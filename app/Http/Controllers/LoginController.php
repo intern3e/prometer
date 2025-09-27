@@ -12,50 +12,35 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Hash; 
+use Throwable;
 class LoginController extends Controller
 {
     /* ===================== Provider Config (ฮาร์ดโค้ด) ===================== */
-
-    // Google
-    private array $googleConfig = [
-        $clientId = config('services.google.client_id');
-        $clientSecret = config('services.google.client_secret');
-        $redirectUri = config('services.google.redirect');
-    ];
-
-    // LINE
+    private array $googleConfig = [];
     private array $lineConfig = [
-        'client_id'     => '2008050920',                       // Channel ID
-        'client_secret' => '7355eeaa67feb39c15eec4f49e3ef513', // Channel Secret
-        // 'redirect' จะถูกเติมให้แบบไดนามิกด้านล่าง
+        'client_id'     => '2008050920',                      
+        'client_secret' => '7355eeaa67feb39c15eec4f49e3ef513', 
     ];
 
     /* -------------------- helper เติม config runtime -------------------- */
     private function bootProvider(string $provider, array $config, string $callbackPath): void
     {
-            // บังคับโดเมนด้วย http://prometer.shop
-            $redirect = 'http://prometer.shop' . $callbackPath;
-            \Log::info("OAuth redirect for {$provider} => {$redirect}");
-            config(["services.$provider" => array_merge($config, ['redirect' => $redirect])]);
-        }
-
-    // private function bootProvider(string $provider, array $config, string $callbackPath): void
-    // {
-    //     // origin ปัจจุบัน (รวม subfolder ถ้ามี)
-    //     $origin = rtrim(request()->getSchemeAndHttpHost() . request()->getBaseUrl(), '/');
-    //     $redirect = $origin . $callbackPath;
-
-    //     \Log::info("OAuth redirect for {$provider} => {$redirect}");
-    //     config(["services.$provider" => array_merge($config, ['redirect' => $redirect])]);
-    // }
+        $redirect = 'http://prometer.shop' . $callbackPath;
+        \Log::info("OAuth redirect for {$provider} => {$redirect}");
+        config(["services.$provider" => array_merge($config, ['redirect' => $redirect])]);
+    }
     private function applyGoogleConfig(): void
-        {
-            $cfg = $this->googleConfig;
-            // ฮาร์ดโค้ดให้ตรงกับ Google Console (โหมด http ตอนนี้)
-            $cfg['redirect'] = 'http://prometer.shop/auth/google/callback';
-            config(['services.google' => $cfg]);
-            \Log::info("OAuth redirect for google => {$cfg['redirect']}");
-        }
+    {
+      
+        $cfg = [
+            'client_id'     => config('services.google.client_id'),
+            'client_secret' => config('services.google.client_secret'),
+            // บังคับเป็น http://prometer.shop ตอนนี้
+            'redirect'      => 'http://prometer.shop/auth/google/callback',
+        ];
+        config(['services.google' => $cfg]);
+        \Log::info("OAuth redirect for google => {$cfg['redirect']}");
+    }
 
     public function googleRedirect()
     {
