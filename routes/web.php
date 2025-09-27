@@ -203,5 +203,7 @@ Route::post('/cart/checkout', [CartController::class, 'checkout'])
 
 
 use App\Http\Controllers\PdfProxyController;
-Route::match(['GET','OPTIONS'], '/pdf-proxy', [PdfProxyController::class, 'fetch'])
-    ->name('pdf.proxy');
+
+Route::match(['GET','OPTIONS'], '/pdf-proxy/b64/{b64}', [PdfProxyController::class, 'fetchB64'])
+    ->where('b64', '[A-Za-z0-9_=\\-]+')    // จำกัด charset ของ base64url
+    ->name('pdf.proxy.b64');
