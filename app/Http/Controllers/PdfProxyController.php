@@ -78,13 +78,14 @@ class PdfProxyController extends Controller
             $etag         = $h['ETag'][0]          ?? null;
             $lastModified = $h['Last-Modified'][0] ?? null;
 
-            $outHeaders = [
-                'Content-Type'                  => $contentType,
-                'Content-Disposition'           => 'inline; filename="document.pdf"',
-                'Accept-Ranges'                 => $acceptRanges,
-                'Access-Control-Expose-Headers' => 'Content-Length, Content-Type, Accept-Ranges, Content-Range, ETag, Last-Modified',
-                'Cache-Control'                 => 'public, max-age=86400',
-            ] + $this->cors();
+       $outHeaders = [
+            'Content-Type'        => $contentType,
+            'Content-Disposition' => 'inline; filename="document.pdf"',
+            'Accept-Ranges'       => $acceptRanges,
+            'Cache-Control'       => 'no-store, no-cache, must-revalidate, max-age=0',
+            'Pragma'              => 'no-cache',
+        ] + $this->cors();
+
 
             if ($contentLen)   $outHeaders['Content-Length'] = $contentLen;
             if ($contentRange) $outHeaders['Content-Range']  = $contentRange;

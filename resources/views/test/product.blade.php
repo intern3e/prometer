@@ -245,24 +245,23 @@
     <div class="flex items-center justify-between gap-3 px-4 md:px-5 py-3 border-b bg-gray-50">
       <div class="flex items-center gap-2 min-w-0">
         <i class="bi bi-file-earmark-pdf text-[var(--brand,#ff6a00)] text-xl"></i>
-        <span class="font-semibold text-gray-900 text-base"data-i18n="p_desc_title">รายละเอียดสินค้า</span> 
+        <span class="font-semibold text-gray-900 text-base" data-i18n="p_desc_title">รายละเอียดสินค้า</span>
       </div>
 
       <div class="flex items-center gap-2">
-        <!-- File selector (auto-hidden if single file) -->
         <label for="pdfSelect" class="sr-only">Select file</label>
         <select id="pdfSelect" class="hidden border rounded px-2 py-1 text-sm"></select>
 
-        <!-- Buttons (EN) -->
         <button id="pdfFsBtn" type="button"
                 class="inline-flex items-center gap-1 text-sm px-2.5 py-1.5 border rounded-lg hover:bg-gray-100"
                 aria-label="Fullscreen">
           <i class="bi bi-arrows-fullscreen"></i><span class="hidden sm:inline">Fullscreen</span>
         </button>
+
         <a id="pdfOpenBtn" href="#" target="_blank" rel="noopener"
            class="inline-flex items-center gap-1 text-sm px-2.5 py-1.5 border rounded-lg hover:bg-gray-100"
            aria-label="Open in new tab">
-          {{-- <i class="bi bi-box-arrow-up-right"></i><span class="hidden sm:inline">Open tab</span> --}}
+          <i class="bi bi-box-arrow-up-right"></i><span class="hidden sm:inline">Open tab</span>
         </a>
       </div>
     </div>
@@ -271,149 +270,145 @@
     <div id="pdfCard" class="relative bg-white">
       <div id="pdfSkeleton" class="skeleton rounded-none"></div>
 
-      <!-- ครอบ iframe เพื่อตัด toolbar ของ PDF.js -->
       <div class="pdf-viewport">
-        <iframe id="pdfFrame" class="pdf-frame" title="PDF viewer" loading="lazy"></iframe>
+        <!-- ใช้ตัวอ่าน PDF ของเบราว์เซอร์โดยตรง -->
+        <embed id="pdfEmbed" type="application/pdf" class="pdf-frame" />
+      </div>
+
+      <!-- Fallback: ถ้าเบราว์เซอร์ไม่รองรับ ให้โชว์ปุ่มเปิดแท็บแทน -->
+      <div id="pdfFallback" class="hidden px-4 py-3 text-sm text-gray-600">
+        เบราว์เซอร์ของคุณไม่รองรับการแสดง PDF ในหน้านี้
+        <a id="pdfFallbackLink" href="#" class="text-[var(--brand,#ff6a00)] underline" target="_blank" rel="noopener">
+          เปิดเอกสารในแท็บใหม่
+        </a>
       </div>
     </div>
 
-    <!-- SEO/fallback text (kept but hidden) -->
+    <!-- เก็บข้อความดิบไว้สำหรับดึง URL -->
     <div id="pColJ" class="sr-only">{{ e($product->document) }}</div>
   </div>
 </section>
 
 <style>
-  /* ปรับความสูง toolbar ของ PDF.js ที่จะถูกตัดทิ้ง หากอนาคต PDF.js เปลี่ยนความสูงให้ปรับค่านี้ */
-  :root{ --pdfjs-toolbar-h: 48px; }
-
   .pdf-viewport{ position:relative; overflow:hidden; }
   .pdf-frame{
     width:100%;
-    /* เพิ่มความสูงเท่ากับ toolbar แล้วเลื่อนขึ้น ให้พื้นที่แสดงผลยังคง ~70vh ตามเดิม */
-    height: calc(min(70vh, 900px) + var(--pdfjs-toolbar-h));
+    height: min(70vh, 900px);
     border:0; display:block;
-    transform: translateY(calc(-1 * var(--pdfjs-toolbar-h)));
   }
-  @media (max-width: 640px){
-    .pdf-frame{ height: calc(60vh + var(--pdfjs-toolbar-h)); }
-  }
+  @media (max-width: 640px){ .pdf-frame{ height: 60vh; } }
 
   .skeleton{ position:absolute; inset:0;
     background:linear-gradient(90deg,#f6f7f8 25%,#eee 37%,#f6f7f8 63%);
     background-size:400% 100%; animation:shimmer 1.2s infinite; border-radius:0.75rem }
   @keyframes shimmer{ 0%{background-position:100% 0} 100%{background-position:0 0} }
 
-  /* ตอน fullscreen ให้ชดเชยความสูง toolbar เช่นกัน */
-  :fullscreen .pdf-frame{ height: calc(100vh + var(--pdfjs-toolbar-h)); }
+  :fullscreen .pdf-frame{ height: 100vh; }
 </style>
 
 <script>
 (function () {
-  const textEl = document.getElementById('pColJ');
+  const textEl   = document.getElementById('pColJ');
   if (!textEl) return;
-  const PROXY = '/pdf-proxy';
 
-  // === 1) ดึงข้อความดิบจาก SEO/fallback แล้วหา URL ===
-  const raw = (textEl.textContent || '').trim();
+  const PROXY    = '/pdf-proxy';
+  const raw      = (textEl.textContent || '').trim();
 
-  // จับลิงก์แบบเต็ม (absolute)
-  const absUrls = raw.match(/https?:\/\/[^\s<>"']+/gi) || [];
-
-  // จับลิงก์แบบ relative ของ myflukestore: /pdfs/cache/.../*.pdf[?...]#
+  // ดึง URL .pdf ทั้งแบบ absolute และ relative (myflukestore)
+  const absUrls       = raw.match(/https?:\/\/[^\s<>"']+/gi) || [];
   const relPdfMatches = raw.match(/(?:^|\s)(\/pdfs\/cache\/[^\s<>"']+?\.pdf(?:[?#][^\s<>"']*)?)/gi) || [];
+  const MYFLUKE_BASE  = 'https://www.myflukestore.com';
+  const toAbsolute    = (u) => /^\/\//.test(u) ? 'https:' + u : (/^\//.test(u) ? MYFLUKE_BASE + u : u);
 
-  // แปลง relative -> absolute สำหรับโดเมน myflukestore
-  const MYFLUKE_BASE = 'https://www.myflukestore.com';
-  const toAbsolute = (u) => {
-    // ถ้าเป็น //host/path ให้เติม https:
-    if (/^\/\//.test(u)) return 'https:' + u;
-    // ถ้าเป็น /path ให้เติมโดเมน myflukestore
-    if (/^\//.test(u)) return MYFLUKE_BASE + u;
-    return u;
-  };
-
-  // รวมรายการ pdf ทั้งแบบ absolute ที่ลงท้าย .pdf และแบบ relative ที่ถูกแปลงแล้ว
   const pdfFromAbs = absUrls.filter(u => /\.pdf(\?|#|$)/i.test(u));
   const pdfFromRel = relPdfMatches.map(s => toAbsolute(s.trim()));
-  // รวม + ลบซ้ำ
-  const pdfs = Array.from(new Set([...pdfFromAbs, ...pdfFromRel]));
+  const pdfs       = Array.from(new Set([...pdfFromAbs, ...pdfFromRel]));
 
   if (!pdfs.length) return;
 
-  // === 2) เตรียม viewer + proxy ===
-  const proxied = (u) => `${location.origin}/pdf-proxy?url=${encodeURIComponent(u)}`;
-
-    const viewerSrc = (u) =>
-    `/pdfjs/web/viewer.html?file=${
-      encodeURIComponent(`${PROXY}?url=${encodeURIComponent(u)}`)
-    }#zoom=page-width&pagemode=none&disableDownload=true`;
-
-
-  // === 3) อ้างอิง element ต่าง ๆ ===
-  const frame    = document.getElementById('pdfFrame');
+  // อ้างอิง element
+  const embed    = document.getElementById('pdfEmbed');
   const skeleton = document.getElementById('pdfSkeleton');
   const fsBtn    = document.getElementById('pdfFsBtn');
   const openBtn  = document.getElementById('pdfOpenBtn');
   const card     = document.getElementById('pdfCard');
   const select   = document.getElementById('pdfSelect');
+  const fallback = document.getElementById('pdfFallback');
+  const fallbackLink = document.getElementById('pdfFallbackLink');
 
-  // ถ้ามีหลายไฟล์ แสดงตัวเลือก
+  // ถ้ามีหลายไฟล์ แสดง selector
   if (pdfs.length > 1) {
     select.classList.remove('hidden');
     select.innerHTML = '';
     pdfs.forEach((u, i) => {
       const opt = document.createElement('option');
       opt.value = u;
-      // ชื่อไฟล์อ่านง่าย
       try {
         const url = new URL(u);
         const name = url.pathname.split('/').pop() || `file-${i+1}.pdf`;
         opt.textContent = `${i+1}. ${name}`;
-      } catch {
-        opt.textContent = `File #${i+1}`;
-      }
+      } catch { opt.textContent = `File #${i+1}`; }
       select.appendChild(opt);
     });
   }
 
+  // render โดยใช้ proxy → ให้ browser เปิด inline
   function render(u){
     skeleton.style.display = 'block';
-    frame.src = viewerSrc(u);
-    openBtn.href = u; // เปิดแท็บใหม่เป็น URL ต้นฉบับ
-    if (select.options.length) {
-      const idx = pdfs.indexOf(u);
-      if (idx >= 0) select.selectedIndex = idx;
-    }
+    const proxied = `${PROXY}?url=${encodeURIComponent(u)}`; // proxy ของคุณจะคืน Content-Disposition:inline
+    openBtn.href = u;
+    fallbackLink.href = u;
+
+    // set src ให้ <embed>
+    embed.src = proxied + '#zoom=page-width'; // hash บางเบราว์เซอร์อาจไม่ใช้ แต่ไม่เป็นไร
   }
 
-  frame.addEventListener('load', () => { skeleton.style.display = 'none'; });
+  // โหลดเสร็จแล้วซ่อน skeleton (บาง browser ไม่มี event load บน embed ให้ตั้ง timeout เผื่อ)
+  const hideSkeleton = () => { skeleton.style.display = 'none'; };
+  embed.addEventListener('load', hideSkeleton);
+  setTimeout(hideSkeleton, 1200);
 
   // แสดงไฟล์แรก
   render(pdfs[0]);
 
-  // เปลี่ยนไฟล์จาก selector
+  // เปลี่ยนจาก selector
   select.addEventListener('change', () => render(select.value));
 
-  // === 4) Fullscreen toggle ===
+  // Fullscreen
   fsBtn.addEventListener('click', async () => {
-    if (!document.fullscreenElement) {
-      try {
+    try {
+      if (!document.fullscreenElement) {
         await card.requestFullscreen();
         fsBtn.innerHTML = '<i class="bi bi-fullscreen-exit"></i><span class="hidden sm:inline">Exit fullscreen</span>';
-      } catch(e){}
-    } else {
-      await document.exitFullscreen();
-      fsBtn.innerHTML = '<i class="bi bi-arrows-fullscreen"></i><span class="hidden sm:inline">Fullscreen</span>';
-    }
+      } else {
+        await document.exitFullscreen();
+        fsBtn.innerHTML = '<i class="bi bi-arrows-fullscreen"></i><span class="hidden sm:inline">Fullscreen</span>';
+      }
+    } catch {}
   });
   document.addEventListener('fullscreenchange', () => {
     if (!document.fullscreenElement) {
       fsBtn.innerHTML = '<i class="bi bi-arrows-fullscreen"></i><span class="hidden sm:inline">Fullscreen</span>';
     }
   });
+
+  // ตรวจความสามารถเบราว์เซอร์ (ถ้าไม่รองรับให้โชว์ fallback)
+  try {
+    const canInline = !!document.createElement('embed').type;
+    if (!canInline) {
+      embed.classList.add('hidden');
+      fallback.classList.remove('hidden');
+      skeleton.style.display = 'none';
+    }
+  } catch {
+    // เผื่อบางเคส
+  }
 })();
 </script>
 @endif
+
+
+
 
 
 
