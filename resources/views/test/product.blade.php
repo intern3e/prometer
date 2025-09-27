@@ -261,7 +261,7 @@
         <a id="pdfOpenBtn" href="#" target="_blank" rel="noopener"
            class="inline-flex items-center gap-1 text-sm px-2.5 py-1.5 border rounded-lg hover:bg-gray-100"
            aria-label="Open in new tab">
-          <i class="bi bi-box-arrow-up-right"></i><span class="hidden sm:inline">Open tab</span>
+          {{-- <i class="bi bi-box-arrow-up-right"></i><span class="hidden sm:inline">Open tab</span> --}}
         </a>
       </div>
     </div>
@@ -276,10 +276,8 @@
       </div>
 
       <!-- Fallback: ถ้าเบราว์เซอร์ไม่รองรับ ให้โชว์ปุ่มเปิดแท็บแทน -->
-      <div id="pdfFallback" class="hidden px-4 py-3 text-sm text-gray-600">
-        เบราว์เซอร์ของคุณไม่รองรับการแสดง PDF ในหน้านี้
+
         <a id="pdfFallbackLink" href="#" class="text-[var(--brand,#ff6a00)] underline" target="_blank" rel="noopener">
-          เปิดเอกสารในแท็บใหม่
         </a>
       </div>
     </div>
