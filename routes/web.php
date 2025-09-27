@@ -13,60 +13,60 @@ use Illuminate\Support\Facades\Cookie;
 use App\Http\Controllers\AccountController;
 use GuzzleHttp\Client;
 
-Route::get('/pdf-proxy', function (Request $req) {
-    $url = $req->query('url');
+// Route::get('/pdf-proxy', function (Request $req) {
+//     $url = $req->query('url');
 
-    // validate เบื้องต้น
-    if (!$url || !preg_match('~^https?://~i', $url) || !preg_match('~\.pdf(\?|#|$)~i', $url)) {
-        abort(400, 'Invalid url');
-    }
+//     // validate เบื้องต้น
+//     if (!$url || !preg_match('~^https?://~i', $url) || !preg_match('~\.pdf(\?|#|$)~i', $url)) {
+//         abort(400, 'Invalid url');
+//     }
 
-    // ป้องกัน SSRF: อนุญาตเฉพาะ host ที่ไว้ใจ (เติมได้เอง)
-    $host = parse_url($url, PHP_URL_HOST) ?: '';
-    $allowHosts = ['www.es.co.th', 'es.co.th'];
-    if (!in_array(strtolower($host), array_map('strtolower', $allowHosts), true)) {
-        abort(403, 'Host not allowed');
-    }
+//     // ป้องกัน SSRF: อนุญาตเฉพาะ host ที่ไว้ใจ (เติมได้เอง)
+//     $host = parse_url($url, PHP_URL_HOST) ?: '';
+//     $allowHosts = ['www.es.co.th', 'es.co.th'];
+//     if (!in_array(strtolower($host), array_map('strtolower', $allowHosts), true)) {
+//         abort(403, 'Host not allowed');
+//     }
 
-    $client  = new Client([
-        'timeout'         => 15,
-        'allow_redirects' => true,
-        'verify'          => false, // ถ้า TLS โอเคใช้ true
-    ]);
+//     $client  = new Client([
+//         'timeout'         => 15,
+//         'allow_redirects' => true,
+//         'verify'          => false, // ถ้า TLS โอเคใช้ true
+//     ]);
 
-    $headers = ['User-Agent' => 'Mozilla/5.0'];
-    if ($range = $req->header('Range')) {
-        $headers['Range'] = $range; // ส่งต่อ range เพื่อให้ PDF เลื่อนหน้าไว
-    }
+//     $headers = ['User-Agent' => 'Mozilla/5.0'];
+//     if ($range = $req->header('Range')) {
+//         $headers['Range'] = $range; // ส่งต่อ range เพื่อให้ PDF เลื่อนหน้าไว
+//     }
 
-    try {
-        $res  = $client->request('GET', $url, ['stream' => true, 'headers' => $headers]);
-        $body = $res->getBody();
-        $status = $res->getStatusCode();
+//     try {
+//         $res  = $client->request('GET', $url, ['stream' => true, 'headers' => $headers]);
+//         $body = $res->getBody();
+//         $status = $res->getStatusCode();
 
-        // เตรียมหัวข้อให้แสดง inline และกัน CORS/iframe
-        $respHeaders = [
-            'Content-Type'                => $res->getHeaderLine('Content-Type') ?: 'application/pdf',
-            'Content-Disposition'         => 'inline; filename="' . basename(parse_url($url, PHP_URL_PATH)) . '"',
-            'Cache-Control'               => 'public, max-age=86400',
-            'Access-Control-Allow-Origin' => '*',
-            // อย่าคืน X-Frame-Options/ CSP กลับไป (ปล่อยว่างไว้)
-        ];
-        foreach (['Content-Length','Content-Range','Accept-Ranges'] as $h) {
-            $v = $res->getHeaderLine($h);
-            if ($v) $respHeaders[$h] = $v;
-        }
+//         // เตรียมหัวข้อให้แสดง inline และกัน CORS/iframe
+//         $respHeaders = [
+//             'Content-Type'                => $res->getHeaderLine('Content-Type') ?: 'application/pdf',
+//             'Content-Disposition'         => 'inline; filename="' . basename(parse_url($url, PHP_URL_PATH)) . '"',
+//             'Cache-Control'               => 'public, max-age=86400',
+//             'Access-Control-Allow-Origin' => '*',
+//             // อย่าคืน X-Frame-Options/ CSP กลับไป (ปล่อยว่างไว้)
+//         ];
+//         foreach (['Content-Length','Content-Range','Accept-Ranges'] as $h) {
+//             $v = $res->getHeaderLine($h);
+//             if ($v) $respHeaders[$h] = $v;
+//         }
 
-        return response()->stream(function () use ($body) {
-            while (!$body->eof()) {
-                echo $body->read(8192);
-            }
-        }, in_array($status, [200,206]) ? $status : 200, $respHeaders);
+//         return response()->stream(function () use ($body) {
+//             while (!$body->eof()) {
+//                 echo $body->read(8192);
+//             }
+//         }, in_array($status, [200,206]) ? $status : 200, $respHeaders);
 
-    } catch (\Throwable $e) {
-        abort(404, 'File not found');
-    }
-})->name('pdf.proxy');
+//     } catch (\Throwable $e) {
+//         abort(404, 'File not found');
+//     }
+// })->name('pdf.proxy');
 
 // routes/web.php
 
