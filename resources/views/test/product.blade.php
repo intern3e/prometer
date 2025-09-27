@@ -342,12 +342,9 @@
   // === 2) เตรียม viewer + proxy ===
   const proxied = (u) => `${location.origin}/pdf-proxy?url=${encodeURIComponent(u)}`;
 
-  const viewerSrc = (u) => {
-    // base64url (แทน +/ ด้วย -_ เพื่อเป็นมิตรกับ URL)
-    const b64 = btoa(u).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
-    const fileParam = `/pdf-proxy/b64/${b64}`;
-    return `/pdfjs/web/viewer.html?file=${encodeURIComponent(fileParam)}#zoom=page-width&pagemode=none&disableDownload=true`;
-  };
+const viewerSrc = (u) =>
+  `/pdfjs/web/viewer.html?file=${encodeURIComponent('/pdf-proxy?url=' + encodeURIComponent(u))}`;
+
   // === 3) อ้างอิง element ต่าง ๆ ===
   const frame    = document.getElementById('pdfFrame');
   const skeleton = document.getElementById('pdfSkeleton');
