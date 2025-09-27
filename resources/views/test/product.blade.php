@@ -342,9 +342,8 @@
   // === 2) เตรียม viewer + proxy ===
   const proxied = (u) => `${location.origin}/pdf-proxy?url=${encodeURIComponent(u)}`;
 
-const viewerSrc = (u) =>
-  `${location.origin}/pdfjs/web/viewer.html?v=2&file=${encodeURIComponent('/pdf-proxy?url=' + encodeURIComponent(u))}#zoom=page-width&pagemode=none`;
-
+  const viewerSrc = (u) =>
+  `/pdfjs/web/viewer.html?file=${encodeURIComponent('/pdf-proxy?url=' + encodeURIComponent(u))}#zoom=page-width&pagemode=none&disableDownload=true`;
 
 
   // === 3) อ้างอิง element ต่าง ๆ ===
