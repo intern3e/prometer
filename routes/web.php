@@ -204,3 +204,26 @@ Route::post('/cart/checkout', [CartController::class, 'checkout'])
 
 use App\Http\Controllers\PdfProxyController;
 Route::match(['GET','OPTIONS'], '/pdf-proxy', [PdfProxyController::class, 'fetch']);
+Route::get('/pdfjs/{path}', function ($path) {
+    $filePath = public_path("pdfjs/{$path}");
+    
+    if (!file_exists($filePath)) {
+        abort(404);
+    }
+    
+    $extension = pathinfo($filePath, PATHINFO_EXTENSION);
+    $contentType = match($extension) {
+        'mjs' => 'application/javascript',
+        'js' => 'application/javascript',
+        'wasm' => 'application/wasm',
+        'css' => 'text/css',
+        'html' => 'text/html',
+        default => 'application/octet-stream'
+    };
+    
+    return response()->file($filePath, [
+        'Content-Type' => $contentType,
+        'Access-Control-Allow-Origin' => '*',
+        'Cross-Origin-Resource-Policy' => 'cross-origin',
+    ]);
+})->where('path', '.*');
