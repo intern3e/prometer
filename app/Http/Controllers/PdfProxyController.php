@@ -8,29 +8,18 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PdfProxyController extends Controller
 {
+    // โดเมนที่อนุญาต (กัน open proxy)
     private array $allowHosts = [
         'www.myflukestore.com','myflukestore.com',
         'www.es.co.th','es.co.th',
     ];
-    private const VERIFY_SSL = false;
 
-    // ====== ใหม่: รองรับรูปแบบ /pdf-proxy/b64/{b64} ======
-    public function fetchB64(Request $req, string $b64)
-    {
-        // base64url -> base64
-        $b64 = strtr($b64, '-_', '+/');
-        $url = base64_decode($b64, true);
-        if (!is_string($url) || $url === '') {
-            return response('Invalid base64 url', 400)->withHeaders($this->cors());
-        }
-
-        // ใส่ url ลงใน query แล้วเรียกใช้ logic เดิม
-        $req->query->set('url', $url);
-        return $this->fetch($req);
-    }
+    // ปิด/เปิด SSL verify (ชั่วคราวเพื่อ debug)
+    private const VERIFY_SSL = false; // เปลี่ยนเป็น true เมื่อใช้จริง
 
     public function fetch(Request $req)
     {
+        // CORS preflight
         if ($req->isMethod('OPTIONS')) {
             return response('OK', 200)->withHeaders($this->cors());
         }
@@ -40,6 +29,7 @@ class PdfProxyController extends Controller
             return response('Missing url', 400)->withHeaders($this->cors());
         }
 
+        // ตรวจ url + allowlist
         $p = parse_url($url);
         if (!isset($p['scheme'], $p['host'])) {
             return response('Invalid url', 400)->withHeaders($this->cors());
@@ -53,6 +43,7 @@ class PdfProxyController extends Controller
         }
 
         try {
+            // ส่งต่อ Range (ให้ upstream ตอบ 206)
             $forwardHeaders = [
                 'User-Agent'      => $req->header('User-Agent', 'Mozilla/5.0'),
                 'Referer'         => ($p['scheme'] ?? 'https').'://'.$host.'/',
@@ -63,12 +54,13 @@ class PdfProxyController extends Controller
                 $forwardHeaders['Range'] = $req->header('Range');
             }
 
+            // ใช้ Laravel Http (stream)
             $response = Http::withHeaders($forwardHeaders)
                 ->withOptions([
-                    'stream'          => true,
-                    'verify'          => self::VERIFY_SSL,
+                    'stream'        => true,
+                    'verify'        => self::VERIFY_SSL, // false ช่วย debug SSL
                     'allow_redirects' => ['max' => 5, 'referer' => true],
-                    'http_errors'     => false,
+                    'http_errors'   => false, // อย่า throw exception อัตโนมัติ
                 ])
                 ->get($url);
 
@@ -77,6 +69,7 @@ class PdfProxyController extends Controller
                 return response("Upstream error ($status)", 502)->withHeaders($this->cors());
             }
 
+            // ดึง header สำคัญจาก upstream
             $h = $response->headers();
             $contentType  = $h['Content-Type'][0]  ?? 'application/pdf';
             $contentLen   = $h['Content-Length'][0] ?? null;
@@ -98,6 +91,7 @@ class PdfProxyController extends Controller
             if ($etag)         $outHeaders['ETag']           = $etag;
             if ($lastModified) $outHeaders['Last-Modified']  = $lastModified;
 
+            // สตรีมเนื้อหาออกไป
             $stream = $response->toPsrResponse()->getBody();
 
             return new StreamedResponse(function () use ($stream) {
@@ -108,6 +102,7 @@ class PdfProxyController extends Controller
             }, $status, $outHeaders);
 
         } catch (\Throwable $e) {
+            // log แล้วตอบข้อความอ่านง่าย (หลีกเลี่ยง 500 เงียบ)
             \Log::error('PDF proxy error: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
             return response('Proxy exception: '.$e->getMessage(), 502)->withHeaders($this->cors());
         }
