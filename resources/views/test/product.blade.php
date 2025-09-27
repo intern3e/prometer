@@ -311,6 +311,7 @@
 (function () {
   const textEl = document.getElementById('pColJ');
   if (!textEl) return;
+  const PROXY = '/pdf-proxy';
 
   // === 1) ดึงข้อความดิบจาก SEO/fallback แล้วหา URL ===
   const raw = (textEl.textContent || '').trim();
@@ -342,8 +343,10 @@
   // === 2) เตรียม viewer + proxy ===
   const proxied = (u) => `${location.origin}/pdf-proxy?url=${encodeURIComponent(u)}`;
 
-  const viewerSrc = (u) =>
-  `/pdfjs/web/viewer.html?file=${encodeURIComponent('/pdf-proxy?url=' + encodeURIComponent(u))}#zoom=page-width&pagemode=none&disableDownload=true`;
+    const viewerSrc = (u) =>
+    `/pdfjs/web/viewer.html?file=${
+      encodeURIComponent(`${PROXY}?url=${encodeURIComponent(u)}`)
+    }#zoom=page-width&pagemode=none&disableDownload=true`;
 
 
   // === 3) อ้างอิง element ต่าง ๆ ===
