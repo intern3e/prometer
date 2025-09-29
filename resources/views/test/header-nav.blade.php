@@ -342,183 +342,301 @@
       <i class="bi bi-search text-lg"></i>
     </button>
 
-    <!-- Cart (robust: Auth + session + fallback + guard) -->
-    @php
-      use Illuminate\Support\Facades\Auth;
-      use Illuminate\Support\Facades\DB;
-      use Illuminate\Support\Facades\Schema;
+<!-- Cart (robust: Auth + session + fallback + guard) -->
+@php
+  use Illuminate\Support\Facades\Auth;
+  use Illuminate\Support\Facades\DB;
+  use Illuminate\Support\Facades\Schema;
 
-      $cartCount = 0;
+  $cartCount = 0;
 
-      // 1) หา uid (Auth -> session('idcustomer') -> map จาก customer_name)
-      $uid = Auth::id() ?? session('idcustomer');
-      if (!$uid && ($name = session('customer_name'))) {
-          try {
-              $uid = DB::table('custdetail')
-                  ->where('username', $name)
-                  ->orWhere('idcustomer', $name)
-                  ->value('idcustomer');
-              if ($uid) {
-                  session(['idcustomer' => $uid]); // cache กลับ
-              }
-          } catch (\Throwable $e) {
-              // เงียบ
-          }
-      }
-
-      // 2) นับจาก DB ตาม idcustomer (รองรับ cart/carts และ quantity/count)
+  // 1) หา uid (Auth -> session('idcustomer') -> map จาก customer_name)
+  $uid = Auth::id() ?? session('idcustomer');
+  if (!$uid && ($name = session('customer_name'))) {
       try {
-          if ($uid) {
-              $tbl = Schema::hasTable('cart') ? 'cart' : (Schema::hasTable('carts') ? 'carts' : null);
-              if ($tbl) {
-                  if (Schema::hasColumn($tbl, 'quantity')) {
-                      $cartCount = (int) DB::table($tbl)->where('idcustomer', $uid)->sum('quantity');
-                  } else {
-                      $cartCount = (int) DB::table($tbl)->where('idcustomer', $uid)->count();
-                  }
-              }
-          }
-      } catch (\Throwable $e) {
-          // ปล่อยให้ fallback ต่อไป
-      }
+          $uid = DB::table('custdetail')
+              ->where('username', $name)
+              ->orWhere('idcustomer', $name)
+              ->value('idcustomer');
+          if ($uid) session(['idcustomer' => $uid]);
+      } catch (\Throwable $e) { /* เงียบ */ }
+  }
 
-      // 3) Fallback: ถ้า 0 หรือยังไม่รู้ uid → ใช้ session('cart') เพื่อให้ตอน "ออกจากระบบ" ก็ยังเห็นจำนวน
-      if ($cartCount === 0) {
-          $sessionCart = session('cart', []);
-          if (is_array($sessionCart)) {
-              foreach ($sessionCart as $item) {
-                  $cartCount += (int) ($item['quantity'] ?? 1);
+  // 2) นับจาก DB ตาม idcustomer (รองรับ cart/carts และ quantity/count)
+  try {
+      if ($uid) {
+          $tbl = Schema::hasTable('cart') ? 'cart' : (Schema::hasTable('carts') ? 'carts' : null);
+          if ($tbl) {
+              if (Schema::hasColumn($tbl, 'quantity')) {
+                  $cartCount = (int) DB::table($tbl)->where('idcustomer', $uid)->sum('quantity');
+              } else {
+                  $cartCount = (int) DB::table($tbl)->where('idcustomer', $uid)->count();
               }
           }
       }
-    @endphp
+  } catch (\Throwable $e) { /* เงียบ */ }
 
-    <a href="{{ url('cart') }}" class="nav-cart relative text-gray-700 hover:text-[var(--brand)] ml-1" aria-label="cart">
-      <i class="bi bi-cart text-2xl"></i>
-      <span id="cartCountDb"
-            data-count="{{ $cartCount }}"
-            class="absolute -top-2 -right-2 bg-[var(--brand)] text-white text-xs rounded-full min-w-5 h-5 px-1
-                   flex items-center justify-center"
-            style="z-index:60">
-        {{ $cartCount }}
-      </span>
-    </a>
+  // 3) Fallback: session cart
+  if ($cartCount === 0) {
+      $sessionCart = session('cart', []);
+      if (is_array($sessionCart)) {
+          foreach ($sessionCart as $item) $cartCount += (int)($item['quantity'] ?? 1);
+      }
+  }
+@endphp
 
-    <!-- ========== Cart Badge: อัปเดตทันทีแบบหน้าเดียว (ไม่พึ่งหน้าอื่น) ========== -->
-    <script>
-    (function(){
-      const badge = document.getElementById('cartCountDb');
-      if (!badge) return;
+<a href="{{ url('cart') }}" class="nav-cart relative text-gray-700 hover:text-[var(--brand,#ff6a00)] ml-1" aria-label="cart">
+  <i class="bi bi-cart text-2xl"></i>
+  <span
+    id="cartCountDb"
+    data-cart-badge
+    data-count="{{ $cartCount }}"
+    aria-live="polite" aria-atomic="true"
+    class="absolute -top-2 -right-2 bg-[var(--brand,#ff6a00)] text-white text-xs rounded-full min-w-5 h-5 px-1 flex items-center justify-center"
+    style="z-index:60">{{ $cartCount }}</span>
+</a>
 
-      const toInt = (v, d=0) => {
-        const n = parseInt(v, 10);
-        return Number.isFinite(n) ? n : d;
-      };
+<style>
+@keyframes cartPop { 0%{transform:scale(1)} 50%{transform:scale(1.15)} 100%{transform:scale(1)} }
+.cart-pop { animation: cartPop .3s ease; }
+</style>
 
-      const get = () => toInt(badge.dataset.count ?? badge.textContent ?? '0', 0);
+<script>
+(function(){
+  // ================= Config =================
+  // ระบุ pattern ของ endpoint เพิ่มสินค้าตะกร้าที่หน้าอื่นอาจเรียกใช้อยู่
+  // เติมลิสต์คำที่เจอบ่อย ๆ ไว้แล้ว เช่น /cart/add, /add-to-cart
+  const CART_MATCH = /(\/cart\/add|\/add-?to-?cart)/i;
 
-      const pop = () => { badge.classList.remove('cart-pop'); void badge.offsetWidth; badge.classList.add('cart-pop'); };
+  // ================ Badge ===================
+  const BADGES = Array.from(document.querySelectorAll('[data-cart-badge], #cartCountDb'));
+  if (!BADGES.length) return;
 
-      const sync = () => {
-        const v = String(badge.dataset.count ?? '0');
-        if (badge.textContent !== v) { badge.textContent = v; pop(); }
-      };
+  const toInt = (v, d=0) => { const n = parseInt(v,10); return Number.isFinite(n) ? n : d; };
 
-      const dispatchCount = () => {
-        window.dispatchEvent(new CustomEvent('cart:count', { detail: { count: get() } }));
-      };
+  const get = () =>
+    BADGES.reduce((m, b) => Math.max(m, toInt(b.dataset.count ?? b.textContent ?? '0', 0)), 0);
 
-      window.setCartCount = (n) => {
-        badge.dataset.count = String(Math.max(0, toInt(n, 0)));
-        sync();
-        dispatchCount();
-      };
+  const setAll = (n, {pop=true} = {}) => {
+    const v = String(Math.max(0, toInt(n, 0)));
+    BADGES.forEach(b => {
+      b.dataset.count = v;
+      if (b.textContent !== v) {
+        b.textContent = v;
+        if (pop) { b.classList.remove('cart-pop'); void b.offsetWidth; b.classList.add('cart-pop'); }
+      }
+    });
+    window.dispatchEvent(new CustomEvent('cart:count:changed', { detail: { count: toInt(v,0) } }));
+  };
 
-      window.bumpCartCount = (delta = 1) => {
-        const next = Math.max(0, get() + toInt(delta, 0));
-        window.setCartCount(next);
-      };
+  // ================ Public API ==============
+  window.setCartCount  = (n, opts={}) => setAll(n, opts);
+  window.bumpCartCount = (delta=1) => setAll(Math.max(0, get() + toInt(delta,0)));
+  window.cartAdded     = (qty=1) => window.bumpCartCount(qty); // เผื่อเรียกเองจากโค้ดอื่น
 
-      // ฟังก์ชันเพิ่มตะกร้าแบบ Optimistic (เด้งเลขทันที)
-      // ถ้ามี data-api บนปุ่ม จะยิงไปที่ API นั้น (POST JSON: {iditem, quantity})
-      window.cartAdd = async function(iditem, qty = 1, options = {}) {
-        const q = Math.max(1, toInt(qty, 1));
-        // เด้งเลขก่อน (หน้าเดียว ไม่ต้องพึ่งผลลัพธ์)
-        window.bumpCartCount(q);
+  // ============== Smart Auto-bind ===========
+  const findQtyNear = (btn) => {
+    const scope = btn.closest('[data-product], [data-card], .product, .card, .item, form') || document;
+    const qEl = btn.getAttribute('data-qty') ? null :
+      scope.querySelector('[data-qty-input], input[name="quantity"], input.qty, .qty input');
+    return toInt(btn.getAttribute('data-qty') ?? (qEl ? qEl.value : 1), 1);
+  };
 
-        const api    = options.api || null;
-        const method = (options.method || 'POST').toUpperCase();
-        if (!api) {
-          // ไม่มี API ก็จบที่การเด้งเลข (ตามคำขอให้จบหน้าเดียว)
-          window.dispatchEvent(new CustomEvent('cart:added', { detail: { iditem, qty: q, optimistic:true } }));
-          return;
-        }
+  const extractIdFrom = (el) => {
+    const direct = el.getAttribute('data-iditem') ?? el.dataset.id ?? el.value ?? '';
+    if (direct) return String(direct).trim();
+    const scope = el.closest('[data-product], [data-card], .product, .card, .item, form') || document;
+    const holder =
+      scope.querySelector('[data-iditem], [data-product-id], [data-id]') ||
+      scope.querySelector('input[name="iditem"], input[name="product_id"], input[name="id"]');
+    if (holder) {
+      const v = holder.getAttribute('data-iditem') ?? holder.getAttribute('data-product-id') ?? holder.getAttribute('data-id') ?? holder.value;
+      if (v) return String(v).trim();
+    }
+    const a = el.closest('a[href]');
+    if (a) {
+      try {
+        const u = new URL(a.href, location.origin);
+        const q = u.searchParams.get('iditem') || u.searchParams.get('id');
+        if (q) return String(q).trim();
+      } catch {}
+    }
+    return '';
+  };
+
+  const extractApiFrom = (el) => {
+    const api = el.getAttribute('data-api');
+    if (api) return api;
+    const a = el.closest('a[href]');
+    if (a && CART_MATCH.test(a.getAttribute('href'))) return a.href;
+    const form = el.closest('form[action]');
+    if (form && CART_MATCH.test(form.getAttribute('action'))) return form.getAttribute('action');
+    return null;
+  };
+
+  const extractMethodFrom = (el) => {
+    const m = (el.getAttribute('data-method') || '').toUpperCase();
+    if (m) return m;
+    const form = el.closest('form');
+    if (form && form.method) return form.method.toUpperCase();
+    return 'POST';
+  };
+
+  // คลิก (ใช้ capture เพื่อชนะสคริปต์ที่ stopPropagation)
+  document.addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-add-to-cart], .add-to-cart, a[href*="/cart/add"], a[href*="add-to-cart"]');
+    if (!btn) return;
+    e.preventDefault();
+
+    const id     = extractIdFrom(btn); // ไม่มี id ก็ยังเด้งเลขได้
+    const qty    = findQtyNear(btn);
+    const api    = extractApiFrom(btn);
+    const method = extractMethodFrom(btn);
+
+    await window.cartAdd(id, qty, api ? { api, method } : {});
+  }, true); // <= capture true
+
+  // submit form (capture true)
+  document.addEventListener('submit', async (e) => {
+    const form = e.target.closest('form');
+    if (!form) return;
+    const action = form.getAttribute('action') || '';
+    const marked = form.matches('[data-add-to-cart-form]');
+    if (!marked && !CART_MATCH.test(action)) return;
+
+    e.preventDefault();
+
+    const idInput = form.querySelector('input[name="iditem"], input[name="product_id"], input[name="id"]');
+    const qtyInput= form.querySelector('[data-qty-input], input[name="quantity"], input.qty, .qty input');
+
+    const id     = idInput?.value || '';
+    const qty    = toInt(qtyInput?.value ?? 1, 1);
+    const api    = action || null;
+    const method = (form.method || 'POST').toUpperCase();
+
+    await window.cartAdd(id, qty, api ? { api, method } : {});
+  }, true);
+
+  // =========== Intercept fetch / XHR =========
+  // ครอบ fetch เพื่อดักการเรียก /cart/add ของสคริปต์อื่น ๆ
+  if (!window.__cartFetchPatched) {
+    window.__cartFetchPatched = true;
+    const _fetch = window.fetch;
+    window.fetch = async function(input, init={}) {
+      const url = (typeof input === 'string') ? input : (input?.url || '');
+      const method = (init?.method || (typeof input !== 'string' ? input.method : 'GET') || 'GET').toUpperCase();
+      const isCartAdd = CART_MATCH.test(url);
+
+      // เริ่ม: ถ้าเป็น add → optimistic (+1 ถ้าเดา qty ไม่ได้)
+      let guessedQty = 1;
+      if (isCartAdd) {
         try {
-          const token  = document.querySelector('meta[name="csrf-token"]')?.content;
-          const res = await fetch(api, {
-            method,
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Requested-With': 'XMLHttpRequest',
-              ...(token ? { 'X-CSRF-TOKEN': token } : {})
-            },
-            body: method === 'GET' ? undefined : JSON.stringify({ iditem, quantity: q })
-          });
-          let data = null;
-          try { data = await res.json(); } catch(_) {}
-          if (data && typeof data.count !== 'undefined') {
-            window.setCartCount(data.count); // sync กับค่าจริง ถ้ามี
+          if (init && init.body && typeof init.body === 'string' && init.headers && /json/i.test(init.headers['Content-Type'] || init.headers['content-type'] || '')) {
+            const j = JSON.parse(init.body); guessedQty = toInt(j.quantity ?? j.qty ?? 1, 1);
           }
-          window.dispatchEvent(new CustomEvent('cart:added', { detail: { iditem, qty: q, optimistic:false, response:data } }));
-        } catch (e) {
-          // ถ้าล้มเหลว เราก็ยังมีเลขแบบ optimistic อยู่แล้ว
-          window.dispatchEvent(new CustomEvent('cart:added:error', { detail: { iditem, qty: q, error: String(e) } }));
-        }
-      };
+        } catch {}
+        window.cartAdded(guessedQty);
+      }
 
-      // เริ่มต้น: sync จากค่า data-count
-      sync();
+      const res = await _fetch(input, init);
+      if (isCartAdd) {
+        try {
+          // พยายามอ่าน count จากผลลัพธ์
+          const clone = res.clone();
+          const type = clone.headers.get('content-type') || '';
+          if (/application\/json/i.test(type)) {
+            const data = await clone.json();
+            if (typeof data?.count !== 'undefined') window.setCartCount(data.count);
+          }
+        } catch {}
+      }
+      return res;
+    };
+  }
 
-      // ถ้า script อื่นพยายามเขียนทับ badge → เราซิงก์คืนจาก data-count เสมอ
-      new MutationObserver(sync).observe(badge, { childList: true, characterData: true, subtree: true });
+  // ครอบ XMLHttpRequest เช่นกัน
+  if (!window.__cartXHRPatched) {
+    window.__cartXHRPatched = true;
+    const _open = XMLHttpRequest.prototype.open;
+    const _send = XMLHttpRequest.prototype.send;
+    XMLHttpRequest.prototype.open = function(method, url, async, user, password) {
+      this.__cart_isAdd = CART_MATCH.test(url || '');
+      this.__cart_method = (method || 'GET').toUpperCase();
+      return _open.apply(this, arguments);
+    };
+    XMLHttpRequest.prototype.send = function(body) {
+      if (this.__cart_isAdd) {
+        let guessedQty = 1;
+        try {
+          if (typeof body === 'string') {
+            // ลองเดาจาก JSON
+            const j = JSON.parse(body);
+            guessedQty = toInt(j.quantity ?? j.qty ?? 1, 1);
+          }
+        } catch {}
+        window.cartAdded(guessedQty);
 
-      // รองรับการตั้งค่าผ่านอีเวนต์สาธารณะ
-      window.addEventListener('cart:count', (e) => {
-        if (e?.detail && typeof e.detail.count !== 'undefined') {
-          window.setCartCount(e.detail.count);
-        }
+        this.addEventListener('load', () => {
+          try {
+            const type = this.getResponseHeader('content-type') || '';
+            if (/application\/json/i.test(type)) {
+              const data = JSON.parse(this.responseText);
+              if (typeof data?.count !== 'undefined') window.setCartCount(data.count);
+            }
+          } catch {}
+        });
+      }
+      return _send.apply(this, arguments);
+    };
+  }
+
+  // ============== cartAdd core =============
+  window.cartAdd = async function(iditem, qty=1, options={}) {
+    const q  = Math.max(1, toInt(qty, 1));
+    const id = (iditem ?? '').toString().trim();
+
+    // optimistic
+    window.cartAdded(q);
+
+    const api    = options.api || null;
+    const method = (options.method || 'POST').toUpperCase();
+    if (!api) return;
+
+    try {
+      const token  = document.querySelector('meta[name="csrf-token"]')?.content;
+      const payload = method === 'GET' ? undefined : JSON.stringify({ iditem: id, quantity: q });
+
+      const res = await fetch(api, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          ...(token ? { 'X-CSRF-TOKEN': token } : {})
+        },
+        body: payload
       });
 
-      // Auto-bind ปุ่ม/ลิงก์ที่มี data-add-to-cart (หน้าเดียวจบ)
-      document.addEventListener('click', async (e) => {
-        const btn = e.target.closest('[data-add-to-cart]');
-        if (!btn) return;
+      // (fetch ถูกครอบด้านบนไว้อยู่แล้ว จะ sync count ให้อัตโนมัติถ้ามี)
+      // เผื่อ API ไม่คืน JSON → ไม่เป็นไร คงค่า optimistic
+      return res;
+    } catch (e) {
+      // ล้มเหลว: คงค่า optimistic ไว้
+      return null;
+    }
+  };
 
-        e.preventDefault();
+  // เริ่มต้นจัดค่าให้ตรงกับ SSR
+  setAll(get(), {pop:false});
 
-        // iditem
-        const id = btn.getAttribute('data-iditem') ?? btn.dataset.id ?? btn.value ?? null;
-
-        // qty: data-qty > input ใกล้ ๆ > 1
-        let qty = btn.getAttribute('data-qty');
-        if (!qty) {
-          const scope = btn.closest('[data-product], .product, .card, .item, form') || document;
-          const qtyInput =
-            scope.querySelector('[data-qty-input]') ||
-            scope.querySelector('input[name="quantity"]') ||
-            scope.querySelector('input.qty') ||
-            scope.querySelector('.qty input');
-          qty = qtyInput ? qtyInput.value : '1';
-        }
-
-        // ถ้ามี data-api ก็ยิงไปด้วย (แต่ว่า "จบหน้าเดียว" อยู่แล้วเพราะเราบวกเลขแบบ optimistic)
-        const api    = btn.getAttribute('data-api');       // ex: "/cart/add"
-        const method = (btn.getAttribute('data-method') || 'POST').toUpperCase();
-
-        await window.cartAdd(id, qty, api ? { api, method } : {});
-      });
-    })();
-    </script>
+  // กันสคริปต์อื่นเขียนทับ textContent
+  BADGES.forEach(badge => {
+    new MutationObserver(() => {
+      const v = String(badge.dataset.count ?? '0');
+      if (badge.textContent !== v) badge.textContent = v;
+    }).observe(badge, { childList: true, characterData: true, subtree: true });
+  });
+})();
+</script>
 
   </div>
 
