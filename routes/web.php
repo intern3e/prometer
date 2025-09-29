@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cookie;
 use App\Http\Controllers\AccountController;
 use GuzzleHttp\Client;
+use App\Models\Custdetail;
 
 // Route::get('/pdf-proxy', function (Request $req) {
 //     $url = $req->query('url');
@@ -204,3 +205,12 @@ Route::post('/cart/checkout', [CartController::class, 'checkout'])
 
 use App\Http\Controllers\PdfProxyController;
 Route::match(['GET','OPTIONS'], '/pdf-proxy', [PdfProxyController::class, 'fetch']);
+
+
+
+use App\Http\Controllers\AdminUserController;
+
+Route::get('Admin', [AdminUserController::class, 'index'])->name('Admin');
+
+
+

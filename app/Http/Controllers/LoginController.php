@@ -25,8 +25,8 @@ class LoginController extends Controller
     /* -------------------- helper เติม config runtime -------------------- */
     private function bootProvider(string $provider, array $config, string $callbackPath): void
     {
-        $redirect = 'http://prometer.shop' . $callbackPath;
-        //  $redirect = 'http://127.0.0.1:8000' . $callbackPath;
+        // $redirect = 'http://prometer.shop' . $callbackPath;
+         $redirect = 'http://127.0.0.1:8000' . $callbackPath;
         \Log::info("OAuth redirect for {$provider} => {$redirect}");
         config(["services.$provider" => array_merge($config, ['redirect' => $redirect])]);
     }
@@ -37,8 +37,8 @@ class LoginController extends Controller
             'client_id'     => config('services.google.client_id'),
             'client_secret' => config('services.google.client_secret'),
             // บังคับเป็น http://prometer.shop ตอนนี้
-            'redirect'      => 'http://prometer.shop/auth/google/callback',
-            //  'redirect'      => 'http://127.0.0.1:8000/auth/google/callback',
+            // 'redirect'      => 'http://prometer.shop/auth/google/callback',
+             'redirect'      => 'http://127.0.0.1:8000/auth/google/callback',
             
         ];
         config(['services.google' => $cfg]);
@@ -260,7 +260,7 @@ class LoginController extends Controller
         $valid = $isHashed ? Hash::check($password, $stored) : hash_equals($stored, $password);
 
         if (!$valid) {
-            return back()->with('alert', 'รหัสมั่ว ไอ้น้องง')->withInput();
+            return back()->with('alert', 'The password is incorrect.')->withInput();
         }
 
         // โหลดโมเดล Eloquent เพื่อใช้กับ Auth

@@ -295,17 +295,57 @@
                      data-i18n="ph_pw" data-i18n-attr="placeholder" />
             </div>
             <div>
-              <label class="block text-sm mb-1" for="password" data-i18n="label_password">รหัสผ่าน</label>
-              <input name="passuser"id="passuser" type="password" class="input" required placeholder="••••••••"
-                     data-i18n="ph_pw" data-i18n-attr="placeholder" />
-              <div id="err_password" class="err hidden"></div>
-            </div>
-            <div>
-              <label class="block text-sm mb-1" for="confirmPassword" data-i18n="label_confirm">ยืนยันรหัสผ่าน</label>
-              <input id="confirmPassword" type="password" class="input" required placeholder="••••••••"
-                     data-i18n="ph_pw2" data-i18n-attr="placeholder" />
-              <div id="err_confirmPassword" class="err hidden"></div>
-            </div>
+  <label class="block text-sm mb-1" for="passuser" data-i18n="label_password">รหัสผ่าน</label>
+  <input
+    name="passuser" id="passuser" type="password" class="input" required
+    placeholder="••••••••" data-i18n="ph_pw" data-i18n-attr="placeholder"
+    pattern="[A-Za-z0-9]{8,32}"
+    title="ใช้เฉพาะ A–Z, a–z, 0–9 ยาว 8–32 ตัวอักษร"
+    autocomplete="new-password"
+    inputmode="text"
+    oninput="filterAlphaNum(this); checkMatch();"
+  />
+  <div id="err_password" class="err hidden"></div>
+</div>
+
+<div>
+  <label class="block text-sm mb-1" for="confirmPassword" data-i18n="label_confirm">ยืนยันรหัสผ่าน</label>
+  <!-- ชื่อฟิลด์ต้องเป็น passuser_confirmation เพื่อใช้กฎ confirmed ของ Laravel -->
+  <input
+    name="passuser_confirmation" id="confirmPassword" type="password" class="input" required
+    placeholder="••••••••" data-i18n="ph_pw2" data-i18n-attr="placeholder"
+    pattern="[A-Za-z0-9]{8,32}"
+    title="ใช้เฉพาะ A–Z, a–z, 0–9 ยาว 8–32 ตัวอักษร"
+    autocomplete="new-password"
+    inputmode="text"
+    oninput="filterAlphaNum(this); checkMatch();"
+  />
+  <div id="err_confirmPassword" class="err hidden"></div>
+</div>
+
+<script>
+  // กรองทันทีที่พิมพ์/วาง ให้เหลือเฉพาะ A-Z a-z 0-9
+  function filterAlphaNum(el) {
+    const v = el.value;
+    const filtered = v.replace(/[^A-Za-z0-9]/g, '');
+    if (v !== filtered) el.value = filtered;
+  }
+
+  // เช็คว่ารหัสผ่านตรงกันหรือไม่ (โชว์/ซ่อน error)
+  function checkMatch() {
+    const p = document.getElementById('passuser').value;
+    const c = document.getElementById('confirmPassword').value;
+    const err = document.getElementById('err_confirmPassword');
+    if (c && p !== c) {
+      err.textContent = 'รหัสผ่านไม่ตรงกัน';
+      err.classList.remove('hidden');
+    } else {
+      err.textContent = '';
+      err.classList.add('hidden');
+    }
+  }
+</script>
+
           </div>
 
           <!-- Upload (optional) – custom component -->

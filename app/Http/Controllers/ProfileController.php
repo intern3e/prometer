@@ -332,7 +332,7 @@ public function delsub(Request $request, $idsubaddress)
         $cd->update(array_filter($data, fn($v) => !is_null($v)));
 
         if ($request->wantsJson() || $request->ajax()) {
-            return response()->json(['success' => 'รับทราบครับจ่ากองร้อย']);
+            return response()->json(['success' => 'Data recorded successfully']);
         }
         return redirect('/');
     }
