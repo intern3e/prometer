@@ -242,171 +242,204 @@
 <section id="pColJWrap" class="mb-4">
   <div class="border rounded-2xl overflow-hidden bg-white shadow-sm">
     <!-- Header -->
-    <div class="flex items-center justify-between gap-3 px-4 md:px-5 py-3 border-b bg-gray-50">
-      <div class="flex items-center gap-2 min-w-0">
-        <i class="bi bi-file-earmark-pdf text-[var(--brand,#ff6a00)] text-xl"></i>
-        <span class="font-semibold text-gray-900 text-base" data-i18n="p_desc_title">รายละเอียดสินค้า</span>
+    <div class="flex items-center justify-between gap-2 px-4 md:px-5 py-3 border-b bg-gray-50">
+      <!-- Title -->
+      <div class="flex items-center gap-2 min-w-0 flex-1">
+        <i class="bi bi-file-earmark-pdf text-[var(--brand,#ff6a00)] text-xl shrink-0"></i>
+        <span class="font-semibold text-gray-900 text-base truncate" data-i18n="p_desc_title">
+          รายละเอียดสินค้า
+        </span>
       </div>
 
-      <div class="flex items-center gap-2">
-        <label for="pdfSelect" class="sr-only">Select file</label>
-        <select id="pdfSelect" class="hidden border rounded px-2 py-1 text-sm"></select>
+      <!-- Controls (อยู่บรรทัดเดียวบนมือถือ) -->
+      <div class="flex items-center gap-2 shrink-0 flex-nowrap whitespace-nowrap">
+        <label for="pdfSelect" class="sr-only">เลือกไฟล์</label>
+        <select id="pdfSelect"
+                class="hidden sm:inline-block border rounded-lg px-2.5 py-1.5 text-sm
+                       max-w-[45vw] md:max-w-[50%]"></select>
 
         <button id="pdfFsBtn" type="button"
-                class="inline-flex items-center gap-1 text-sm px-2.5 py-1.5 border rounded-lg hover:bg-gray-100"
+                class="inline-flex items-center justify-center gap-1.5 text-xs sm:text-sm
+                       px-2.5 py-1.5 border rounded-lg hover:bg-gray-100"
                 aria-label="Fullscreen">
-          <i class="bi bi-arrows-fullscreen"></i><span class="hidden sm:inline">Fullscreen</span>
+          <i class="bi bi-arrows-fullscreen"></i>
+          <span class="hidden sm:inline">Fullscreen</span>
         </button>
 
         <a id="pdfOpenBtn" href="#" target="_blank" rel="noopener"
-           class="inline-flex items-center gap-1 text-sm px-2.5 py-1.5 border rounded-lg hover:bg-gray-100"
+           class="inline-flex items-center justify-center gap-1.5 text-xs sm:text-sm
+                  px-2.5 py-1.5 border rounded-lg hover:bg-gray-100"
            aria-label="Open in new tab">
-          {{-- <i class="bi bi-box-arrow-up-right"></i><span class="hidden sm:inline">Open tab</span> --}}
+          <i class="bi bi-box-arrow-up-right"></i>
+          <span class="hidden sm:inline">เปิดแท็บใหม่</span>
         </a>
       </div>
     </div>
 
     <!-- Viewer -->
     <div id="pdfCard" class="relative bg-white">
-      <div id="pdfSkeleton" class="skeleton rounded-none"></div>
-
-      <div class="pdf-viewport">
-        <!-- ใช้ตัวอ่าน PDF ของเบราว์เซอร์โดยตรง -->
-        <embed id="pdfEmbed" type="application/pdf" class="pdf-frame" />
+      <!-- Placeholder: ไอคอนดาวน์โหลดสีส้ม -->
+      <div id="pdfPlaceholder" class="pdf-ph">
+        <a id="pdfPhLink" href="#" target="_blank" rel="noopener" class="ph-btn" aria-label="ดาวน์โหลดเอกสาร PDF">
+          <span class="ph-icon">
+            <i class="bi bi-download"></i>
+          </span>
+          <span class="ph-text">ดาวน์โหลดเอกสาร</span>
+        </a>
       </div>
 
-      <!-- Fallback: ถ้าเบราว์เซอร์ไม่รองรับ ให้โชว์ปุ่มเปิดแท็บแทน -->
-
-        <a id="pdfFallbackLink" href="#" class="text-[var(--brand,#ff6a00)] underline" target="_blank" rel="noopener">
-        </a>
+      <!-- ฝังแบบ native ไม่มีทูลบาร์ -->
+      <div class="pdf-viewport">
+        <embed id="pdfEmbed" type="application/pdf" class="pdf-frame" />
       </div>
     </div>
 
-    <!-- เก็บข้อความดิบไว้สำหรับดึง URL -->
+    <!-- ข้อความดิบที่เก็บลิงก์ -->
     <div id="pColJ" class="sr-only">{{ e($product->document) }}</div>
   </div>
 </section>
 
 <style>
-  .pdf-viewport{ position:relative; overflow:hidden; }
+  .pdf-viewport{ position:relative; overflow:hidden; background:#fff; }
   .pdf-frame{
     width:100%;
-    height: min(70vh, 900px);
-    border:0; display:block;
+    max-width:100%;
+    height: clamp(420px, 78vh, 980px);
+    display:block; border:0;
   }
-  @media (max-width: 640px){ .pdf-frame{ height: 60vh; } }
+  @media (max-width: 640px){ .pdf-frame{ height: 75vh; } }
 
-  .skeleton{ position:absolute; inset:0;
-    background:linear-gradient(90deg,#f6f7f8 25%,#eee 37%,#f6f7f8 63%);
-    background-size:400% 100%; animation:shimmer 1.2s infinite; border-radius:0.75rem }
-  @keyframes shimmer{ 0%{background-position:100% 0} 100%{background-position:0 0} }
+  /* Placeholder (ส้ม) */
+  .pdf-ph{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    background:#ffffff; z-index:10; padding:24px;
+  }
+  .ph-btn{
+    display:flex; flex-direction:column; align-items:center; gap:.5rem;
+    text-decoration:none; user-select:none;
+  }
+  .ph-icon{
+    width:72px; height:72px; border-radius:9999px;
+    background: var(--brand, #ff6a00); color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow: 0 6px 20px rgba(255,106,0,.25);
+  }
+  .ph-icon i{ font-size:28px; line-height:1; }
+  .ph-text{ font-weight:700; color: var(--brand, #ff6a00); }
+  .ph-sub{ font-size:.875rem; color:#64748b; }
 
   :fullscreen .pdf-frame{ height: 100vh; }
+  @supports (height: 100dvh){ :fullscreen .pdf-frame{ height: 100dvh; } }
 </style>
 
 <script>
 (function () {
-  const textEl   = document.getElementById('pColJ');
+  const textEl = document.getElementById('pColJ');
   if (!textEl) return;
 
-  const PROXY    = '/pdf-proxy';
-  const raw      = (textEl.textContent || '').trim();
+  // ====== CONFIG ======
+  // proxy ของคุณควรตอบ Content-Type: application/pdf และ Content-Disposition:inline
+  const PROXY = '/pdf-proxy';
 
-  // ดึง URL .pdf ทั้งแบบ absolute และ relative (myflukestore)
-  const absUrls       = raw.match(/https?:\/\/[^\s<>"']+/gi) || [];
+  // ====== Parse URLs ======
+  const raw  = (textEl.textContent || '').trim();
+  const absUrls = raw.match(/https?:\/\/[^\s<>"']+/gi) || [];
   const relPdfMatches = raw.match(/(?:^|\s)(\/pdfs\/cache\/[^\s<>"']+?\.pdf(?:[?#][^\s<>"']*)?)/gi) || [];
   const MYFLUKE_BASE  = 'https://www.myflukestore.com';
   const toAbsolute    = (u) => /^\/\//.test(u) ? 'https:' + u : (/^\//.test(u) ? MYFLUKE_BASE + u : u);
-
   const pdfFromAbs = absUrls.filter(u => /\.pdf(\?|#|$)/i.test(u));
   const pdfFromRel = relPdfMatches.map(s => toAbsolute(s.trim()));
-  const pdfs       = Array.from(new Set([...pdfFromAbs, ...pdfFromRel]));
+  const pdfs       = Array.from(new Set([ ...pdfFromAbs, ...pdfFromRel ]));
 
   if (!pdfs.length) return;
 
-  // อ้างอิง element
-  const embed    = document.getElementById('pdfEmbed');
-  const skeleton = document.getElementById('pdfSkeleton');
-  const fsBtn    = document.getElementById('pdfFsBtn');
-  const openBtn  = document.getElementById('pdfOpenBtn');
-  const card     = document.getElementById('pdfCard');
-  const select   = document.getElementById('pdfSelect');
-  const fallback = document.getElementById('pdfFallback');
-  const fallbackLink = document.getElementById('pdfFallbackLink');
+  // ====== Elements ======
+  const embed   = document.getElementById('pdfEmbed');
+  const fsBtn   = document.getElementById('pdfFsBtn');
+  const openBtn = document.getElementById('pdfOpenBtn');
+  const card    = document.getElementById('pdfCard');
+  const select  = document.getElementById('pdfSelect');
+  const phBox   = document.getElementById('pdfPlaceholder');
+  const phLink  = document.getElementById('pdfPhLink');
 
-  // ถ้ามีหลายไฟล์ แสดง selector
+  // ====== Helpers ======
+  const supportsFullscreen = !!(card.requestFullscreen || card.webkitRequestFullscreen || card.msRequestFullscreen);
+  function enterFs(el){ (el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen)?.call(el); }
+  function exitFs(){ (document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen)?.call(document); }
+
+  function proxiedURL(u){ return `${PROXY}?url=${encodeURIComponent(u)}`; }
+  function embedURL(u){
+    // ซ่อนทูลบาร์/แถบต่าง ๆ และพอดีกว้าง
+    return proxiedURL(u) + '#toolbar=0&navpanes=0&scrollbar=0&view=FitH&zoom=page-width';
+  }
+
+  function hidePlaceholder(){ phBox.style.display = 'none'; }
+  function showPlaceholder(){ phBox.style.display = 'flex'; }
+
+  // เติม selector เมื่อมีหลายไฟล์ (แสดงเฉพาะ sm ขึ้นไป)
   if (pdfs.length > 1) {
-    select.classList.remove('hidden');
     select.innerHTML = '';
-    pdfs.forEach((u, i) => {
+    pdfs.forEach((u,i)=>{
       const opt = document.createElement('option');
       opt.value = u;
-      try {
+      try{
         const url = new URL(u);
-        const name = url.pathname.split('/').pop() || `file-${i+1}.pdf`;
+        const name = decodeURIComponent(url.pathname.split('/').pop() || `file-${i+1}.pdf`);
         opt.textContent = `${i+1}. ${name}`;
-      } catch { opt.textContent = `File #${i+1}`; }
+      }catch{ opt.textContent = `File #${i+1}`; }
       select.appendChild(opt);
     });
   }
 
-  // render โดยใช้ proxy → ให้ browser เปิด inline
+  // Render
   function render(u){
-    skeleton.style.display = 'block';
-    const proxied = `${PROXY}?url=${encodeURIComponent(u)}`; // proxy ของคุณจะคืน Content-Disposition:inline
-    openBtn.href = u;
-    fallbackLink.href = u;
+    // ตั้งลิงก์ให้ปุ่ม "เปิดแท็บใหม่" และ Placeholder
+    openBtn.href = u; phLink.href = u;
 
-    // set src ให้ <embed>
-    embed.src = proxied + '#zoom=page-width'; // hash บางเบราว์เซอร์อาจไม่ใช้ แต่ไม่เป็นไร
+    // โชว์ไอคอนดาวน์โหลดไว้ก่อน
+    showPlaceholder();
+
+    let loaded = false;
+    const onLoad = () => { loaded = true; hidePlaceholder(); embed.removeEventListener('load', onLoad); };
+    embed.addEventListener('load', onLoad, { once:true });
+
+    try {
+      embed.src = embedURL(u);
+      // เผื่อบางเบราว์เซอร์ไม่ยิง load ให้ซ่อนไอคอนเมื่อครบเวลา (ถือว่าโหลดแล้ว)
+      setTimeout(()=>{ if (!loaded) hidePlaceholder(); }, 1800);
+    } catch {
+      // ถ้าฝังไม่ได้ ให้คงไอคอนดาวน์โหลดไว้
+      showPlaceholder();
+    }
   }
 
-  // โหลดเสร็จแล้วซ่อน skeleton (บาง browser ไม่มี event load บน embed ให้ตั้ง timeout เผื่อ)
-  const hideSkeleton = () => { skeleton.style.display = 'none'; };
-  embed.addEventListener('load', hideSkeleton);
-  setTimeout(hideSkeleton, 1200);
-
-  // แสดงไฟล์แรก
+  // Initial
   render(pdfs[0]);
 
-  // เปลี่ยนจาก selector
+  // Change by selector
   select.addEventListener('change', () => render(select.value));
 
-  // Fullscreen
-  fsBtn.addEventListener('click', async () => {
-    try {
-      if (!document.fullscreenElement) {
-        await card.requestFullscreen();
-        fsBtn.innerHTML = '<i class="bi bi-fullscreen-exit"></i><span class="hidden sm:inline">Exit fullscreen</span>';
+  // Fullscreen toggle
+  if (!supportsFullscreen) {
+    fsBtn.classList.add('hidden');
+  } else {
+    fsBtn.addEventListener('click', () => {
+      if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
+        enterFs(card);
       } else {
-        await document.exitFullscreen();
-        fsBtn.innerHTML = '<i class="bi bi-arrows-fullscreen"></i><span class="hidden sm:inline">Fullscreen</span>';
+        exitFs();
       }
-    } catch {}
-  });
-  document.addEventListener('fullscreenchange', () => {
-    if (!document.fullscreenElement) {
-      fsBtn.innerHTML = '<i class="bi bi-arrows-fullscreen"></i><span class="hidden sm:inline">Fullscreen</span>';
-    }
-  });
-
-  // ตรวจความสามารถเบราว์เซอร์ (ถ้าไม่รองรับให้โชว์ fallback)
-  try {
-    const canInline = !!document.createElement('embed').type;
-    if (!canInline) {
-      embed.classList.add('hidden');
-      fallback.classList.remove('hidden');
-      skeleton.style.display = 'none';
-    }
-  } catch {
-    // เผื่อบางเคส
+    });
+    document.addEventListener('fullscreenchange', () => {
+      const isFs = !!document.fullscreenElement;
+      fsBtn.innerHTML = isFs
+        ? '<i class="bi bi-fullscreen-exit"></i><span class="hidden sm:inline">Exit fullscreen</span>'
+        : '<i class="bi bi-arrows-fullscreen"></i><span class="hidden sm:inline">Fullscreen</span>';
+    });
   }
 })();
 </script>
 @endif
-
-
-
 
 
 
