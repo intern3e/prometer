@@ -253,11 +253,6 @@
 
       <!-- Controls (อยู่บรรทัดเดียวบนมือถือ) -->
       <div class="flex items-center gap-2 shrink-0 flex-nowrap whitespace-nowrap">
-        <label for="pdfSelect" class="sr-only">เลือกไฟล์</label>
-        <select id="pdfSelect"
-                class="hidden sm:inline-block border rounded-lg px-2.5 py-1.5 text-sm
-                       max-w-[45vw] md:max-w-[50%]"></select>
-
         <button id="pdfFsBtn" type="button"
                 class="inline-flex items-center justify-center gap-1.5 text-xs sm:text-sm
                        px-2.5 py-1.5 border rounded-lg hover:bg-gray-100"
@@ -266,13 +261,11 @@
           <span class="hidden sm:inline">Fullscreen</span>
         </button>
 
-        <a id="pdfOpenBtn" href="#" target="_blank" rel="noopener"
-           class="inline-flex items-center justify-center gap-1.5 text-xs sm:text-sm
-                  px-2.5 py-1.5 border rounded-lg hover:bg-gray-100"
-           aria-label="Open in new tab">
-          <i class="bi bi-box-arrow-up-right"></i>
-          <span class="hidden sm:inline">เปิดแท็บใหม่</span>
-        </a>
+<a id="pdfOpenBtn" href="#" target="_blank" rel="noopener"
+   class="inline-flex items-center justify-center gap-1.5 text-xs sm:text-sm
+          px-2.5 py-1.5 border rounded-lg hover:bg-gray-100 hidden"
+   aria-label="Open in new tab">
+</a>
       </div>
     </div>
 
@@ -300,36 +293,53 @@
 </section>
 
 <style>
-  .pdf-viewport{ position:relative; overflow:hidden; background:#fff; }
-  .pdf-frame{
-    width:100%;
-    max-width:100%;
-    height: clamp(420px, 78vh, 980px);
-    display:block; border:0;
+  .pdf-viewport {
+    position: relative;
+    overflow: hidden;
+    background: transparent; /* กลืนกับพื้นหลัง ไม่บังคับขาว */
   }
-  @media (max-width: 640px){ .pdf-frame{ height: 75vh; } }
+
+  .pdf-frame {
+    width: 100%;
+    max-width: 100%;
+    height: clamp(420px, 78vh, 980px);
+    display: block;
+    border: none;       /* ลบเส้นขอบดำ */
+    outline: none;      /* กันไม่ให้ browser ใส่กรอบโฟกัส */
+    background: none;   /* เอาพื้นหลัง embed ออก */
+  }
+
+  @media (max-width: 640px) {
+    .pdf-frame { height: 75vh; }
+  }
 
   /* Placeholder (ส้ม) */
-  .pdf-ph{
-    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-    background:#ffffff; z-index:10; padding:24px;
+  .pdf-ph {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: #ffffff;
+    z-index: 10; padding: 24px;
   }
-  .ph-btn{
-    display:flex; flex-direction:column; align-items:center; gap:.5rem;
-    text-decoration:none; user-select:none;
+  .ph-btn {
+    display: flex; flex-direction: column; align-items: center; gap: .5rem;
+    text-decoration: none; user-select: none;
   }
-  .ph-icon{
-    width:72px; height:72px; border-radius:9999px;
-    background: var(--brand, #ff6a00); color:#fff;
-    display:flex; align-items:center; justify-content:center;
+  .ph-icon {
+    width: 72px; height: 72px; border-radius: 9999px;
+    background: var(--brand, #ff6a00); color: #fff;
+    display: flex; align-items: center; justify-content: center;
     box-shadow: 0 6px 20px rgba(255,106,0,.25);
   }
-  .ph-icon i{ font-size:28px; line-height:1; }
-  .ph-text{ font-weight:700; color: var(--brand, #ff6a00); }
-  .ph-sub{ font-size:.875rem; color:#64748b; }
+  .ph-icon i { font-size: 28px; line-height: 1; }
+  .ph-text { font-weight: 700; color: var(--brand, #ff6a00); }
+  .ph-sub { font-size: .875rem; color: #64748b; }
 
-  :fullscreen .pdf-frame{ height: 100vh; }
-  @supports (height: 100dvh){ :fullscreen .pdf-frame{ height: 100dvh; } }
+  :fullscreen .pdf-frame { height: 100vh; }
+  @supports (height: 100dvh) {
+    :fullscreen .pdf-frame { height: 100dvh; }
+  }
+
+  #pdfOpenBtn { display: none; }
 </style>
 
 <script>
@@ -440,6 +450,8 @@
 })();
 </script>
 @endif
+
+
 
 
 
