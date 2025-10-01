@@ -243,47 +243,48 @@
   <div class="border rounded-2xl overflow-hidden bg-white shadow-sm">
     <!-- Header -->
     <div class="flex items-center justify-between gap-2 px-4 md:px-5 py-3 border-b bg-gray-50">
-      <!-- Title -->
       <div class="flex items-center gap-2 min-w-0 flex-1">
         <i class="bi bi-file-earmark-pdf text-[var(--brand,#ff6a00)] text-xl shrink-0"></i>
-        <span class="font-semibold text-gray-900 text-base truncate" data-i18n="p_desc_title">
-          รายละเอียดสินค้า
-        </span>
+        <span class="font-semibold text-gray-900 text-base truncate" data-i18n="p_desc_title">รายละเอียดสินค้า</span>
       </div>
 
-      <!-- Controls (อยู่บรรทัดเดียวบนมือถือ) -->
+      <!-- Controls -->
       <div class="flex items-center gap-2 shrink-0 flex-nowrap whitespace-nowrap">
         <button id="pdfFsBtn" type="button"
-                class="inline-flex items-center justify-center gap-1.5 text-xs sm:text-sm
-                       px-2.5 py-1.5 border rounded-lg hover:bg-gray-100"
-                aria-label="Fullscreen">
+                class="inline-flex items-center justify-center gap-1.5 text-xs sm:text-sm px-2.5 py-1.5 border rounded-lg hover:bg-gray-100">
           <i class="bi bi-arrows-fullscreen"></i>
           <span class="hidden sm:inline">Fullscreen</span>
         </button>
 
-<a id="pdfOpenBtn" href="#" target="_blank" rel="noopener"
-   class="inline-flex items-center justify-center gap-1.5 text-xs sm:text-sm
-          px-2.5 py-1.5 border rounded-lg hover:bg-gray-100 hidden"
-   aria-label="Open in new tab">
-</a>
+      <a id="pdfOpenBtn" href="#" target="_blank" rel="noopener"
+        class="hidden items-center justify-center gap-1.5 text-xs sm:text-sm px-2.5 py-1.5 border rounded-lg hover:bg-gray-100"
+        aria-hidden="true" tabindex="-1">
+        <i class="bi bi-box-arrow-up-right"></i>
+        <span class="hidden sm:inline">เปิดแท็บใหม่</span>
+      </a>
+
       </div>
     </div>
 
     <!-- Viewer -->
     <div id="pdfCard" class="relative bg-white">
-      <!-- Placeholder: ไอคอนดาวน์โหลดสีส้ม -->
+      <!-- Placeholder -->
       <div id="pdfPlaceholder" class="pdf-ph">
         <a id="pdfPhLink" href="#" target="_blank" rel="noopener" class="ph-btn" aria-label="ดาวน์โหลดเอกสาร PDF">
-          <span class="ph-icon">
-            <i class="bi bi-download"></i>
-          </span>
+          <span class="ph-icon"><i class="bi bi-download"></i></span>
           <span class="ph-text">ดาวน์โหลดเอกสาร</span>
+          <span class="ph-sub">แตะเพื่อเปิดในแท็บใหม่</span>
         </a>
       </div>
 
-      <!-- ฝังแบบ native ไม่มีทูลบาร์ -->
+      <!-- เดสก์ท็อป: ใช้ embed -->
       <div class="pdf-viewport">
         <embed id="pdfEmbed" type="application/pdf" class="pdf-frame" />
+      </div>
+
+      <!-- มือถือ: ใช้ PDF.js -->
+      <div class="pdf-viewport">
+        <iframe id="pdfIframe" class="pdf-frame" allowfullscreen referrerpolicy="no-referrer"></iframe>
       </div>
     </div>
 
@@ -293,53 +294,22 @@
 </section>
 
 <style>
-  .pdf-viewport {
-    position: relative;
-    overflow: hidden;
-    background: transparent; /* กลืนกับพื้นหลัง ไม่บังคับขาว */
-  }
-
-  .pdf-frame {
-    width: 100%;
-    max-width: 100%;
-    height: clamp(420px, 78vh, 980px);
-    display: block;
-    border: none;       /* ลบเส้นขอบดำ */
-    outline: none;      /* กันไม่ให้ browser ใส่กรอบโฟกัส */
-    background: none;   /* เอาพื้นหลัง embed ออก */
-  }
-
-  @media (max-width: 640px) {
-    .pdf-frame { height: 75vh; }
-  }
+  .pdf-viewport{ position:relative; overflow:hidden; background:#fff; }
+  .pdf-frame{ width:100%; max-width:100%; height: clamp(420px, 78vh, 980px); display:block; border:0; }
+  @media (max-width: 640px){ .pdf-frame{ height: 75vh; } }
 
   /* Placeholder (ส้ม) */
-  .pdf-ph {
-    position: absolute; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-    background: #ffffff;
-    z-index: 10; padding: 24px;
-  }
-  .ph-btn {
-    display: flex; flex-direction: column; align-items: center; gap: .5rem;
-    text-decoration: none; user-select: none;
-  }
-  .ph-icon {
-    width: 72px; height: 72px; border-radius: 9999px;
-    background: var(--brand, #ff6a00); color: #fff;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 6px 20px rgba(255,106,0,.25);
-  }
-  .ph-icon i { font-size: 28px; line-height: 1; }
-  .ph-text { font-weight: 700; color: var(--brand, #ff6a00); }
-  .ph-sub { font-size: .875rem; color: #64748b; }
+  .pdf-ph{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:#ffffff; z-index:10; padding:24px; }
+  .ph-btn{ display:flex; flex-direction:column; align-items:center; gap:.5rem; text-decoration:none; user-select:none; }
+  .ph-icon{ width:72px; height:72px; border-radius:9999px; background: var(--brand, #ff6a00); color:#fff; display:flex; align-items:center; justify-content:center; box-shadow: 0 6px 20px rgba(255,106,0,.25); }
+  .ph-icon i{ font-size:28px; line-height:1; }
+  .ph-text{ font-weight:700; color: var(--brand, #ff6a00); }
+  .ph-sub{ font-size:.875rem; color:#64748b; }
 
-  :fullscreen .pdf-frame { height: 100vh; }
-  @supports (height: 100dvh) {
-    :fullscreen .pdf-frame { height: 100dvh; }
-  }
+  :fullscreen .pdf-frame{ height: 100vh; }
+  @supports (height: 100dvh){ :fullscreen .pdf-frame{ height: 100dvh; } }
 
-  #pdfOpenBtn { display: none; }
+  #pdfOpenBtn{ display:none !important; }
 </style>
 
 <script>
@@ -348,10 +318,12 @@
   if (!textEl) return;
 
   // ====== CONFIG ======
-  // proxy ของคุณควรตอบ Content-Type: application/pdf และ Content-Disposition:inline
+  // proxy ต้องตอบ Content-Type: application/pdf และรองรับ Range (206)
   const PROXY = '/pdf-proxy';
+  // path ไปยัง PDF.js viewer (วางไว้ใน public/pdfjs/web/viewer.html)
+  const PDFJS_VIEWER = '/pdfjs/web/viewer.html';
 
-  // ====== Parse URLs ======
+  // ====== Parse URL จากข้อความดิบ ======
   const raw  = (textEl.textContent || '').trim();
   const absUrls = raw.match(/https?:\/\/[^\s<>"']+/gi) || [];
   const relPdfMatches = raw.match(/(?:^|\s)(\/pdfs\/cache\/[^\s<>"']+?\.pdf(?:[?#][^\s<>"']*)?)/gi) || [];
@@ -360,76 +332,77 @@
   const pdfFromAbs = absUrls.filter(u => /\.pdf(\?|#|$)/i.test(u));
   const pdfFromRel = relPdfMatches.map(s => toAbsolute(s.trim()));
   const pdfs       = Array.from(new Set([ ...pdfFromAbs, ...pdfFromRel ]));
-
   if (!pdfs.length) return;
 
   // ====== Elements ======
   const embed   = document.getElementById('pdfEmbed');
+  const iframe  = document.getElementById('pdfIframe');
   const fsBtn   = document.getElementById('pdfFsBtn');
   const openBtn = document.getElementById('pdfOpenBtn');
   const card    = document.getElementById('pdfCard');
-  const select  = document.getElementById('pdfSelect');
   const phBox   = document.getElementById('pdfPlaceholder');
   const phLink  = document.getElementById('pdfPhLink');
 
   // ====== Helpers ======
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
   const supportsFullscreen = !!(card.requestFullscreen || card.webkitRequestFullscreen || card.msRequestFullscreen);
-  function enterFs(el){ (el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen)?.call(el); }
-  function exitFs(){ (document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen)?.call(document); }
+  const proxiedURL = (u) => `${PROXY}?url=${encodeURIComponent(u)}`;
 
-  function proxiedURL(u){ return `${PROXY}?url=${encodeURIComponent(u)}`; }
-  function embedURL(u){
-    // ซ่อนทูลบาร์/แถบต่าง ๆ และพอดีกว้าง
-    return proxiedURL(u) + '#toolbar=0&navpanes=0&scrollbar=0&view=FitH&zoom=page-width';
-  }
+  // viewer ของ PDF.js (ใช้ proxy เดิมเพื่อ same-origin)
+  const pdfjsURL  = (u) => {
+    const file = encodeURIComponent(proxiedURL(u));
+    // ตั้งค่าเริ่มให้พอดีกว้าง และซ่อน sidebar
+    return `${PDFJS_VIEWER}?file=${file}#zoom=page-width&navpanes=0`;
+  };
+
+  const embedURL  = (u) => proxiedURL(u) + '#toolbar=0&navpanes=0&scrollbar=0&view=FitH&zoom=page-width';
 
   function hidePlaceholder(){ phBox.style.display = 'none'; }
   function showPlaceholder(){ phBox.style.display = 'flex'; }
 
-  // เติม selector เมื่อมีหลายไฟล์ (แสดงเฉพาะ sm ขึ้นไป)
-  if (pdfs.length > 1) {
-    select.innerHTML = '';
-    pdfs.forEach((u,i)=>{
-      const opt = document.createElement('option');
-      opt.value = u;
-      try{
-        const url = new URL(u);
-        const name = decodeURIComponent(url.pathname.split('/').pop() || `file-${i+1}.pdf`);
-        opt.textContent = `${i+1}. ${name}`;
-      }catch{ opt.textContent = `File #${i+1}`; }
-      select.appendChild(opt);
-    });
+  function showEmbed(){
+    embed.style.display = 'block';
+    iframe.style.display = 'none';
+  }
+  function showIframe(){
+    iframe.style.display = 'block';
+    embed.style.display = 'none';
   }
 
-  // Render
   function render(u){
-    // ตั้งลิงก์ให้ปุ่ม "เปิดแท็บใหม่" และ Placeholder
-    openBtn.href = u; phLink.href = u;
+    // อัปเดตปุ่มลิงก์
+    openBtn.href = u; 
+    phLink.href  = u;
 
-    // โชว์ไอคอนดาวน์โหลดไว้ก่อน
+    // แสดง placeholder ระหว่างโหลด
     showPlaceholder();
 
-    let loaded = false;
-    const onLoad = () => { loaded = true; hidePlaceholder(); embed.removeEventListener('load', onLoad); };
-    embed.addEventListener('load', onLoad, { once:true });
-
-    try {
+    if (isMobile) {
+      // มือถือ -> ใช้ PDF.js
+      showIframe();
+      let loaded = false;
+      const onLoad = () => { loaded = true; hidePlaceholder(); iframe.removeEventListener('load', onLoad); };
+      iframe.addEventListener('load', onLoad, { once:true });
+      iframe.src = pdfjsURL(u);
+      setTimeout(()=>{ if(!loaded) hidePlaceholder(); }, 2000);
+    } else {
+      // เดสก์ท็อป -> ใช้ embed
+      showEmbed();
+      let loaded = false;
+      const onLoad = () => { loaded = true; hidePlaceholder(); embed.removeEventListener('load', onLoad); };
+      embed.addEventListener('load', onLoad, { once:true });
       embed.src = embedURL(u);
-      // เผื่อบางเบราว์เซอร์ไม่ยิง load ให้ซ่อนไอคอนเมื่อครบเวลา (ถือว่าโหลดแล้ว)
-      setTimeout(()=>{ if (!loaded) hidePlaceholder(); }, 1800);
-    } catch {
-      // ถ้าฝังไม่ได้ ให้คงไอคอนดาวน์โหลดไว้
-      showPlaceholder();
+      setTimeout(()=>{ if(!loaded) hidePlaceholder(); }, 1800);
     }
   }
 
-  // Initial
+  // เริ่มเรนเดอร์ไฟล์แรก
   render(pdfs[0]);
 
-  // Change by selector
-  select.addEventListener('change', () => render(select.value));
+  // Fullscreen
+  function enterFs(el){ (el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen)?.call(el); }
+  function exitFs(){ (document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen)?.call(document); }
 
-  // Fullscreen toggle
   if (!supportsFullscreen) {
     fsBtn.classList.add('hidden');
   } else {
@@ -450,6 +423,7 @@
 })();
 </script>
 @endif
+
 
 
 
@@ -894,13 +868,13 @@ const I18N = {
       applyI18n(saved);
     });
   </script>
+
+
 <script>
 (function(){
-  const EXCHANGE = 38; // THB -> USD
-  // ====== Config เส้นทางปลายทางสินค้า ======
-  // ถ้าคุณมี route เป็น /product/{iditem} ให้ใช้แบบนี้
-  const PRODUCT_PATH = '/product/'; // <-- แก้เป็น path ที่มีอยู่จริง
+const EXCHANGE = 38;
 
+  // ดึง input ทั้ง 2 (desktop + mobile)
   const inputs = [
     { el: document.getElementById('globalSearch'), results: document.getElementById('searchResultsDesktop') },
     { el: document.getElementById('mobileSearchInput'), results: document.getElementById('searchResultsMobile') }
@@ -909,20 +883,17 @@ const I18N = {
   if (!inputs.length) return;
 
   let ALL = [];
+  const BASE = location.origin + '/';
 
-  const getLang = () => localStorage.getItem('site_lang')
-                   || localStorage.getItem('preferredLanguage')
-                   || 'ไทย';
-
-  const fmtTHB = v => new Intl.NumberFormat('th-TH', {
+  const getLang = () => localStorage.getItem('site_lang') || localStorage.getItem('preferredLanguage') || 'ไทย';
+  const fmtTHB = v => new Intl.NumberFormat('th-TH',{
     style:'currency', currency:'THB', minimumFractionDigits:0, maximumFractionDigits:2
   }).format(v);
-
-  const fmtUSD = v => new Intl.NumberFormat('en-US', {
+  const fmtUSD = v => new Intl.NumberFormat('en-US',{
     style:'currency', currency:'USD', minimumFractionDigits:0, maximumFractionDigits:2
   }).format(v);
 
-  // THB -> USD (ปัดขึ้นเป็นเซนต์)
+  // ✅ แปลงบาท → ดอลลาร์ โดยปัดขึ้นเป็นเซนต์
   const toUSD = (thb) => {
     if (!Number.isFinite(thb)) return null;
     const satang = Math.round(thb * 100);
@@ -930,48 +901,50 @@ const I18N = {
     return cents / 100;
   };
 
-  const priceText = (p) => {
-    if (typeof p === 'number' && isFinite(p)) {
+  const priceText = (p)=>{
+    if (typeof p === 'number' && !isNaN(p)){
       return (getLang()==='English') ? fmtUSD(toUSD(p)) : fmtTHB(p);
     }
     return (getLang()==='English') ? '$0.00' : '฿—';
   };
 
-  // ดึงตัวเลขจาก string ทุกรูปแบบ (รองรับมี comma/สัญลักษณ์เงิน)
+  // ✅ parser ราคา (ทศนิยมได้)
   function parseTHB(raw){
     if (raw == null) return null;
-    const s = String(raw).replace(/[^\d.,-]/g,'').replace(/,/g,'');
+    const s = String(raw).replace(/[^\d.]/g,'');
     if (!s) return null;
     const n = parseFloat(s);
     return Number.isFinite(n) ? n : null;
   }
 
-  // โหลดข้อมูลจาก preload (ต้องมี iditem ด้วย)
-  function ensureData(){
-    if (ALL.length) return;
+  const slugify = (name)=> String(name||'').toLowerCase().trim()
+    .replace(/[\/\s]+/g,'-').replace(/[^\u0E00-\u0E7Fa-z0-9\-]+/gi,'')
+    .replace(/-+/g,'-').replace(/^-|-$/g,'');
 
-    const src = Array.isArray(window.PRODUCTS) ? window.PRODUCTS : [];
-
-    ALL = src.map(x => {
-      // รองรับชื่อฟิลด์ราคาได้หลายแบบ
-      const rawPrice = (x.webpriceTHB ?? x.webprice_thb ?? x.price ?? null);
-      return {
-        iditem: x.iditem ?? x.id ?? null,                 // ✅ ต้องมีเพื่อสร้างลิงก์
-        name:   x.name || '',
-        category: x.category || x.brand || '',
-        image:  x.image || x.pic || '',
-        price:  parseTHB(rawPrice),                       // ✅ แปลงราคาเป็นตัวเลข
-        columnJ: x.columnJ || ''
-      };
-    })
-    // ต้องมีชื่อ + มี iditem และ (มีรูป หรือ มีราคา)
-    .filter(x => x.name && x.iditem && (x.image || x.price != null));
+  function buildHref(item){
+    const name = (item.name || '').trim();
+    const urlParams = new URLSearchParams({
+      slug: slugify(name),
+      name: name,
+      image: item.image || '',
+      columnJ: item.columnJ || '',
+      price: (typeof item.price === 'number' && !isNaN(item.price)) ? String(item.price) : ''
+    });
+    return BASE.replace(/\/+$/,'/') + 'product?' + urlParams.toString();
   }
 
-  // ลิงก์ไปหน้ารายละเอียดที่มีอยู่จริง
-  function buildHref(item){
-    // /product/{iditem}
-    return PRODUCT_PATH.replace(/\/+$/,'/') + encodeURIComponent(item.iditem);
+  // ✅ ไม่ดึง API — ใช้ข้อมูล preload จาก DB → window.PRODUCTS (ใช้ webpriceTHB อย่างเดียว)
+  function ensureData(){
+    if (ALL.length) return;
+    const src = Array.isArray(window.PRODUCTS) ? window.PRODUCTS : [];
+    ALL = src.map(x => ({
+      name: x.name || '',
+      category: x.category || '',
+      image: x.image || x.pic || '',
+      price: parseTHB(x.webpriceTHB), // ← ใช้ webpriceTHB อย่างเดียว
+      columnJ: x.columnJ || ''
+    }))
+    .filter(x => x.name && (x.image || x.price != null));
   }
 
   function searchLocal(q){
@@ -997,17 +970,17 @@ const I18N = {
     }
 
     list.slice(0, 10).forEach(it=>{
-      const href  = buildHref(it);
-      const name  = (it.name || '').trim() || '—';
-      const cat   = (it.category || '').trim() || '';
-      const img   = it.image || '';
-      const price = priceText(it.price);
+      const href = buildHref(it);
+      const name = (it.name || '').trim() || '—';
+      const cat  = (it.category || '').trim() || '';
+      const img  = it.image || '';
+      const price= priceText(it.price);
 
       const row = document.createElement('a');
       row.href = href;
       row.className = 'flex gap-3 items-center px-3 py-2 hover:bg-orange-50 transition-colors';
       row.innerHTML = `
-        <div class="h-10 w-10 rounded border bg-white overflow-hidden flex-shrink-0">
+        <div class="h-10 w-10 rounded border bg-gray-50 overflow-hidden flex-shrink-0">
           ${img ? `<img src="${img}" alt="" class="w-full h-full object-cover">` : ''}
         </div>
         <div class="min-w-0 flex-1">
@@ -1022,7 +995,7 @@ const I18N = {
     dd.classList.remove('hidden');
   }
 
-  // events: desktop + mobile
+  // ใส่ event ให้ทั้ง desktop + mobile
   inputs.forEach(target=>{
     let timer=null;
     target.el.addEventListener('input', ()=>{
@@ -1036,6 +1009,7 @@ const I18N = {
       }, 220);
     });
 
+    // click outside
     document.addEventListener('click', (e)=>{
       if (!e.target.closest(`#${target.results.id}, #${target.el.id}`)){
         target.results.classList.add('hidden');
@@ -1044,6 +1018,119 @@ const I18N = {
   });
 
 })();
+</script>
+
+
+
+<script>
+  window.FLASH_DEALS = @json($flashDeals ?? []);
+  window.PRODUCTS    = @json($products ?? []);
+</script>
+
+
+
+<!-- ===== Cart Badge Sync ===== -->
+<script>
+(function(){
+  const LS_KEY = 'cartV1';   // เก็บข้อมูลตะกร้าใน localStorage
+
+  // โหลดข้อมูลตะกร้า
+  const load = () => { 
+    try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); } 
+    catch { return []; } 
+  };
+
+  // รวมจำนวนสินค้าทั้งหมด
+  const totalQty = () => load().reduce((s,it)=> s + (Number(it.qty)||1), 0);
+
+  // อัปเดต badge ที่ไอคอนตะกร้า
+  function updateCartBadge(){
+    const badge = document.querySelector('a[aria-label="cart"] span');
+    if(!badge) return;
+    const n = totalQty();
+    badge.textContent = String(n);
+    badge.style.transform = 'scale(1.15)';
+    setTimeout(()=> badge.style.transform = 'scale(1)', 130);
+  }
+
+  // ฟัง event เมื่อมีการเปลี่ยนตะกร้า
+  window.addEventListener('storage', (e)=>{
+    if (e.key === LS_KEY || e.key === '__cart_changed__'){
+      updateCartBadge();
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', updateCartBadge);
+})();
+</script>
+<!-- ===== Minimal, accessible JS for toggles/drawer ===== -->
+<script>
+  (function () {
+    // Collapse toggles (for mobile accordions & search)
+    document.querySelectorAll('[data-collapse-toggle]').forEach(btn => {
+      const targetSel = btn.getAttribute('data-collapse-toggle');
+      const target = document.querySelector(targetSel);
+      if (!target) return;
+      btn.addEventListener('click', () => {
+        const isHidden = target.classList.contains('hidden');
+        target.classList.toggle('hidden');
+        btn.setAttribute('aria-expanded', String(isHidden));
+      });
+    });
+
+    // Drawer (mobile off-canvas)
+    const openers = document.querySelectorAll('[data-drawer-toggle]');
+    const closers = document.querySelectorAll('[data-drawer-close]');
+    function openDrawer(sel) {
+      const wrap = document.querySelector(sel);
+      if (!wrap) return;
+      const drawer = wrap.querySelector('aside');
+      wrap.classList.remove('hidden');
+      // next frame to allow transition
+      requestAnimationFrame(() => drawer.classList.remove('translate-x-full'));
+      // focus close button for accessibility
+      const closeBtn = wrap.querySelector('[data-drawer-close]');
+      if (closeBtn) closeBtn.focus();
+      // esc to close
+      function onEsc(e){ if (e.key === 'Escape') closeDrawer(sel, true); }
+      wrap._escHandler = onEsc;
+      document.addEventListener('keydown', onEsc);
+    }
+    function closeDrawer(sel, fromEsc=false) {
+      const wrap = document.querySelector(sel);
+      if (!wrap) return;
+      const drawer = wrap.querySelector('aside');
+      drawer.classList.add('translate-x-full');
+      // wait for transition then hide
+      drawer.addEventListener('transitionend', function onEnd() {
+        wrap.classList.add('hidden');
+        drawer.removeEventListener('transitionend', onEnd);
+      }, { once: true });
+      if (wrap._escHandler) {
+        document.removeEventListener('keydown', wrap._escHandler);
+        wrap._escHandler = null;
+      }
+      // restore focus to opener
+      if (!fromEsc) {
+        const opener = document.querySelector(`[data-drawer-toggle="${sel}"]`);
+        if (opener) opener.focus();
+      }
+    }
+    openers.forEach(btn => {
+      const sel = btn.getAttribute('data-drawer-toggle');
+      btn.addEventListener('click', () => {
+        const wrap = document.querySelector(sel);
+        const drawer = wrap && wrap.querySelector('aside');
+        const isClosed = drawer && drawer.classList.contains('translate-x-full');
+        if (isClosed) openDrawer(sel); else closeDrawer(sel);
+        btn.setAttribute('aria-expanded', String(isClosed));
+      });
+    });
+    closers.forEach(btn => {
+      const sel = btn.getAttribute('data-drawer-close');
+      btn.addEventListener('click', () => closeDrawer(sel));
+    });
+  })();
 </script>
   {{-- footer --}}
   @include('test.footer')

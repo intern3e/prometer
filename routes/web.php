@@ -204,7 +204,10 @@ Route::post('/cart/checkout', [CartController::class, 'checkout'])
 
 
 use App\Http\Controllers\PdfProxyController;
-Route::match(['GET','OPTIONS'], '/pdf-proxy', [PdfProxyController::class, 'fetch']);
+Route::match(['GET','OPTIONS'], '/pdf-proxy', [PdfProxyController::class, 'fetch'])->name('pdf.proxy');
+
+
+
 
 
 

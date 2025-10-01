@@ -670,7 +670,268 @@
     });
   })();
   </script>
+<script>
+(function(){
+const EXCHANGE = 38;
 
+  // ดึง input ทั้ง 2 (desktop + mobile)
+  const inputs = [
+    { el: document.getElementById('globalSearch'), results: document.getElementById('searchResultsDesktop') },
+    { el: document.getElementById('mobileSearchInput'), results: document.getElementById('searchResultsMobile') }
+  ].filter(x => x.el && x.results);
+
+  if (!inputs.length) return;
+
+  let ALL = [];
+  const BASE = location.origin + '/';
+
+  const getLang = () => localStorage.getItem('site_lang') || localStorage.getItem('preferredLanguage') || 'ไทย';
+  const fmtTHB = v => new Intl.NumberFormat('th-TH',{
+    style:'currency', currency:'THB', minimumFractionDigits:0, maximumFractionDigits:2
+  }).format(v);
+  const fmtUSD = v => new Intl.NumberFormat('en-US',{
+    style:'currency', currency:'USD', minimumFractionDigits:0, maximumFractionDigits:2
+  }).format(v);
+
+  // ✅ แปลงบาท → ดอลลาร์ โดยปัดขึ้นเป็นเซนต์
+  const toUSD = (thb) => {
+    if (!Number.isFinite(thb)) return null;
+    const satang = Math.round(thb * 100);
+    const cents  = Math.ceil(satang / EXCHANGE);
+    return cents / 100;
+  };
+
+  const priceText = (p)=>{
+    if (typeof p === 'number' && !isNaN(p)){
+      return (getLang()==='English') ? fmtUSD(toUSD(p)) : fmtTHB(p);
+    }
+    return (getLang()==='English') ? '$0.00' : '฿—';
+  };
+
+  // ✅ parser ราคา (ทศนิยมได้)
+  function parseTHB(raw){
+    if (raw == null) return null;
+    const s = String(raw).replace(/[^\d.]/g,'');
+    if (!s) return null;
+    const n = parseFloat(s);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  const slugify = (name)=> String(name||'').toLowerCase().trim()
+    .replace(/[\/\s]+/g,'-').replace(/[^\u0E00-\u0E7Fa-z0-9\-]+/gi,'')
+    .replace(/-+/g,'-').replace(/^-|-$/g,'');
+
+  function buildHref(item){
+    const name = (item.name || '').trim();
+    const urlParams = new URLSearchParams({
+      slug: slugify(name),
+      name: name,
+      image: item.image || '',
+      columnJ: item.columnJ || '',
+      price: (typeof item.price === 'number' && !isNaN(item.price)) ? String(item.price) : ''
+    });
+    return BASE.replace(/\/+$/,'/') + 'product?' + urlParams.toString();
+  }
+
+  // ✅ ไม่ดึง API — ใช้ข้อมูล preload จาก DB → window.PRODUCTS (ใช้ webpriceTHB อย่างเดียว)
+  function ensureData(){
+    if (ALL.length) return;
+    const src = Array.isArray(window.PRODUCTS) ? window.PRODUCTS : [];
+    ALL = src.map(x => ({
+      name: x.name || '',
+      category: x.category || '',
+      image: x.image || x.pic || '',
+      price: parseTHB(x.webpriceTHB), // ← ใช้ webpriceTHB อย่างเดียว
+      columnJ: x.columnJ || ''
+    }))
+    .filter(x => x.name && (x.image || x.price != null));
+  }
+
+  function searchLocal(q){
+    const s = q.trim().toLowerCase();
+    if (s.length < 3) return [];
+    const tokens = s.split(/\s+/).filter(Boolean);
+    const ok = (item)=>{
+      const name = String(item.name || '').toLowerCase();
+      const cat  = String(item.category || '').toLowerCase();
+      return tokens.every(t => name.includes(t) || cat.includes(t));
+    };
+    return ALL.filter(ok).slice(0, 50);
+  }
+
+  function renderDropdown(target, list){
+    const dd = target.results;
+    dd.innerHTML = '';
+
+    if (!list.length){
+      dd.innerHTML = `<div class="px-3 py-2 text-sm text-gray-500">ไม่พบผลลัพธ์</div>`;
+      dd.classList.remove('hidden');
+      return;
+    }
+
+    list.slice(0, 10).forEach(it=>{
+      const href = buildHref(it);
+      const name = (it.name || '').trim() || '—';
+      const cat  = (it.category || '').trim() || '';
+      const img  = it.image || '';
+      const price= priceText(it.price);
+
+      const row = document.createElement('a');
+      row.href = href;
+      row.className = 'flex gap-3 items-center px-3 py-2 hover:bg-orange-50 transition-colors';
+      row.innerHTML = `
+        <div class="h-10 w-10 rounded border bg-gray-50 overflow-hidden flex-shrink-0">
+          ${img ? `<img src="${img}" alt="" class="w-full h-full object-cover">` : ''}
+        </div>
+        <div class="min-w-0 flex-1">
+          <div class="text-sm text-gray-800 truncate">${name}</div>
+          <div class="text-xs text-gray-500 truncate">${cat}</div>
+        </div>
+        <div class="text-sm font-semibold text-[var(--brand)] ml-2">${price}</div>
+      `;
+      dd.appendChild(row);
+    });
+
+    dd.classList.remove('hidden');
+  }
+
+  // ใส่ event ให้ทั้ง desktop + mobile
+  inputs.forEach(target=>{
+    let timer=null;
+    target.el.addEventListener('input', ()=>{
+      const q = target.el.value;
+      clearTimeout(timer);
+      timer = setTimeout(()=>{
+        if (q.trim().length < 3){ target.results.classList.add('hidden'); return; }
+        ensureData();
+        const results = searchLocal(q);
+        renderDropdown(target, results);
+      }, 220);
+    });
+
+    // click outside
+    document.addEventListener('click', (e)=>{
+      if (!e.target.closest(`#${target.results.id}, #${target.el.id}`)){
+        target.results.classList.add('hidden');
+      }
+    });
+  });
+
+})();
+</script>
+
+
+
+<script>
+  window.FLASH_DEALS = @json($flashDeals ?? []);
+  window.PRODUCTS    = @json($products ?? []);
+</script>
+
+
+
+<!-- ===== Cart Badge Sync ===== -->
+<script>
+(function(){
+  const LS_KEY = 'cartV1';   // เก็บข้อมูลตะกร้าใน localStorage
+
+  // โหลดข้อมูลตะกร้า
+  const load = () => { 
+    try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); } 
+    catch { return []; } 
+  };
+
+  // รวมจำนวนสินค้าทั้งหมด
+  const totalQty = () => load().reduce((s,it)=> s + (Number(it.qty)||1), 0);
+
+  // อัปเดต badge ที่ไอคอนตะกร้า
+  function updateCartBadge(){
+    const badge = document.querySelector('a[aria-label="cart"] span');
+    if(!badge) return;
+    const n = totalQty();
+    badge.textContent = String(n);
+    badge.style.transform = 'scale(1.15)';
+    setTimeout(()=> badge.style.transform = 'scale(1)', 130);
+  }
+
+  // ฟัง event เมื่อมีการเปลี่ยนตะกร้า
+  window.addEventListener('storage', (e)=>{
+    if (e.key === LS_KEY || e.key === '__cart_changed__'){
+      updateCartBadge();
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', updateCartBadge);
+})();
+</script>
+<!-- ===== Minimal, accessible JS for toggles/drawer ===== -->
+<script>
+  (function () {
+    // Collapse toggles (for mobile accordions & search)
+    document.querySelectorAll('[data-collapse-toggle]').forEach(btn => {
+      const targetSel = btn.getAttribute('data-collapse-toggle');
+      const target = document.querySelector(targetSel);
+      if (!target) return;
+      btn.addEventListener('click', () => {
+        const isHidden = target.classList.contains('hidden');
+        target.classList.toggle('hidden');
+        btn.setAttribute('aria-expanded', String(isHidden));
+      });
+    });
+
+    // Drawer (mobile off-canvas)
+    const openers = document.querySelectorAll('[data-drawer-toggle]');
+    const closers = document.querySelectorAll('[data-drawer-close]');
+    function openDrawer(sel) {
+      const wrap = document.querySelector(sel);
+      if (!wrap) return;
+      const drawer = wrap.querySelector('aside');
+      wrap.classList.remove('hidden');
+      // next frame to allow transition
+      requestAnimationFrame(() => drawer.classList.remove('translate-x-full'));
+      // focus close button for accessibility
+      const closeBtn = wrap.querySelector('[data-drawer-close]');
+      if (closeBtn) closeBtn.focus();
+      // esc to close
+      function onEsc(e){ if (e.key === 'Escape') closeDrawer(sel, true); }
+      wrap._escHandler = onEsc;
+      document.addEventListener('keydown', onEsc);
+    }
+    function closeDrawer(sel, fromEsc=false) {
+      const wrap = document.querySelector(sel);
+      if (!wrap) return;
+      const drawer = wrap.querySelector('aside');
+      drawer.classList.add('translate-x-full');
+      // wait for transition then hide
+      drawer.addEventListener('transitionend', function onEnd() {
+        wrap.classList.add('hidden');
+        drawer.removeEventListener('transitionend', onEnd);
+      }, { once: true });
+      if (wrap._escHandler) {
+        document.removeEventListener('keydown', wrap._escHandler);
+        wrap._escHandler = null;
+      }
+      // restore focus to opener
+      if (!fromEsc) {
+        const opener = document.querySelector(`[data-drawer-toggle="${sel}"]`);
+        if (opener) opener.focus();
+      }
+    }
+    openers.forEach(btn => {
+      const sel = btn.getAttribute('data-drawer-toggle');
+      btn.addEventListener('click', () => {
+        const wrap = document.querySelector(sel);
+        const drawer = wrap && wrap.querySelector('aside');
+        const isClosed = drawer && drawer.classList.contains('translate-x-full');
+        if (isClosed) openDrawer(sel); else closeDrawer(sel);
+        btn.setAttribute('aria-expanded', String(isClosed));
+      });
+    });
+    closers.forEach(btn => {
+      const sel = btn.getAttribute('data-drawer-close');
+      btn.addEventListener('click', () => closeDrawer(sel));
+    });
+  })();
+</script>
   @include('test.footer')
 </body>
 </html>
