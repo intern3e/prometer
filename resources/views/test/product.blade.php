@@ -256,13 +256,12 @@
           <span class="hidden sm:inline">Fullscreen</span>
         </button>
 
-      <a id="pdfOpenBtn" href="#" target="_blank" rel="noopener"
-        class="hidden items-center justify-center gap-1.5 text-xs sm:text-sm px-2.5 py-1.5 border rounded-lg hover:bg-gray-100"
-        aria-hidden="true" tabindex="-1">
-        <i class="bi bi-box-arrow-up-right"></i>
-        <span class="hidden sm:inline">เปิดแท็บใหม่</span>
-      </a>
-
+        <a id="pdfOpenBtn" href="#" target="_blank" rel="noopener"
+           class="hidden items-center justify-center gap-1.5 text-xs sm:text-sm px-2.5 py-1.5 border rounded-lg hover:bg-gray-100"
+           aria-label="เปิดแท็บใหม่">
+          <i class="bi bi-box-arrow-up-right"></i>
+          <span class="hidden sm:inline">เปิดแท็บใหม่</span>
+        </a>
       </div>
     </div>
 
@@ -277,14 +276,17 @@
         </a>
       </div>
 
-      <!-- เดสก์ท็อป: ใช้ embed -->
+      <!-- เดสก์ท็อป: embed -->
       <div class="pdf-viewport">
         <embed id="pdfEmbed" type="application/pdf" class="pdf-frame" />
       </div>
 
-      <!-- มือถือ: ใช้ PDF.js -->
+      <!-- มือถือ: PDF.js -->
       <div class="pdf-viewport">
-        <iframe id="pdfIframe" class="pdf-frame" allowfullscreen referrerpolicy="no-referrer"></iframe>
+        <iframe id="pdfIframe" class="pdf-frame"
+                allowfullscreen allow="fullscreen"
+                sandbox="allow-scripts allow-same-origin allow-downloads"
+                referrerpolicy="no-referrer"></iframe>
       </div>
     </div>
 
@@ -297,19 +299,15 @@
   .pdf-viewport{ position:relative; overflow:hidden; background:#fff; }
   .pdf-frame{ width:100%; max-width:100%; height: clamp(420px, 78vh, 980px); display:block; border:0; }
   @media (max-width: 640px){ .pdf-frame{ height: 75vh; } }
-
-  /* Placeholder (ส้ม) */
   .pdf-ph{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:#ffffff; z-index:10; padding:24px; }
-  .ph-btn{ display:flex; flex-direction:column; align-items:center; gap:.5rem; text-decoration:none; user-select:none; }
-  .ph-icon{ width:72px; height:72px; border-radius:9999px; background: var(--brand, #ff6a00); color:#fff; display:flex; align-items:center; justify-content:center; box-shadow: 0 6px 20px rgba(255,106,0,.25); }
+  .ph-btn{ display:flex; flex-direction:column; align-items:center; gap:.6rem; text-decoration:none; user-select:none; }
+  .ph-icon{ width:72px; height:72px; border-radius:9999px; background: var(--brand, #ff6a00); color:#fff; display:flex; align-items:center; justify-content:center; box-shadow: 0 6px 20px rgba(255,106,0,.25); animation: pulse 1.2s ease-in-out infinite; }
   .ph-icon i{ font-size:28px; line-height:1; }
   .ph-text{ font-weight:700; color: var(--brand, #ff6a00); }
   .ph-sub{ font-size:.875rem; color:#64748b; }
-
+  @keyframes pulse{ 0%{ transform:scale(1);} 50%{ transform:scale(1.06);} 100%{ transform:scale(1);} }
   :fullscreen .pdf-frame{ height: 100vh; }
   @supports (height: 100dvh){ :fullscreen .pdf-frame{ height: 100dvh; } }
-
-  #pdfOpenBtn{ display:none !important; }
 </style>
 
 <script>
@@ -317,21 +315,19 @@
   const textEl = document.getElementById('pColJ');
   if (!textEl) return;
 
-  // ====== CONFIG ======
-  // proxy ต้องตอบ Content-Type: application/pdf และรองรับ Range (206)
-  const PROXY = '/pdf-proxy';
-  // path ไปยัง PDF.js viewer (วางไว้ใน public/pdfjs/web/viewer.html)
-  const PDFJS_VIEWER = '/pdfjs/web/viewer.html';
+  // ====== CONFIG (ใช้ helper ของ Laravel ป้องกันพาธเพี้ยน) ======
+  const PROXY = @json(url('/pdf-proxy')); // route ของ proxy
+  const PDFJS_VIEWER = @json(asset('pdfjs/web/viewer.html')); // ไฟล์ viewer ที่ถูก copy ไปไว้ใน public/pdfjs
 
   // ====== Parse URL จากข้อความดิบ ======
   const raw  = (textEl.textContent || '').trim();
   const absUrls = raw.match(/https?:\/\/[^\s<>"']+/gi) || [];
-  const relPdfMatches = raw.match(/(?:^|\s)(\/pdfs\/cache\/[^\s<>"']+?\.pdf(?:[?#][^\s<>"']*)?)/gi) || [];
+  const relPdfMatches = raw.match(/(?:^|\s)(\/pdfs\/[^\s<>"']+?\.pdf(?:[?#][^\s<>"']*)?)/gi) || [];
   const MYFLUKE_BASE  = 'https://www.myflukestore.com';
-  const toAbsolute    = (u) => /^\/\//.test(u) ? 'https:' + u : (/^\//.test(u) ? MYFLUKE_BASE + u : u);
+  const toAbsolute = (u) => /^\/\//.test(u) ? 'https:' + u : (/^\//.test(u) ? MYFLUKE_BASE + u : u);
   const pdfFromAbs = absUrls.filter(u => /\.pdf(\?|#|$)/i.test(u));
   const pdfFromRel = relPdfMatches.map(s => toAbsolute(s.trim()));
-  const pdfs       = Array.from(new Set([ ...pdfFromAbs, ...pdfFromRel ]));
+  const pdfs = Array.from(new Set([ ...pdfFromAbs, ...pdfFromRel ]));
   if (!pdfs.length) return;
 
   // ====== Elements ======
@@ -344,65 +340,81 @@
   const phLink  = document.getElementById('pdfPhLink');
 
   // ====== Helpers ======
-  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const UA = navigator.userAgent || '';
+  const isIOS = /iP(hone|ad|od)/i.test(UA);
+  const isAndroid = /Android/i.test(UA);
+  const isAndroidWebView = isAndroid && /; wv\)/i.test(UA);
+  const forcePdfJs = isIOS || isAndroidWebView;
   const supportsFullscreen = !!(card.requestFullscreen || card.webkitRequestFullscreen || card.msRequestFullscreen);
+
   const proxiedURL = (u) => `${PROXY}?url=${encodeURIComponent(u)}`;
-
-  // viewer ของ PDF.js (ใช้ proxy เดิมเพื่อ same-origin)
-  const pdfjsURL  = (u) => {
-    const file = encodeURIComponent(proxiedURL(u));
-    // ตั้งค่าเริ่มให้พอดีกว้าง และซ่อน sidebar
-    return `${PDFJS_VIEWER}?file=${file}#zoom=page-width&navpanes=0`;
-  };
-
-  const embedURL  = (u) => proxiedURL(u) + '#toolbar=0&navpanes=0&scrollbar=0&view=FitH&zoom=page-width';
+  const pdfjsURL = (u) => `${PDFJS_VIEWER}?file=${encodeURIComponent(proxiedURL(u))}#zoom=page-width&navpanes=0`;
+  const embedURL = (u) => proxiedURL(u) + '#toolbar=0&navpanes=0&scrollbar=0&view=FitH&zoom=page-width';
 
   function hidePlaceholder(){ phBox.style.display = 'none'; }
   function showPlaceholder(){ phBox.style.display = 'flex'; }
+  function showEmbed(){ embed.style.display = 'block'; iframe.style.display = 'none'; }
+  function showIframe(){ iframe.style.display = 'block'; embed.style.display = 'none'; }
+  function showOpenBtn(){ openBtn.classList.remove('hidden'); }
 
-  function showEmbed(){
-    embed.style.display = 'block';
-    iframe.style.display = 'none';
+  function waitForLoad(target, timeout=4000){
+    return new Promise(resolve => {
+      let done=false;
+      const onLoad=()=>{ if(done) return; done=true; resolve(true); };
+      target.addEventListener('load', onLoad, { once:true });
+      setTimeout(()=>{ if(done) return; done=true; resolve(false); }, timeout);
+    });
   }
-  function showIframe(){
-    iframe.style.display = 'block';
-    embed.style.display = 'none';
+  async function headOK(url){
+    try{ const r = await fetch(url, { method:'HEAD', cache:'no-store' }); return r && (r.ok || r.status===206); }
+    catch(_){ return false; }
   }
 
-  function render(u){
-    // อัปเดตปุ่มลิงก์
-    openBtn.href = u; 
-    phLink.href  = u;
-
-    // แสดง placeholder ระหว่างโหลด
+  async function render(u){
+    const direct = u;
+    const proxied = proxiedURL(u);
+    openBtn.href = direct;
+    phLink.href  = direct;
     showPlaceholder();
 
-    if (isMobile) {
-      // มือถือ -> ใช้ PDF.js
-      showIframe();
-      let loaded = false;
-      const onLoad = () => { loaded = true; hidePlaceholder(); iframe.removeEventListener('load', onLoad); };
-      iframe.addEventListener('load', onLoad, { once:true });
-      iframe.src = pdfjsURL(u);
-      setTimeout(()=>{ if(!loaded) hidePlaceholder(); }, 2000);
+    // ก่อนใช้ PDF.js เช็กว่า viewer.html มีจริง (กัน 404)
+    const viewerReady = await headOK(PDFJS_VIEWER);
+
+    if (forcePdfJs || isAndroid || isIOS) {
+      if (viewerReady) {
+        showIframe();
+        iframe.src = pdfjsURL(u);
+        const ok = await waitForLoad(iframe, 6000);
+        if (ok) { hidePlaceholder(); } else { showOpenBtn(); hidePlaceholder(); }
+      } else {
+        // viewer ไม่เจอ ⇒ โชว์ปุ่มเปิดแท็บใหม่ (กัน 404 ใน iframe)
+        console.warn('PDF.js viewer not found at', PDFJS_VIEWER);
+        showOpenBtn(); hidePlaceholder();
+      }
     } else {
-      // เดสก์ท็อป -> ใช้ embed
+      // เดสก์ท็อปลอง embed ก่อน
       showEmbed();
-      let loaded = false;
-      const onLoad = () => { loaded = true; hidePlaceholder(); embed.removeEventListener('load', onLoad); };
-      embed.addEventListener('load', onLoad, { once:true });
       embed.src = embedURL(u);
-      setTimeout(()=>{ if(!loaded) hidePlaceholder(); }, 1800);
+      const ok = await waitForLoad(embed, 2500);
+      if (ok) { hidePlaceholder(); return; }
+
+      // ตกไปใช้ PDF.js
+      if (viewerReady) {
+        showIframe();
+        iframe.src = pdfjsURL(u);
+        const ok2 = await waitForLoad(iframe, 6000);
+        if (ok2) { hidePlaceholder(); } else { showOpenBtn(); hidePlaceholder(); }
+      } else {
+        showOpenBtn(); hidePlaceholder();
+      }
     }
   }
 
-  // เริ่มเรนเดอร์ไฟล์แรก
   render(pdfs[0]);
 
   // Fullscreen
   function enterFs(el){ (el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen)?.call(el); }
   function exitFs(){ (document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen)?.call(document); }
-
   if (!supportsFullscreen) {
     fsBtn.classList.add('hidden');
   } else {
@@ -423,6 +435,7 @@
 })();
 </script>
 @endif
+
 
 
 
