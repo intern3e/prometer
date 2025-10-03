@@ -245,13 +245,13 @@ class LoginController extends Controller
         $row = DB::table('custdetail')->where($emailCol, $email)->first();
 
         if (!$row) {
-            return back()->with('alert', 'ไม่พบบัญชีนี้')->withInput();
+            return back()->with('alert', 'This account was not found.')->withInput();
         }
 
 
         $stored = (string)($row->passuser ?? '');
         if ($stored === '') {
-            return back()->with('alert', 'อีเมล มั่วซั่ว')->withInput();
+            return back()->with('alert', 'Email error')->withInput();
         }
 
         $isHashed = Str::startsWith($stored, ['$2y$', '$argon2', '$argon2id$']);

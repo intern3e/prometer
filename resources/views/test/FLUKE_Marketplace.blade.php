@@ -355,20 +355,11 @@
 
   window.allItems = [];
 
-  // 🌐 ภาษา + formatter (รองรับทศนิยม)
   const getLang = () => localStorage.getItem('site_lang') || localStorage.getItem('preferredLanguage') || 'ไทย';
-  const fmtTHB = v => new Intl.NumberFormat('th-TH', {
-    style:'currency', currency:'THB', minimumFractionDigits:0, maximumFractionDigits:2
-  }).format(v);
-  const fmtUSD = v => new Intl.NumberFormat('en-US', {
-    style:'currency', currency:'USD', minimumFractionDigits:0, maximumFractionDigits:2
-  }).format(v);
+  const fmtTHB = v => new Intl.NumberFormat('th-TH', { style:'currency', currency:'THB', minimumFractionDigits:0, maximumFractionDigits:2 }).format(v);
+  const fmtUSD = v => new Intl.NumberFormat('en-US', { style:'currency', currency:'USD', minimumFractionDigits:0, maximumFractionDigits:2 }).format(v);
 
-  // 🈯️ I18N
-  const I18N = {
-    th: { quote: 'ขอใบเสนอราคา' },
-    en: { quote: 'Request a quote' },
-  };
+  const I18N = { th: { quote: 'ขอใบเสนอราคา' }, en: { quote: 'Request a quote' } };
   const normalizeLang = (s) => {
     s = (s || '').toLowerCase();
     if (['ไทย','thai','th','th-th'].includes(s)) return 'th';
@@ -377,7 +368,6 @@
   };
   const t = (key) => I18N[normalizeLang(getLang())]?.[key] ?? I18N.en[key] ?? key;
 
-  // ✅ แปลงบาท → ดอลลาร์ โดยปัดขึ้นเป็นเซนต์ (กันราคา USD ต่ำกว่าต้นทุน)
   const toUSD = (thb) => {
     if (!Number.isFinite(thb) || thb <= 0) return null;
     const satang = Math.round(thb * 100);
@@ -386,14 +376,10 @@
   };
 
   function renderPriceText(price){
-    // ถ้าไม่มีราคา หรือราคาเป็นศูนย์/ติดลบ => แสดงขอใบเสนอราคา (I18N)
-    if (price == null || !Number.isFinite(price) || price <= 0){
-      return t('quote');
-    }
+    if (price == null || !Number.isFinite(price) || price <= 0) return t('quote');
     return (normalizeLang(getLang()) === 'en') ? fmtUSD(toUSD(price)) : fmtTHB(price);
   }
 
-  // ✅ แปลง webpriceTHB ให้เป็นเลขทศนิยมได้ (ตัด ฿, คอมมา, เว้นวรรค)
   function parseTHB(raw){
     if (raw == null) return null;
     const s = String(raw).replace(/[^\d.]/g,'');
@@ -430,21 +416,10 @@
     a.classList.add('w-32','md:w-36','shrink-0');
 
     const n = (item.name || '').trim() || '—';
-    const s = slugify(n);
-
     const valTHB = parseTHB(item.webpriceTHB);
-
-    const urlParams = new URLSearchParams({
-      slug: s,
-      name: n,
-      image: item.pic || '',
-      price: (valTHB != null) ? String(valTHB) : ''
-    });
 
     a.href = '/product/' + encodeURIComponent(item.iditem);
     a.title = n;
-    // ถ้าต้องการแนบ query:
-    // a.href = '/product/' + encodeURIComponent(item.iditem) + '?' + urlParams.toString();
 
     if (img){
       if (item.pic){
@@ -459,24 +434,70 @@
 
     if (name){
       name.textContent = n;
-      // ⬇️ ปรับตัวหนังสือเล็กลง
       name.classList.add('text-[11px]','md:text-[12px]','leading-tight');
     }
 
     if (price){
       price.textContent = renderPriceText(valTHB);
-      // ⬇️ ปรับตัวหนังสือเล็กลง
       price.classList.add('text-[12px]','md:text-[13px]','leading-tight','font-medium');
     }
 
     return node;
   }
 
+  // ===== Infinite marquee (ไม่บล็อกรอรูป) =====
+  let rafId=null, paused=false, offsetX=0, pxPerSec=50; // ทำให้ขยับแน่นอน
+  let cycleWidth=0, lastTs=0;
+
+  function measureCycle(){
+    cycleWidth = Math.floor(track.scrollWidth / 2) || 0;
+  }
+
+  function step(ts){
+    if (!lastTs) lastTs = ts;
+    const dt = (ts - lastTs) / 1000;
+    lastTs = ts;
+
+    if (!paused && pxPerSec > 0 && cycleWidth > 0){
+      offsetX -= pxPerSec * dt;
+      if (offsetX <= -cycleWidth){
+        offsetX += cycleWidth;
+      }
+      track.style.transform = `translate3d(${offsetX}px,0,0)`;
+    }
+    rafId = requestAnimationFrame(step);
+  }
+
+  function startMarquee(){
+    if (rafId) cancelAnimationFrame(rafId);
+    measureCycle();
+    offsetX = 0; lastTs = 0;
+    rafId = requestAnimationFrame(step);
+  }
+
   function renderAll(items){
-    const combined = items.concat(items);
     track.innerHTML = '';
-    combined.forEach(it => track.appendChild(createCard(it)));
+    const base = items.concat(items);
+    base.forEach(it => track.appendChild(createCard(it)));
+
+    // เติมให้พอความกว้างอย่างน้อย 2× viewport
+    const minWidth = grid.clientWidth * 2;
+    while (track.scrollWidth < minWidth) {
+      base.forEach(it => track.appendChild(createCard(it)));
+      // กัน loop ค้างถ้าความกว้างยัง 0 เพราะไม่มีไอเท็ม
+      if (!track.childElementCount) break;
+    }
+
+    // เริ่มเลย ไม่รอรูป
     startMarquee();
+
+    // หลังรูปโหลดค่อยวัดใหม่ (ไม่บล็อค)
+    track.querySelectorAll('img').forEach(img=>{
+      if (!img.complete){
+        img.addEventListener('load', ()=>{ measureCycle(); }, { once:true });
+        img.addEventListener('error', ()=>{ measureCycle(); }, { once:true });
+      }
+    });
   }
 
   function shuffleAndPick(arr, max){
@@ -488,36 +509,11 @@
     return copy.slice(0, max);
   }
 
-  // 🌀 marquee
-  let rafId=null, paused=false, offsetX=0, speed=2.0, cycleWidth=0;
-  function measureCycle(){ cycleWidth = track.scrollWidth / 2; }
-  function step(){
-    if (!paused){
-      offsetX -= speed;
-      if (offsetX <= -cycleWidth){ offsetX = 0; }
-      track.style.transform = `translate3d(${offsetX}px,0,0)`;
-    }
-    rafId = requestAnimationFrame(step);
-  }
-  function startMarquee(){
-    if (rafId) cancelAnimationFrame(rafId);
-    measureCycle();
-    offsetX = 0;
-    rafId = requestAnimationFrame(step);
-  }
-
-  grid.addEventListener('mouseenter', ()=> paused=true);
-  grid.addEventListener('mouseleave', ()=> paused=false);
-  let resizeTimer=null;
-  window.addEventListener('resize', ()=>{ clearTimeout(resizeTimer); resizeTimer=setTimeout(measureCycle,150); });
-
   function loadDeals(){
-    // ✅ ใช้ข้อมูลจาก DB ที่ preload มาใน window.FLASH_DEALS (ใช้ webpriceTHB อย่างเดียว)
     let pool = Array.isArray(window.FLASH_DEALS)
       ? window.FLASH_DEALS.filter(x => x && x.pic && parseTHB(x.webpriceTHB) != null)
       : [];
 
-    // ถ้าไม่มีเลย ลองใช้ cache (เผื่อหน้าอื่น preload ให้มาก่อน)
     if (!pool.length){
       const cached = readCache();
       if (cached && cached.length) pool = cached;
@@ -525,32 +521,64 @@
 
     if (pool.length){
       window.allItems = shuffleAndPick(pool, MAX_ITEMS);
-      writeCache(pool); // cache ไว้ให้หน้าอื่นใช้ซ้ำ
+      writeCache(pool);
       renderAll(window.allItems);
     } else {
       track.innerHTML = '<div class="p-3 text-sm text-gray-500">No deals</div>';
+      startMarquee(); // ให้ระบบยังทำงานแม้ไม่มีรูป
     }
   }
 
-  document.addEventListener('DOMContentLoaded', loadDeals);
+  // ✅ ถ้า DOM โหลดไปแล้วให้เรียกทันที มิฉะนั้นรอ event
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadDeals);
+  } else {
+    loadDeals();
+  }
 
   function rerenderCurrency(){
     if (window.allItems && window.allItems.length){
       renderAll(window.allItems);
     }
   }
-
   window.addEventListener('storage', (e)=>{
     if (e.key === 'site_lang' || e.key === 'preferredLanguage'){
       rerenderCurrency();
     }
   });
-
   window.addEventListener('site_lang_changed', rerenderCurrency);
   window.rerenderCurrency = rerenderCurrency;
 
+  // QoL
+  grid.addEventListener('mouseenter', ()=> paused=true);
+  grid.addEventListener('mouseleave', ()=> paused=false);
+  document.addEventListener('visibilitychange', ()=>{ paused = document.hidden; });
+
+  let resizeTimer=null;
+  window.addEventListener('resize', ()=>{
+    clearTimeout(resizeTimer);
+    resizeTimer=setTimeout(()=>{
+      const wasPaused = paused;
+      paused = true;
+      const prevCycle = cycleWidth;
+      measureCycle();
+      if (prevCycle && cycleWidth) {
+        // รักษาตำแหน่งสัมพัทธ์
+        offsetX = ((offsetX % cycleWidth) + cycleWidth) % cycleWidth * -1;
+      }
+      paused = wasPaused;
+    },150);
+  });
+
+  // ❗️ยกเลิกการปิดแอนิเมชันอัตโนมัติจาก prefers-reduced-motion
+  // ถ้าต้องการให้เคารพ PRM ให้ปลดคอมเมนต์ด้านล่าง
+  // const mediaPRM = window.matchMedia('(prefers-reduced-motion: reduce)');
+  // if (mediaPRM.matches) pxPerSec = 0;
+  // mediaPRM.addEventListener?.('change', (e)=>{ pxPerSec = e.matches ? 0 : 50; });
+
 })();
 </script>
+
 
 
 <script>

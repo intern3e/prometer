@@ -93,20 +93,36 @@
 </head>
 <body>
 
-<!-- ===== Top utility bar ===== -->
-<header class="bg-gray-100 text-[13px] text-gray-700 border-b">
-  <div class="container-outer mx-auto section-pad py-2 flex items-center justify-between gap-2 flex-wrap md:flex-nowrap">
+<!-- ===== Top utility bar (one-line on mobile) ===== -->
+<style>
+  /* ปรับให้บาร์นี้บีบตัวเองบนจอเล็ก */
+  .utilbar{ font-size:12px; }
+  @media (min-width:768px){ .utilbar{ font-size:13px; } }
+
+  /* ตัวช่วยตัดข้อความแบบ inline */
+  .inline-clip{
+    display:inline-block; max-width:100%;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    vertical-align:bottom;
+  }
+</style>
+
+<header class="bg-gray-100 text-gray-700 border-b utilbar">
+  <!-- flex-nowrap บังคับบรรทัดเดียวบนมือถือ / min-w-0 ช่วย truncate -->
+  <div class="container-outer mx-auto section-pad py-1.5 flex items-center justify-between gap-2 flex-nowrap min-w-0">
     <!-- ซ้าย -->
-    <div class="flex items-center gap-4 whitespace-nowrap">
+    <div class="flex items-center gap-3 whitespace-nowrap shrink-0">
       <a class="hover:text-[var(--brand)]" data-i18n="top_buyer_central">Buyer Central</a>
       <a class="hover:text-[var(--brand)]" data-i18n="top_help">Help</a>
     </div>
 
     <!-- ขวา -->
-    <div class="flex items-center gap-4 min-w-0 whitespace-nowrap">
+    <div class="flex items-center gap-2 min-w-0 whitespace-nowrap flex-1 justify-end">
+      <!-- ภาษา -->
       <div class="relative shrink-0">
-        <button id="currentLangBtn" class="flex items-center gap-1 hover:text-[var(--brand)]">
-          <span id="currentLangLabel">ไทย</span> <i class="bi bi-chevron-down text-xs"></i>
+        <button id="currentLangBtn" class="flex items-center gap-1 px-2 py-1 rounded border border-gray-200 hover:bg-orange-50">
+          <span id="currentLangLabel" class="inline-clip" style="max-width:64px">ไทย</span>
+          <i class="bi bi-chevron-down text-[10px]"></i>
         </button>
         <div id="langDropdown" class="absolute right-0 top-full mt-2 w-36 bg-white rounded shadow hidden z-50">
           <div class="px-3 py-2 text-xs text-gray-500" data-i18n="top_choose_lang">เลือกภาษา</div>
@@ -129,82 +145,85 @@
 @endphp
 
 @if (!$email)
-  <a href="{{ route('login') }}" class="hover:text-[var(--brand)]" data-i18n="top_login">เข้าสู่ระบบ</a>
-  <a href="{{ route('Sign_up') }}" class="hover:text-[var(--brand)]" data-i18n="top_join_free">สมัครสมาชิกฟรี</a>
+      <!-- ปุ่ม Login/Register จะไม่ดันตกบรรทัด -->
+      <a href="{{ route('login') }}" class="hover:text-[var(--brand)] shrink-0" data-i18n="top_login">เข้าสู่ระบบ</a>
+      <a href="{{ route('Sign_up') }}" class="hover:text-[var(--brand)] shrink-0" data-i18n="top_join_free">สมัครสมาชิกฟรี</a>
 @else
-  <!-- Desktop -->
-  <div class="hidden md:flex items-center gap-3 min-w-0 whitespace-nowrap">
-    <span class="text-sm text-gray-700 truncate max-w-[360px]">
-      <span data-i18n="top_user">ผู้ใช้</span>:
-      <span class="font-medium text-gray-900">{{ $username }}</span>
-      <span class="text-xs text-gray-500 ml-1" title="{{ $email }}">
-        ({{ \Illuminate\Support\Str::limit($email, 25, '…') }})
-      </span>
-    </span>
+      <!-- Desktop -->
+      <div class="hidden md:flex items-center gap-2 min-w-0 whitespace-nowrap">
+        <!-- ส่วนนี้ยอมตัดชื่อ/อีเมลด้วย ... -->
+        <span class="text-sm text-gray-700 truncate max-w-[360px] inline-clip" style="max-width:360px">
+          <span data-i18n="top_user">ผู้ใช้</span>:
+          <span class="font-medium text-gray-900 inline-clip" style="max-width:180px">{{ $username }}</span>
+          <span class="text-xs text-gray-500 ml-1" title="{{ $email }}">
+            ({{ \Illuminate\Support\Str::limit($email, 25, '…') }})
+          </span>
+        </span>
 
+        <a href="{{ $profileUrl }}"
+           class="px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-orange-50 text-gray-700 inline-flex items-center gap-2 shrink-0"
+           data-i18n="top_profile">
+          <i class="bi bi-person-gear" data-i18n="icon_profile"></i>
+          <span data-i18n="label_profile">โปรไฟล์</span>
+        </a>
 
-      <a href="/profile"
-        class="px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-orange-50 text-gray-700 inline-flex items-center gap-2"
-        data-i18n="top_profile">
-        <i class="bi bi-person-gear" data-i18n="icon_profile"></i>
-        <span data-i18n="label_profile">โปรไฟล์</span>
-      </a>
-
-
-    <form method="POST" action="{{ route('logout') }}" class="shrink-0">
-      @csrf
-      <button type="submit"
-              class="px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-orange-50 text-gray-700">
-        <span data-i18n="top_logout">ออกจากระบบ</span>
-      </button>
-    </form>
-  </div>
-
-<!-- Mobile -->
-<div class="relative md:hidden">
-  <button id="userMenuBtn"
-          class="flex items-center gap-2 px-2 py-1.5 rounded-lg border hover:bg-gray-50 text-gray-700"
-          aria-haspopup="true" aria-expanded="false" aria-controls="userMenuDropdown">
-    <i class="bi bi-person-circle text-base"></i>
-    <span class="text-sm">
-      {{ \Illuminate\Support\Str::limit($username, 15, '...') }}
-    </span>
-    <i class="bi bi-caret-down-fill text-[10px]"></i>
-    <span class="sr-only">({{ $email }})</span>
-  </button>
-
-
-    <div id="userMenuDropdown"
-         class="hidden absolute right-0 mt-2 w-56 bg-white border rounded-lg shadow-lg z-50">
-      <div class="px-3 py-2 text-xs text-gray-500 break-all">
-        <span data-i18n="top_user">ผู้ใช้</span>:
-        <span class="font-medium text-gray-800">{{ $username }}</span>
-      </div>
-      <div class="px-3 pb-2 text-[11px] text-gray-500 break-all">
-        {{ $email }}
+        <form method="POST" action="{{ route('logout') }}" class="shrink-0">
+          @csrf
+          <button type="submit"
+                  class="px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-orange-50 text-gray-700">
+            <span data-i18n="top_logout">ออกจากระบบ</span>
+          </button>
+        </form>
       </div>
 
-      <div class="border-t"></div>
-
-            {{-- ลิงก์โปรไฟล์ (Mobile) --}}
-      <a href="/profile"
-        class="block w-full px-4 py-2 text-sm hover:bg-orange-50 flex items-center gap-2"
-        data-i18n="top_profile">
-        <i class="bi bi-person-gear"></i>
-        <span data-i18n="label_profile">โปรไฟล์</span>
-      </a>
-
-      <form method="POST" action="{{ route('logout') }}">
-        @csrf
-        <button type="submit"
-                class="w-full text-left px-4 py-2 text-sm hover:bg-orange-50 flex items-center gap-2">
-          <i class="bi bi-box-arrow-right"></i>
-          <span data-i18n="top_logout">ออกจากระบบ</span>
+      <!-- Mobile (บีบให้ชิพเดียว ไม่ตกบรรทัด) -->
+      <div class="relative md:hidden min-w-0">
+        <button id="userMenuBtn"
+                class="flex items-center gap-1.5 px-2 py-1 rounded-lg border hover:bg-gray-50 text-gray-700 min-w-0"
+                aria-haspopup="true" aria-expanded="false" aria-controls="userMenuDropdown">
+          <i class="bi bi-person-circle text-sm shrink-0"></i>
+          <!-- ชื่อจะถูกตัด ... และซ่อนอีเมล -->
+          <span class="text-[12px] inline-clip" style="max-width:110px">
+            {{ \Illuminate\Support\Str::limit($username, 18, '…') }}
+          </span>
+          <i class="bi bi-caret-down-fill text-[9px] shrink-0"></i>
+          <span class="sr-only">({{ $email }})</span>
         </button>
-      </form>
+
+        <div id="userMenuDropdown"
+             class="hidden absolute right-0 mt-2 w-56 bg-white border rounded-lg shadow-lg z-50">
+          <div class="px-3 py-2 text-xs text-gray-500 break-all">
+            <span data-i18n="top_user">ผู้ใช้</span>:
+            <span class="font-medium text-gray-800">{{ $username }}</span>
+          </div>
+          <div class="px-3 pb-2 text-[11px] text-gray-500 break-all">
+            {{ $email }}
+          </div>
+
+          <div class="border-t"></div>
+
+          <a href="{{ $profileUrl }}"
+             class="block w-full px-4 py-2 text-sm hover:bg-orange-50 flex items-center gap-2"
+             data-i18n="top_profile">
+            <i class="bi bi-person-gear"></i>
+            <span data-i18n="label_profile">โปรไฟล์</span>
+          </a>
+
+          <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <button type="submit"
+                    class="w-full text-left px-4 py-2 text-sm hover:bg-orange-50 flex items-center gap-2">
+              <i class="bi bi-box-arrow-right"></i>
+              <span data-i18n="top_logout">ออกจากระบบ</span>
+            </button>
+          </form>
+        </div>
+      </div>
+@endif
     </div>
   </div>
-@endif
+</header>
+
 
     </div>
   </div>

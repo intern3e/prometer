@@ -285,67 +285,47 @@
 </section>
 
 <style>
-  .pdf-viewport {
-    position: relative;
-    overflow: auto;
-    background: #f8f9fa;
-    min-height: clamp(420px, 75vh, 980px);
-    padding: 16px;
-    -webkit-overflow-scrolling: touch;
+  .pdf-viewport{
+    position:relative;
+    overflow:auto;
+    background:#f8f9fa;
+    min-height:clamp(420px,75vh,980px);
+    padding:16px;
+    -webkit-overflow-scrolling:touch;
   }
-  .pdf-page {
-    display: block;
-    width: 100%;
-    max-width: 900px;
-    margin: 0 auto 16px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    background: #fff;
+  .pdf-page{
+    display:block;
+    width:100%;
+    max-width:1400px; /* แสดงผลกว้างสุด (CSS) แต่ความคมคุมด้วย DPR */
+    margin:0 auto 16px;
+    box-shadow:0 2px 8px rgba(0,0,0,.1);
+    background:#fff;
   }
-  .pdf-page.loading {
-    background: repeating-linear-gradient(
-      45deg,
-      #f5f5f5, #f5f5f5 10px,
-      #eeeeee 10px, #eeeeee 20px
-    );
+  .pdf-page.loading{
+    background:repeating-linear-gradient(45deg,#f5f5f5,#f5f5f5 10px,#eee 10px,#eee 20px);
   }
-  @media (max-width: 640px) {
-    .pdf-viewport { min-height: 75vh; padding: 8px; }
-    .pdf-page { margin-bottom: 12px; }
+  @media (max-width:640px){
+    .pdf-viewport{min-height:75vh;padding:8px}
+    .pdf-page{margin-bottom:12px}
   }
 
   /* Loading Placeholder */
-  .pdf-ph {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #ffffff;
-    z-index: 10;
+  .pdf-ph{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    background:#fff;z-index:10
   }
-  .pdf-ph.hidden { display: none; }
-  .ph-content { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
-  .ph-spinner {
-    width: 48px; height: 48px;
-    border: 4px solid #e5e7eb;
-    border-top-color: var(--brand, #ff6a00);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .ph-text { font-weight: 600; color: #64748b; }
+  .pdf-ph.hidden{display:none}
+  .ph-content{display:flex;flex-direction:column;align-items:center;gap:1rem}
+  .ph-spinner{width:48px;height:48px;border:4px solid #e5e7eb;border-top-color:var(--brand,#ff6a00);border-radius:50%;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .ph-text{font-weight:600;color:#64748b}
 
-  /* ===== Fullscreen: ให้ #pdfViewport เป็นตัวเลื่อนเต็มจอได้จริง ===== */
+  /* ==== Fullscreen ให้ #pdfViewport เป็นตัวเลื่อน ==== */
   #pdfViewport:fullscreen,
   #pdfViewport:-webkit-full-screen,
-  #pdfViewport:-moz-full-screen {
-    width: 100vw;
-    height: 100vh;
-    max-height: 100vh;
-    overflow: auto;
-    padding: 16px;
-    -webkit-overflow-scrolling: touch;
-    background: #f8f9fa;
+  #pdfViewport:-moz-full-screen{
+    width:100vw;height:100vh;max-height:100vh;overflow:auto;padding:16px;background:#f8f9fa;
+    -webkit-overflow-scrolling:touch;
   }
 </style>
 
@@ -357,12 +337,15 @@
   const textEl = document.getElementById('pColJ');
   if (!textEl) return;
 
+  // PDF.js worker
   pdfjsLib.GlobalWorkerOptions.workerSrc =
     'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
+  // Config
   const PROXY = '/pdf-proxy';
   const MYFLUKE_BASE = 'https://www.myflukestore.com';
 
+  // Parse document URLs
   const raw = (textEl.textContent || '').trim();
   const absUrls = raw.match(/https?:\/\/[^\s<>"']+/gi) || [];
   const relPdfMatches = raw.match(/(?:^|\s)(\/pdfs\/cache\/[^\s<>"']+?\.pdf(?:[?#][^\s<>"']*)?)/gi) || [];
@@ -373,34 +356,38 @@
   ]));
   if (!pdfs.length) return;
 
+  // Elements
   const card        = document.getElementById('pdfCard');
   const viewport    = document.getElementById('pdfViewport');
   const placeholder = document.getElementById('pdfPlaceholder');
   const fsBtn       = document.getElementById('pdfFsBtn');
 
+  // Helpers
   const proxiedURL = (u) => `${PROXY}?url=${encodeURIComponent(u)}`;
   const hidePlaceholder = () => placeholder.classList.add('hidden');
   const showPlaceholder = () => placeholder.classList.remove('hidden');
 
-  // ==== Fullscreen (ใช้ viewport เป็น target) ====
+  // ===== Fullscreen: ให้ #pdfViewport เป็น target =====
   const fsTarget = viewport;
   const enterFs = (el) => (el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen)?.call(el);
-  const exitFs  = () => (document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen)?.call(document);
+  const exitFs  = ()    => (document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen)?.call(document);
+
   if (fsTarget.requestFullscreen || fsTarget.webkitRequestFullscreen || fsTarget.msRequestFullscreen) {
     fsBtn.addEventListener('click', () => {
       const inFs = document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
-      if (!inFs) enterFs(fsTarget);
-      else exitFs();
+      if (!inFs) enterFs(fsTarget); else exitFs();
     });
   } else {
     fsBtn.style.display = 'none';
   }
 
+  // State
   let pdfDoc = null;
-  let pageCanvases = [];
+  let pageCanvases = []; // { num, canvas, rendered }
 
   try {
     showPlaceholder();
+
     const loadingTask = pdfjsLib.getDocument({
       url: proxiedURL(pdfs[0]),
       cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
@@ -408,6 +395,7 @@
     });
     pdfDoc = await loadingTask.promise;
 
+    // เตรียม canvas ทุกหน้า (lazy render)
     const frag = document.createDocumentFragment();
     pageCanvases = Array.from({length: pdfDoc.numPages}, (_, i) => {
       const num = i + 1;
@@ -420,9 +408,11 @@
     viewport.innerHTML = '';
     viewport.appendChild(frag);
 
+    // render หน้าแรกก่อน
     await renderPage(1);
     hidePlaceholder();
 
+    // Lazy render เมื่อเข้าใกล้จอ
     const io = new IntersectionObserver(async (entries) => {
       for (const entry of entries) {
         if (!entry.isIntersecting) continue;
@@ -434,6 +424,7 @@
     }, { root: viewport, rootMargin: '400px 0px', threshold: 0.01 });
     pageCanvases.forEach(({canvas}) => io.observe(canvas));
 
+    // Resize => re-render เฉพาะหน้าที่เห็น
     let resizeTimeout;
     window.addEventListener('resize', () => {
       clearTimeout(resizeTimeout);
@@ -443,6 +434,7 @@
       }, 200);
     });
 
+    // Fullscreen change => สลับไอคอน + re-render
     function handleFsChange() {
       const inFs = document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
       fsBtn.innerHTML = inFs
@@ -464,6 +456,7 @@
     if (s) s.style.display = 'none';
   }
 
+  // Utils
   function getVisiblePages() {
     const res = [];
     const vTop = viewport.scrollTop;
@@ -476,21 +469,43 @@
     return res;
   }
 
+  // ===== Render คูณ DPR ให้คมกริบ =====
   async function renderPage(num, force = false) {
     if (!pdfDoc) return;
     const item = pageCanvases[num - 1];
     if (!item) return;
     if (item.rendered && !force) return;
+
     try {
       const page = await pdfDoc.getPage(num);
-      const containerWidth = Math.min(viewport.clientWidth - 32, 900);
+
+      // ความกว้างของคอนเทนเนอร์ (CSS px)
+      const containerWidthCSS = Math.max(320, viewport.clientWidth - 32); // กันต่ำเกิน
       const unscaled = page.getViewport({ scale: 1 });
-      const scale = containerWidth / unscaled.width;
-      const vp = page.getViewport({ scale });
+      const baseScale = containerWidthCSS / unscaled.width;
+
+      // คูณด้วย DPR (คุมเพดานไม่ให้หนักเกินไป)
+      const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+
+      // viewport สำหรับวาดจริง (px จริง)
+      const vp = page.getViewport({ scale: baseScale * dpr });
+
       const canvas = item.canvas;
       const ctx = canvas.getContext('2d', { alpha: false });
+
+      // ขนาดพิกเซลจริงของ canvas
       canvas.width  = Math.floor(vp.width);
       canvas.height = Math.floor(vp.height);
+
+      // ขนาดแสดงผลบนหน้า (CSS px)
+      canvas.style.width  = Math.floor(vp.width  / dpr) + 'px';
+      canvas.style.height = Math.floor(vp.height / dpr) + 'px';
+
+      // ลดการเบลอจากการย่อ/ขยาย
+      if (typeof ctx.imageSmoothingEnabled !== 'undefined') {
+        ctx.imageSmoothingEnabled = false;
+      }
+
       await page.render({ canvasContext: ctx, viewport: vp }).promise;
       canvas.classList.remove('loading');
       item.rendered = true;

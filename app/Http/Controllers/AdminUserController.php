@@ -57,4 +57,5 @@ class AdminUserController extends Controller
 
         return view('Admin.Admin', ['users' => $users, 'q' => $q]);
     }
+    
 }

@@ -136,21 +136,36 @@ input[type="checkbox"]{ accent-color: var(--brand); }
 
 </head>
 <body>
+<!-- ===== Top utility bar (one-line on mobile) ===== -->
+<style>
+  /* ปรับให้บาร์นี้บีบตัวเองบนจอเล็ก */
+  .utilbar{ font-size:12px; }
+  @media (min-width:768px){ .utilbar{ font-size:13px; } }
 
-<!-- ===== Top utility bar (คงเดิม) ===== -->
-<header class="bg-gray-100 text-[13px] text-gray-700 border-b">
-  <div class="container-outer mx-auto section-pad py-2 flex items-center justify-between gap-2 flex-wrap md:flex-nowrap">
+  /* ตัวช่วยตัดข้อความแบบ inline */
+  .inline-clip{
+    display:inline-block; max-width:100%;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    vertical-align:bottom;
+  }
+</style>
+
+<header class="bg-gray-100 text-gray-700 border-b utilbar">
+  <!-- flex-nowrap บังคับบรรทัดเดียวบนมือถือ / min-w-0 ช่วย truncate -->
+  <div class="container-outer mx-auto section-pad py-1.5 flex items-center justify-between gap-2 flex-nowrap min-w-0">
     <!-- ซ้าย -->
-    <div class="flex items-center gap-4 whitespace-nowrap">
+    <div class="flex items-center gap-3 whitespace-nowrap shrink-0">
       <a class="hover:text-[var(--brand)]" data-i18n="top_buyer_central">Buyer Central</a>
       <a class="hover:text-[var(--brand)]" data-i18n="top_help">Help</a>
     </div>
 
     <!-- ขวา -->
-    <div class="flex items-center gap-4 min-w-0 whitespace-nowrap">
+    <div class="flex items-center gap-2 min-w-0 whitespace-nowrap flex-1 justify-end">
+      <!-- ภาษา -->
       <div class="relative shrink-0">
-        <button id="currentLangBtn" class="flex items-center gap-1 hover:text-[var(--brand)]">
-          <span id="currentLangLabel">ไทย</span> <i class="bi bi-chevron-down text-xs"></i>
+        <button id="currentLangBtn" class="flex items-center gap-1 px-2 py-1 rounded border border-gray-200 hover:bg-orange-50">
+          <span id="currentLangLabel" class="inline-clip" style="max-width:64px">ไทย</span>
+          <i class="bi bi-chevron-down text-[10px]"></i>
         </button>
         <div id="langDropdown" class="absolute right-0 top-full mt-2 w-36 bg-white rounded shadow hidden z-50">
           <div class="px-3 py-2 text-xs text-gray-500" data-i18n="top_choose_lang">เลือกภาษา</div>
@@ -161,7 +176,7 @@ input[type="checkbox"]{ accent-color: var(--brand); }
         </div>
       </div>
 
-  @php
+@php
   use Illuminate\Support\Facades\Route;
 
   $email    = session('customer_email');
@@ -173,82 +188,85 @@ input[type="checkbox"]{ accent-color: var(--brand); }
 @endphp
 
 @if (!$email)
-  <a href="{{ route('login') }}" class="hover:text-[var(--brand)]" data-i18n="top_login">เข้าสู่ระบบ</a>
-  <a href="{{ route('Sign_up') }}" class="hover:text-[var(--brand)]" data-i18n="top_join_free">สมัครสมาชิกฟรี</a>
+      <!-- ปุ่ม Login/Register จะไม่ดันตกบรรทัด -->
+      <a href="{{ route('login') }}" class="hover:text-[var(--brand)] shrink-0" data-i18n="top_login">เข้าสู่ระบบ</a>
+      <a href="{{ route('Sign_up') }}" class="hover:text-[var(--brand)] shrink-0" data-i18n="top_join_free">สมัครสมาชิกฟรี</a>
 @else
-  <!-- Desktop -->
-  <div class="hidden md:flex items-center gap-3 min-w-0 whitespace-nowrap">
-    <span class="text-sm text-gray-700 truncate max-w-[360px]">
-      <span data-i18n="top_user">ผู้ใช้</span>:
-      <span class="font-medium text-gray-900">{{ $username }}</span>
-      <span class="text-xs text-gray-500 ml-1" title="{{ $email }}">
-        ({{ \Illuminate\Support\Str::limit($email, 25, '…') }})
-      </span>
-    </span>
+      <!-- Desktop -->
+      <div class="hidden md:flex items-center gap-2 min-w-0 whitespace-nowrap">
+        <!-- ส่วนนี้ยอมตัดชื่อ/อีเมลด้วย ... -->
+        <span class="text-sm text-gray-700 truncate max-w-[360px] inline-clip" style="max-width:360px">
+          <span data-i18n="top_user">ผู้ใช้</span>:
+          <span class="font-medium text-gray-900 inline-clip" style="max-width:180px">{{ $username }}</span>
+          <span class="text-xs text-gray-500 ml-1" title="{{ $email }}">
+            ({{ \Illuminate\Support\Str::limit($email, 25, '…') }})
+          </span>
+        </span>
 
-    <a href="/profile"
-      class="px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-orange-50 text-gray-700 inline-flex items-center gap-2"
-      data-i18n="label_profile">
-      <i class="bi bi-person-gear"></i>
-      <span data-i18n="label_profile">โปรไฟล์</span>
-    </a>
+        <a href="{{ $profileUrl }}"
+           class="px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-orange-50 text-gray-700 inline-flex items-center gap-2 shrink-0"
+           data-i18n="top_profile">
+          <i class="bi bi-person-gear" data-i18n="icon_profile"></i>
+          <span data-i18n="label_profile">โปรไฟล์</span>
+        </a>
 
-    <form method="POST" action="{{ route('logout') }}" class="shrink-0">
-      @csrf
-      <button type="submit"
-              class="px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-orange-50 text-gray-700">
-        <span data-i18n="top_logout">ออกจากระบบ</span>
-      </button>
-    </form>
-  </div>
-
-<!-- Mobile -->
-<div class="relative md:hidden">
-  <button id="userMenuBtn"
-          class="flex items-center gap-2 px-2 py-1.5 rounded-lg border hover:bg-gray-50 text-gray-700"
-          aria-haspopup="true" aria-expanded="false" aria-controls="userMenuDropdown">
-    <i class="bi bi-person-circle text-base"></i>
-    <span class="text-sm">
-      {{ \Illuminate\Support\Str::limit($username, 15, '...') }}
-    </span>
-    <i class="bi bi-caret-down-fill text-[10px]"></i>
-    <span class="sr-only">({{ $email }})</span>
-  </button>
-
-    <div id="userMenuDropdown"
-         class="hidden absolute right-0 mt-2 w-56 bg-white border rounded-lg shadow-lg z-50">
-      <div class="px-3 py-2 text-xs text-gray-500 break-all">
-        <span data-i18n="top_user">ผู้ใช้</span>:
-        <span class="font-medium text-gray-800">{{ $username }}</span>
-      </div>
-      <div class="px-3 pb-2 text-[11px] text-gray-500 break-all">
-        {{ $email }}
+        <form method="POST" action="{{ route('logout') }}" class="shrink-0">
+          @csrf
+          <button type="submit"
+                  class="px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-orange-50 text-gray-700">
+            <span data-i18n="top_logout">ออกจากระบบ</span>
+          </button>
+        </form>
       </div>
 
-      <div class="border-t"></div>
-
-      <a href="/profile"
-        class="block w-full px-4 py-2 text-sm hover:bg-orange-50 flex items-center gap-2"
-        data-i18n="label_profile">
-        <i class="bi bi-person-gear"></i>
-        <span data-i18n="label_profile">โปรไฟล์</span>
-      </a>
-
-      <form method="POST" action="{{ route('logout') }}">
-        @csrf
-        <button type="submit"
-                class="w-full text-left px-4 py-2 text-sm hover:bg-orange-50 flex items-center gap-2">
-          <i class="bi bi-box-arrow-right"></i>
-          <span data-i18n="top_logout">ออกจากระบบ</span>
+      <!-- Mobile (บีบให้ชิพเดียว ไม่ตกบรรทัด) -->
+      <div class="relative md:hidden min-w-0">
+        <button id="userMenuBtn"
+                class="flex items-center gap-1.5 px-2 py-1 rounded-lg border hover:bg-gray-50 text-gray-700 min-w-0"
+                aria-haspopup="true" aria-expanded="false" aria-controls="userMenuDropdown">
+          <i class="bi bi-person-circle text-sm shrink-0"></i>
+          <!-- ชื่อจะถูกตัด ... และซ่อนอีเมล -->
+          <span class="text-[12px] inline-clip" style="max-width:110px">
+            {{ \Illuminate\Support\Str::limit($username, 18, '…') }}
+          </span>
+          <i class="bi bi-caret-down-fill text-[9px] shrink-0"></i>
+          <span class="sr-only">({{ $email }})</span>
         </button>
-      </form>
-    </div>
-  </div>
-@endif
 
+        <div id="userMenuDropdown"
+             class="hidden absolute right-0 mt-2 w-56 bg-white border rounded-lg shadow-lg z-50">
+          <div class="px-3 py-2 text-xs text-gray-500 break-all">
+            <span data-i18n="top_user">ผู้ใช้</span>:
+            <span class="font-medium text-gray-800">{{ $username }}</span>
+          </div>
+          <div class="px-3 pb-2 text-[11px] text-gray-500 break-all">
+            {{ $email }}
+          </div>
+
+          <div class="border-t"></div>
+
+          <a href="{{ $profileUrl }}"
+             class="block w-full px-4 py-2 text-sm hover:bg-orange-50 flex items-center gap-2"
+             data-i18n="top_profile">
+            <i class="bi bi-person-gear"></i>
+            <span data-i18n="label_profile">โปรไฟล์</span>
+          </a>
+
+          <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <button type="submit"
+                    class="w-full text-left px-4 py-2 text-sm hover:bg-orange-50 flex items-center gap-2">
+              <i class="bi bi-box-arrow-right"></i>
+              <span data-i18n="top_logout">ออกจากระบบ</span>
+            </button>
+          </form>
+        </div>
+      </div>
+@endif
     </div>
   </div>
 </header>
+
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     const btn = document.getElementById('userMenuBtn');
@@ -363,38 +381,72 @@ input[type="checkbox"]{ accent-color: var(--brand); }
   </div>
 </main>
 
-<!-- ====== CHECKOUT MODAL ====== -->
-<div id="checkoutModal" class="fixed inset-0 z-[100] hidden">
-  <!-- Backdrop -->
-  <div class="absolute inset-0 bg-black/50" data-close-modal></div>
+<!-- ====== CHECKOUT MODAL (Mobile bottom sheet 85vh, desktop dialog) ====== -->
+<style>
+  /* Mobile height fix (uses --vh set by JS) */
+  @media (max-width: 767px){
+    #checkoutModal [data-modal-panel]{
+      height: calc(var(--vh, 1vh) * 85);
+      max-height: calc(var(--vh, 1vh) * 85);
+    }
+  }
+  /* Prevent horizontal overflow and allow wrapping */
+  #checkoutModal, #checkoutModal *{ min-width: 0; }
+  #checkoutModal [data-modal-panel]{ overflow-x: hidden; }
+  .wrap{ overflow-wrap:anywhere; word-break:break-word; hyphens:auto; }
+</style>
 
-  <!-- Panel -->
-  <div class="absolute inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center">
-    <div class="bg-white md:rounded-2xl md:shadow-2xl w-full md:w-[980px] max-h-[92vh] overflow-hidden">
+<div id="checkoutModal"
+     class="fixed inset-0 z-[100] hidden"
+     role="dialog" aria-modal="true" aria-labelledby="checkoutTitle"
+     data-i18n-scope="checkout">
+  <!-- Backdrop -->
+  <div class="absolute inset-0 bg-black/50" data-close-modal aria-label="Close modal backdrop"></div>
+
+  <!-- Panel wrapper -->
+  <div class="absolute inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center
+              px-[max(env(safe-area-inset-left),0px)] pb-[max(env(safe-area-inset-bottom),0px)]">
+    <!-- Panel (FLEX COLUMN) -->
+    <div class="bg-white w-full md:w-[980px]
+                md:rounded-2xl md:shadow-2xl
+                rounded-t-2xl md:rounded-b-2xl
+                transition-transform duration-200 ease-out will-change-transform
+                outline-none overflow-hidden flex flex-col"
+         tabindex="-1"
+         data-modal-panel>
+
+      <!-- Drag handle (mobile only) -->
+      <div class="md:hidden flex items-center justify-center pt-2">
+        <div class="w-12 h-1.5 rounded-full bg-gray-300" data-drag-handle aria-hidden="true"></div>
+      </div>
+
       <!-- Header -->
-      <div class="flex items-center justify-between px-4 sm:px-6 py-3 border-b bg-gray-50">
-        <h3 class="text-lg font-semibold">สรุปคำสั่งซื้อ</h3>
-        <button class="text-gray-500 hover:text-gray-800" id="closeCheckoutModal" title="ปิด">
-          <i class="bi bi-x-lg"></i>
+      <div class="flex items-center justify-between px-4 sm:px-6 py-3 border-b bg-gray-50 wrap">
+        <h3 id="checkoutTitle" class="text-lg font-semibold" data-i18n="title">สรุปคำสั่งซื้อ</h3>
+        <button class="text-gray-500 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-400 rounded-md"
+                id="closeCheckoutModal" title="ปิด" data-i18n-attr="title:close" data-close-modal>
+          <i class="bi bi-x-lg" aria-hidden="true"></i>
+          <span class="sr-only" data-i18n="close">ปิด</span>
         </button>
       </div>
 
-      <!-- Body -->
-      <div class="grid md:grid-cols-5 gap-0 md:gap-6 p-4 sm:p-6 overflow-auto max-h-[calc(92vh-56px-72px)]">
+      <!-- Body (SCROLL AREA) -->
+      <div class="grid md:grid-cols-5 gap-0 md:gap-6 p-4 sm:p-6 flex-1 min-h-0 overflow-y-auto wrap"
+           data-modal-body>
         <!-- สินค้าที่เลือก -->
         <section class="md:col-span-3 space-y-3">
           <div class="border rounded-xl overflow-hidden">
-            <div class="px-4 py-3 bg-gray-50 border-b font-medium">สินค้าที่เลือก</div>
-            <div id="coItems" class="divide-y max-h-[40vh] overflow-auto"></div>
+            <div class="px-4 py-3 bg-gray-50 border-b font-medium" data-i18n="selected_items">สินค้าที่เลือก</div>
+            <div id="coItems" class="divide-y max-h-[40vh] md:max-h-[52vh] overflow-auto"></div>
           </div>
 
           <div class="border rounded-xl overflow-hidden">
-            <div class="px-4 py-3 bg-gray-50 border-b font-medium">ยอดรวม</div>
+            <div class="px-4 py-3 bg-gray-50 border-b font-medium" data-i18n="totals">ยอดรวม</div>
             <div class="p-4 space-y-2 text-sm">
-              <div class="flex justify-between"><span>รวมสินค้า</span><span id="coSubtotal">฿0.00</span></div>
-              <div class="flex justify-between"><span>ค่าส่ง</span><span id="coShipping">฿0.00</span></div>
+              <div class="flex justify-between"><span data-i18n="subtotal">รวมสินค้า</span><span id="coSubtotal">฿0.00</span></div>
+              <div class="flex justify-between"><span data-i18n="shipping">ค่าส่ง</span><span id="coShipping">฿0.00</span></div>
               <div class="border-t my-2"></div>
-              <div class="flex justify-between text-base font-bold"><span>ยอดสุทธิ</span><span id="coGrand">฿0.00</span></div>
+              <div class="flex justify-between text-base font-bold"><span data-i18n="grand_total">ยอดสุทธิ</span><span id="coGrand">฿0.00</span></div>
             </div>
           </div>
         </section>
@@ -403,36 +455,42 @@ input[type="checkbox"]{ accent-color: var(--brand); }
         <section class="md:col-span-2 space-y-3">
           <!-- Address -->
           <div class="border rounded-xl overflow-hidden">
-            <div class="px-4 py-3 bg-gray-50 border-b font-medium">ที่อยู่จัดส่ง</div>
+            <div class="px-4 py-3 bg-gray-50 border-b font-medium" data-i18n="shipping_address">ที่อยู่จัดส่ง</div>
             <div class="p-4 grid grid-cols-1 gap-3" id="addrList"><!-- render by JS --></div>
           </div>
           <!-- Payment -->
           <div class="border rounded-xl overflow-hidden">
-            <div class="px-4 py-3 bg-gray-50 border-b font-medium">วิธีชำระเงิน</div>
+            <div class="px-4 py-3 bg-gray-50 border-b font-medium" data-i18n="payment_method">วิธีชำระเงิน</div>
             <div class="p-4 grid gap-2 text-sm">
               <label class="flex items-center gap-2">
                 <input type="radio" name="paymethod" value="COD" class="w-4 h-4" checked>
-                <span>ชำระปลายทาง (COD)</span>
+                <span data-i18n="pay_cod">ชำระปลายทาง (COD)</span>
               </label>
               <label class="flex items-center gap-2">
                 <input type="radio" name="paymethod" value="BANK" class="w-4 h-4">
-                <span>โอนผ่านบัญชีธนาคาร</span>
+                <span data-i18n="pay_bank">โอนผ่านบัญชีธนาคาร</span>
               </label>
               <label class="flex items-center gap-2">
                 <input type="radio" name="paymethod" value="CARD" class="w-4 h-4">
-                <span>บัตรเครดิต/เดบิต</span>
+                <span data-i18n="pay_card">บัตรเครดิต/เดบิต</span>
               </label>
             </div>
           </div>
         </section>
       </div>
 
-      <!-- Footer -->
-      <div class="px-4 sm:px-6 py-4 border-t bg-white flex flex-col md:flex-row items-center justify-between gap-3">
-        <div class="text-sm text-gray-500">ตรวจสอบข้อมูลให้ถูกต้องก่อนยืนยัน</div>
+      <!-- Footer (NOT sticky; panel is flex so footer stays visible while body scrolls) -->
+      <div class="px-4 sm:px-6 py-4 border-t bg-white flex flex-col md:flex-row items-center justify-between gap-3"
+           data-modal-footer>
+        <div class="text-sm text-gray-500" data-i18n="review_note">ตรวจสอบข้อมูลให้ถูกต้องก่อนยืนยัน</div>
         <div class="flex items-center gap-3 w-full md:w-auto">
-          <button class="px-4 py-2 rounded-lg border hover:bg-gray-50 w-full md:w-auto" data-close-modal>ยกเลิก</button>
-          <button id="confirmCheckoutBtn" class="btn-orange px-5 py-2.5 rounded-lg w-full md:w-auto">
+          <button class="px-4 py-2 rounded-lg border hover:bg-gray-50 w-full md:w-auto
+                         focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-400"
+                  data-close-modal data-i18n="cancel">ยกเลิก</button>
+          <button id="confirmCheckoutBtn"
+                  class="btn-orange px-5 py-2.5 rounded-lg w-full md:w-auto
+                         focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                  data-i18n="confirm_order">
             ยืนยันสั่งซื้อ
           </button>
         </div>
@@ -440,45 +498,451 @@ input[type="checkbox"]{ accent-color: var(--brand); }
     </div>
   </div>
 </div>
+
+<script>
+(function(){
+  const modal = document.getElementById('checkoutModal');
+  const panel = modal?.querySelector('[data-modal-panel]');
+  const openBtn = document.getElementById('checkoutBtn'); // optional opener
+  const closeBtns = modal?.querySelectorAll('[data-close-modal]');
+  const handle = modal?.querySelector('[data-drag-handle]');
+
+  // ---- mobile 100vh fix ----
+  function setVH(){ document.documentElement.style.setProperty('--vh', (window.innerHeight*0.01)+'px'); }
+  setVH();
+  window.addEventListener('resize', setVH, { passive: true });
+
+  let lastActive = null;
+  const FOCUSABLE = [
+    'a[href]', 'button:not([disabled])', 'input:not([disabled])',
+    'select:not([disabled])', 'textarea:not([disabled])',
+    '[tabindex]:not([tabindex="-1"])'
+  ].join(',');
+
+  function lockScroll(lock){
+    document.documentElement.classList.toggle('overflow-hidden', lock);
+    document.body.classList.toggle('overflow-hidden', lock);
+    document.body.classList.toggle('touch-pan-y', !lock);
+  }
+
+  function trapFocus(e){
+    if (!modal || modal.classList.contains('hidden')) return;
+    if (e.key !== 'Tab') return;
+    const els = modal.querySelectorAll(FOCUSABLE);
+    if (!els.length) return;
+    const first = els[0], last = els[els.length - 1];
+    if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+  }
+
+  function openModal(triggerEl){
+    if (!modal) return;
+    lastActive = triggerEl || document.activeElement;
+    modal.classList.remove('hidden');
+    lockScroll(true);
+
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!reduce && panel){
+      panel.style.transform = 'translateY(20px)';
+      requestAnimationFrame(()=>{ panel.style.transform = 'translateY(0)'; });
+    }
+    setTimeout(()=>{ (modal.querySelector(FOCUSABLE) || panel)?.focus?.(); }, 0);
+
+    document.addEventListener('keydown', onKey);
+    document.addEventListener('keydown', trapFocus, true);
+  }
+
+  function closeModal(){
+    if (!modal) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!reduce && panel){
+      panel.style.transform = 'translateY(20px)';
+      setTimeout(hideNow, 140);
+    } else hideNow();
+
+    function hideNow(){
+      modal.classList.add('hidden');
+      panel && (panel.style.transform = '');
+      lockScroll(false);
+      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('keydown', trapFocus, true);
+      if (lastActive && typeof lastActive.focus === 'function') lastActive.focus();
+    }
+  }
+
+  function onKey(e){ if (e.key === 'Escape') closeModal(); }
+
+  // Open & close hooks
+  if (openBtn) openBtn.addEventListener('click', (e)=>openModal(e.currentTarget));
+  closeBtns?.forEach(btn => btn.addEventListener('click', closeModal));
+  modal?.addEventListener('click', (e)=>{ if (e.target && e.target.hasAttribute('data-close-modal')) closeModal(); });
+
+  // ---- Drag-to-close (mobile) ----
+  (function enableDragToClose(){
+    const area = handle || panel; if (!area || !panel) return;
+    let startY = 0, currentY = 0, dragging = false, startTime = 0;
+    const maxTranslate = 120; // px
+    const threshold = 60;     // px
+
+    function onStart(ev){
+      const t = ev.touches ? ev.touches[0] : ev;
+      dragging = true; startY = t.clientY; currentY = startY; startTime = Date.now();
+      panel.style.transition = 'none';
+      window.addEventListener('mousemove', onMove, { passive: false });
+      window.addEventListener('touchmove', onMove, { passive: false });
+      window.addEventListener('mouseup', onEnd);
+      window.addEventListener('touchend', onEnd);
+    }
+    function onMove(ev){
+      if (!dragging) return;
+      const t = ev.touches ? ev.touches[0] : ev;
+      currentY = t.clientY;
+      const dy = Math.max(0, currentY - startY);
+      if (dy > 0) ev.preventDefault();
+      const translate = Math.min(maxTranslate, dy);
+      panel.style.transform = `translateY(${translate}px)`;
+    }
+    function onEnd(){
+      if (!dragging) return;
+      const dy = Math.max(0, currentY - startY);
+      const dt = Math.max(1, Date.now() - startTime);
+      const velocity = dy / dt; // px/ms
+      dragging = false;
+      panel.style.transition = '';
+      panel.style.transform = '';
+      if (dy >= threshold || velocity > 0.8){ closeModal(); }
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('touchmove', onMove);
+      window.removeEventListener('mouseup', onEnd);
+      window.removeEventListener('touchend', onEnd);
+    }
+
+    area.addEventListener('mousedown', onStart);
+    area.addEventListener('touchstart', onStart, { passive: true });
+  })();
+
+  // Expose programmatic API (single definition)
+  window.checkoutModal = { open: openModal, close: closeModal };
+})();
+</script>
+
 <!-- ====== /CHECKOUT MODAL ====== -->
 
-{{-- footer --}}
+<!-- ====== CHECKOUT MODAL (Mobile bottom sheet 85vh, Desktop dialog) ====== -->
+<style>
+  /* Mobile height fix (uses --vh set by JS) */
+  @media (max-width: 767px){
+    #checkoutModal [data-modal-panel]{
+      height: calc(var(--vh, 1vh) * 85);
+      max-height: calc(var(--vh, 1vh) * 85);
+    }
+  }
+  /* Prevent horizontal overflow & allow wrapping */
+  #checkoutModal, #checkoutModal *{ min-width: 0; }
+  #checkoutModal [data-modal-panel]{ overflow-x: hidden; }
+  .wrap{ overflow-wrap:anywhere; word-break:break-word; hyphens:auto; }
+</style>
+
+<div id="checkoutModal"
+     class="fixed inset-0 z-[100] hidden"
+     role="dialog" aria-modal="true" aria-labelledby="checkoutTitle"
+     data-i18n-scope="checkout">
+  <!-- Backdrop -->
+  <div class="absolute inset-0 bg-black/50" data-close-modal aria-label="Close modal backdrop"></div>
+
+  <!-- Panel wrapper -->
+  <div class="absolute inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center
+              px-[max(env(safe-area-inset-left),0px)] pb-[max(env(safe-area-inset-bottom),0px)]">
+    <!-- Panel (FLEX COLUMN) -->
+    <div class="bg-white w-full md:w-[980px]
+                md:rounded-2xl md:shadow-2xl
+                rounded-t-2xl md:rounded-b-2xl
+                transition-transform duration-200 ease-out will-change-transform
+                outline-none overflow-hidden flex flex-col"
+         tabindex="-1"
+         data-modal-panel>
+
+      <!-- Drag handle (mobile only) -->
+      <div class="md:hidden flex items-center justify-center pt-2">
+        <div class="w-12 h-1.5 rounded-full bg-gray-300" data-drag-handle aria-hidden="true"></div>
+      </div>
+
+      <!-- Header -->
+      <div class="flex items-center justify-between px-4 sm:px-6 py-3 border-b bg-gray-50 wrap">
+        <h3 id="checkoutTitle" class="text-lg font-semibold" data-i18n="title">สรุปคำสั่งซื้อ</h3>
+        <button class="text-gray-500 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-400 rounded-md"
+                id="closeCheckoutModal" title="ปิด" data-i18n-attr="title:close" data-close-modal>
+          <i class="bi bi-x-lg" aria-hidden="true"></i>
+          <span class="sr-only" data-i18n="close">ปิด</span>
+        </button>
+      </div>
+
+      <!-- Body (SCROLL AREA) -->
+      <div class="grid md:grid-cols-5 gap-0 md:gap-6 p-4 sm:p-6 flex-1 min-h-0 overflow-y-auto wrap"
+           data-modal-body>
+        <!-- สินค้าที่เลือก -->
+        <section class="md:col-span-3 space-y-3">
+          <div class="border rounded-xl overflow-hidden">
+            <div class="px-4 py-3 bg-gray-50 border-b font-medium" data-i18n="selected_items">สินค้าที่เลือก</div>
+            <div id="coItems" class="divide-y max-h-[40vh] md:max-h-[52vh] overflow-auto"></div>
+          </div>
+
+          <div class="border rounded-xl overflow-hidden">
+            <div class="px-4 py-3 bg-gray-50 border-b font-medium" data-i18n="totals">ยอดรวม</div>
+            <div class="p-4 space-y-2 text-sm">
+              <div class="flex justify-between"><span data-i18n="subtotal">รวมสินค้า</span><span id="coSubtotal">฿0.00</span></div>
+              <div class="flex justify-between"><span data-i18n="shipping">ค่าส่ง</span><span id="coShipping">฿0.00</span></div>
+              <div class="border-t my-2"></div>
+              <div class="flex justify-between text-base font-bold"><span data-i18n="grand_total">ยอดสุทธิ</span><span id="coGrand">฿0.00</span></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ที่อยู่ + วิธีชำระ -->
+        <section class="md:col-span-2 space-y-3">
+          <!-- Address -->
+          <div class="border rounded-xl overflow-hidden">
+            <div class="px-4 py-3 bg-gray-50 border-b font-medium" data-i18n="shipping_address">ที่อยู่จัดส่ง</div>
+            <div class="p-4 grid grid-cols-1 gap-3" id="addrList"><!-- render by JS --></div>
+          </div>
+          <!-- Payment -->
+          <div class="border rounded-xl overflow-hidden">
+            <div class="px-4 py-3 bg-gray-50 border-b font-medium" data-i18n="payment_method">วิธีชำระเงิน</div>
+            <div class="p-4 grid gap-2 text-sm">
+              <label class="flex items-center gap-2">
+                <input type="radio" name="paymethod" value="COD" class="w-4 h-4" checked>
+                <span data-i18n="pay_cod">ชำระปลายทาง (COD)</span>
+              </label>
+              <label class="flex items-center gap-2">
+                <input type="radio" name="paymethod" value="BANK" class="w-4 h-4">
+                <span data-i18n="pay_bank">โอนผ่านบัญชีธนาคาร</span>
+              </label>
+              <label class="flex items-center gap-2">
+                <input type="radio" name="paymethod" value="CARD" class="w-4 h-4">
+                <span data-i18n="pay_card">บัตรเครดิต/เดบิต</span>
+              </label>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Footer -->
+      <div class="px-4 sm:px-6 py-4 border-t bg-white flex flex-col md:flex-row items-center justify-between gap-3"
+           data-modal-footer>
+        <div class="text-sm text-gray-500" data-i18n="review_note">ตรวจสอบข้อมูลให้ถูกต้องก่อนยืนยัน</div>
+        <div class="flex items-center gap-3 w-full md:w-auto">
+          <button class="px-4 py-2 rounded-lg border hover:bg-gray-50 w-full md:w-auto
+                         focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-400"
+                  data-close-modal data-i18n="cancel">ยกเลิก</button>
+          <button id="confirmCheckoutBtn"
+                  class="btn-orange px-5 py-2.5 rounded-lg w-full md:w-auto
+                         focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                  data-i18n="confirm_order">
+            ยืนยันสั่งซื้อ
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
-/* ================== CART CHECKOUT SCRIPT (paste once, after HTML) ================== */
+/* ================== MODAL OPEN/CLOSE (accessibility + drag-to-close + --vh fix) ================== */
+(function(){
+  const modal = document.getElementById('checkoutModal');
+  const panel = modal?.querySelector('[data-modal-panel]');
+  const openBtn = document.getElementById('checkoutBtn'); // ปุ่มเปิด (ถ้ามี)
+  const closeBtns = modal?.querySelectorAll('[data-close-modal]');
+  const handle = modal?.querySelector('[data-drag-handle]');
+
+  // mobile 100vh fix
+  function setVH(){ document.documentElement.style.setProperty('--vh', (window.innerHeight*0.01)+'px'); }
+  setVH(); window.addEventListener('resize', setVH, { passive:true });
+
+  let lastActive = null;
+  const FOCUSABLE = [
+    'a[href]','button:not([disabled])','input:not([disabled])',
+    'select:not([disabled])','textarea:not([disabled])',
+    '[tabindex]:not([tabindex="-1"])'
+  ].join(',');
+
+  function lockScroll(lock){
+    document.documentElement.classList.toggle('overflow-hidden', lock);
+    document.body.classList.toggle('overflow-hidden', lock);
+    document.body.classList.toggle('touch-pan-y', !lock);
+  }
+
+  function trapFocus(e){
+    if (!modal || modal.classList.contains('hidden')) return;
+    if (e.key !== 'Tab') return;
+    const els = modal.querySelectorAll(FOCUSABLE);
+    if (!els.length) return;
+    const first = els[0], last = els[els.length - 1];
+    if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+  }
+
+  function openModal(triggerEl){
+    if (!modal) return;
+    lastActive = triggerEl || document.activeElement;
+    modal.classList.remove('hidden');
+    lockScroll(true);
+
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!reduce && panel){
+      panel.style.transform = 'translateY(20px)';
+      requestAnimationFrame(()=>{ panel.style.transform = 'translateY(0)'; });
+    }
+    setTimeout(()=>{ (modal.querySelector(FOCUSABLE) || panel)?.focus?.(); }, 0);
+
+    document.addEventListener('keydown', onKey);
+    document.addEventListener('keydown', trapFocus, true);
+  }
+
+  function closeModal(){
+    if (!modal) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!reduce && panel){
+      panel.style.transform = 'translateY(20px)';
+      setTimeout(hideNow, 140);
+    } else hideNow();
+
+    function hideNow(){
+      modal.classList.add('hidden');
+      panel && (panel.style.transform = '');
+      lockScroll(false);
+      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('keydown', trapFocus, true);
+      if (lastActive && typeof lastActive.focus === 'function') lastActive.focus();
+    }
+  }
+  function onKey(e){ if (e.key === 'Escape') closeModal(); }
+
+  // hooks
+  if (openBtn) openBtn.addEventListener('click', (e)=>openModal(e.currentTarget));
+  closeBtns?.forEach(btn => btn.addEventListener('click', closeModal));
+  modal?.addEventListener('click', (e)=>{ if (e.target && e.target.hasAttribute('data-close-modal')) closeModal(); });
+
+  // Drag-to-close (mobile)
+  (function enableDragToClose(){
+    const area = handle || panel; if (!area || !panel) return;
+    let startY = 0, currentY = 0, dragging = false, startTime = 0;
+    const maxTranslate = 120; const threshold = 60;
+    function onStart(ev){
+      const t = ev.touches ? ev.touches[0] : ev;
+      dragging = true; startY = t.clientY; currentY = startY; startTime = Date.now();
+      panel.style.transition = 'none';
+      window.addEventListener('mousemove', onMove, { passive:false });
+      window.addEventListener('touchmove', onMove, { passive:false });
+      window.addEventListener('mouseup', onEnd);
+      window.addEventListener('touchend', onEnd);
+    }
+    function onMove(ev){
+      if (!dragging) return;
+      const t = ev.touches ? ev.touches[0] : ev;
+      currentY = t.clientY;
+      const dy = Math.max(0, currentY - startY);
+      if (dy > 0) ev.preventDefault();
+      panel.style.transform = `translateY(${Math.min(maxTranslate, dy)}px)`;
+    }
+    function onEnd(){
+      if (!dragging) return;
+      const dy = Math.max(0, currentY - startY);
+      const dt = Math.max(1, Date.now() - startTime);
+      const velocity = dy / dt;
+      dragging = false;
+      panel.style.transition = '';
+      panel.style.transform = '';
+      if (dy >= threshold || velocity > 0.8){ closeModal(); }
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('touchmove', onMove);
+      window.removeEventListener('mouseup', onEnd);
+      window.removeEventListener('touchend', onEnd);
+    }
+    area.addEventListener('mousedown', onStart);
+    area.addEventListener('touchstart', onStart, { passive:true });
+  })();
+
+  // Expose API
+  window.checkoutModal = { open: openModal, close: closeModal };
+})();
+</script>
+
+<script>
+/* ================== CART CHECKOUT SCRIPT (addresses + confirm guard) ================== */
 (function () {
   /* ---- ROUTES (Blade) ---- */
   const ROUTES = {
-    addresses: '{{ route("profile.addresses") }}', // must return { main:{...}, subs:[...] }
-    checkout : '{{ route("cart.checkout") }}'      // expects {iditems[], address_key, paymethod}
+    addresses: '{{ route("profile.addresses") }}', // returns: { main:{...}? or main_address:{...}?, subs:[...] }
+    checkout : '{{ route("cart.checkout") }}'      // expects: { iditems[], address_key, paymethod }
   };
+  const EDIT_ADDR_URL = '{{ route("profile.edit") }}';
 
-  /* ---- Globals / Elements ---- */
+  /* ---- Elements ---- */
   const addrListEl  = document.getElementById('addrList');
   const checkoutBtn = document.getElementById('checkoutBtn');
   const confirmBtn  = document.getElementById('confirmCheckoutBtn');
   const cartMount   = document.getElementById('cartMount');
   const csrfToken   = document.querySelector('meta[name="csrf-token"]')?.content || '';
 
-  /* ---- Expose STATE (cart script should assign into this) ---- */
+  /* ---- STATE (from cart) ---- */
   window.STATE = window.STATE || { idcustomer:null, items:[], totalQty:0, subtotal:0 };
 
-  /* ================== ADDRESS LOADING ================== */
+  let HAS_ANY_ADDRESS = false;
+
+  /* ===== Helpers ===== */
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, m => ({
     '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
   }[m]));
-
+  const truthy = (v) => String(v ?? '').trim() !== '';
+  const isAddressUsable = (a) => {
+    if (!a || typeof a !== 'object') return false;
+    return truthy(a.line1) || truthy(a.subdistrict) || truthy(a.district) ||
+           truthy(a.province) || truthy(a.zip) || truthy(a.country) ||
+           truthy(a.phone) || truthy(a.name);
+  };
   const fmtAddr = (a) => {
     const p = [];
-    if (a.line1)       p.push(esc(a.line1));
-    if (a.subdistrict) p.push('ต.' + esc(a.subdistrict));
-    if (a.district)    p.push('อ.' + esc(a.district));
-    if (a.province)    p.push('จ.' + esc(a.province));
-    if (a.zip)         p.push(esc(a.zip));
-    if (a.country)     p.push(esc(a.country));
+    if (a?.line1)       p.push(esc(a.line1));
+    if (a?.subdistrict) p.push('ต.' + esc(a.subdistrict));
+    if (a?.district)    p.push('อ.' + esc(a.district));
+    if (a?.province)    p.push('จ.' + esc(a.province));
+    if (a?.zip)         p.push(esc(a.zip));
+    if (a?.country)     p.push(esc(a.country));
     return p.join(' ');
   };
+  function setConfirmEnabled(enabled){
+    if (!confirmBtn) return;
+    confirmBtn.disabled = !enabled;
+    confirmBtn.classList.toggle('opacity-50', !enabled);
+    confirmBtn.classList.toggle('cursor-not-allowed', !enabled);
+    confirmBtn.setAttribute('aria-disabled', String(!enabled));
+  }
+  function getSelectedIdxs(){
+    if (!cartMount) return [];
+    return [...cartMount.querySelectorAll('.item-chk:checked')].map(c => +c.dataset.index);
+  }
+  function getSelectedItemIds(){
+    const idxs = getSelectedIdxs();
+    return idxs.map(i => window.STATE.items?.[i]?.iditem).filter(Boolean);
+  }
+  function getSelectedAddressKey(){
+    const rb = document.querySelector('#addrList input[name="shipaddr"]:checked');
+    return rb ? rb.value : null;
+  }
+  function requireAddressOrRedirect(){
+    if (!HAS_ANY_ADDRESS){
+      alert('กรุณาเพิ่มที่อยู่จัดส่งก่อนทำรายการ');
+      if (EDIT_ADDR_URL) window.location.assign(EDIT_ADDR_URL);
+      return false;
+    }
+    const key = getSelectedAddressKey();
+    if (!key){ alert('กรุณาเลือกที่อยู่จัดส่ง'); return false; }
+    return true;
+  }
 
-  async function fetchAddresses() {
+  /* ===== Address Loading / Rendering ===== */
+  async function fetchAddresses(){
     const res = await fetch(ROUTES.addresses, {
       headers: { 'Accept': 'application/json' },
       credentials: 'same-origin'
@@ -487,133 +951,171 @@ input[type="checkbox"]{ accent-color: var(--brand); }
     return res.json();
   }
 
-  function renderAddresses(data) {
-    if (!addrListEl) return;
-    const list = [];
-    if (data?.main) list.push({ key:'main', ...data.main, tag:'ค่าเริ่มต้น' });
-    (data?.subs || []).forEach(s => list.push({ key:String(s.idsubaddress), ...s }));
+  const addAddressCardHTML = `
+    <button id="addAddrCard" type="button"
+      class="border rounded-xl p-3 w-full text-left hover:bg-orange-50 flex items-center gap-3">
+      <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg border">
+        <i class="bi bi-plus-lg"></i>
+      </span>
+      <div>
+        <div class="font-semibold">Add an address</div>
+        <div class="text-sm text-gray-600">Go to the address settings page to add new information.</div>
+      </div>
+    </button>`;
 
-    if (!list.length) {
-      addrListEl.innerHTML = `<div class="text-sm text-gray-500">ไม่พบที่อยู่ในบัญชีของคุณ</div>`;
-      return;
+  function renderAddresses(data){
+    if (!addrListEl) return;
+
+    const mainRaw = data?.main ?? data?.main_address ?? null;
+    const hasMain = isAddressUsable(mainRaw);
+
+    const subsRaw = Array.isArray(data?.subs) ? data.subs : [];
+    const subs = subsRaw.filter(isAddressUsable);
+
+    const list = [];
+    if (hasMain) list.push({ key:'main', ...mainRaw, tag:'ค่าเริ่มต้น' });
+    subs.forEach(s => list.push({ key:String(s.idsubaddress ?? s.key ?? ''), ...s }));
+
+    HAS_ANY_ADDRESS = list.length > 0;
+
+    if (!HAS_ANY_ADDRESS){
+      addrListEl.innerHTML = addAddressCardHTML;
+    } else {
+      const itemsHTML = list.map((a, i) => `
+        <label class="border rounded-xl p-3 flex gap-3 items-start hover:bg-orange-50 cursor-pointer">
+          <input type="radio" name="shipaddr" class="mt-1.5" value="${esc(a.key)}" ${i===0 ? 'checked' : ''}>
+          <div class="min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="font-semibold">${esc(a.name || '-')}</span>
+              ${a.phone ? `<span class="text-sm text-gray-600">(${esc(a.phone)})</span>` : ''}
+              ${a.tag ? `<span class="text-[11px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 border">${esc(a.tag)}</span>` : ''}
+            </div>
+            <div class="text-sm text-gray-700 break-words">${fmtAddr(a) || '-'}</div>
+            ${a.email ? `<div class="text-xs text-gray-500 mt-0.5">${esc(a.email)}</div>` : ''}
+          </div>
+        </label>
+      `).join('');
+      const addMoreHTML = `
+        <button id="addAddrCard" type="button"
+          class="mt-2 text-[13px] text-orange-600 hover:text-orange-700 underline underline-offset-2">
+          + Add another address
+        </button>`;
+      addrListEl.innerHTML = itemsHTML + addMoreHTML;
     }
 
-    addrListEl.innerHTML = list.map((a, i) => `
-      <label class="border rounded-xl p-3 flex gap-3 items-start hover:bg-orange-50 cursor-pointer">
-        <input type="radio" name="shipaddr" class="mt-1.5" value="${esc(a.key)}" ${i===0?'checked':''}>
-        <div class="min-w-0">
-          <div class="flex items-center gap-2 flex-wrap">
-            <span class="font-semibold">${esc(a.name || '-')}</span>
-            ${a.phone ? `<span class="text-sm text-gray-600">(${esc(a.phone)})</span>` : ''}
-            ${a.tag ? `<span class="text-[11px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 border">${esc(a.tag)}</span>` : ''}
-          </div>
-          <div class="text-sm text-gray-700 break-words">${fmtAddr(a) || '-'}</div>
-          ${a.email ? `<div class="text-xs text-gray-500 mt-0.5">${esc(a.email)}</div>` : ''}
-        </div>
-      </label>
-    `).join('');
+    const addBtn = document.getElementById('addAddrCard');
+    if (addBtn){
+      addBtn.addEventListener('click', () => {
+        sessionStorage.setItem('after_addr_edit', '1');
+        window.location.assign(EDIT_ADDR_URL);
+      });
+    }
+
+    setConfirmEnabled(HAS_ANY_ADDRESS);
   }
 
-  async function ensureAddressListLoaded() {
+  async function ensureAddressListLoaded(){
     if (!addrListEl) return;
-    try {
+    try{
       const data = await fetchAddresses();
       renderAddresses(data);
-    } catch (e) {
+    }catch(e){
       console.error(e);
       addrListEl.innerHTML = `<div class="text-sm text-red-600">โหลดที่อยู่ไม่สำเร็จ</div>`;
+      HAS_ANY_ADDRESS = false;
+      setConfirmEnabled(false);
     }
   }
 
-  /* ================== ITEM SELECTION ================== */
-  function getSelectedIdxs() {
-    // จำกัดขอบเขตค้นหา checkbox เฉพาะใน cart list
-    return [...cartMount.querySelectorAll('.item-chk:checked')].map(c => +c.dataset.index);
+  /* ===== Create Order ===== */
+  async function createOrder(ids){
+    const key = getSelectedAddressKey();
+    if (!key){
+      const err = new Error('no_address'); err.code = 'no_address'; throw err;
+    }
+    const res = await fetch(ROUTES.checkout, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'Accept':'application/json','Content-Type':'application/json','X-CSRF-TOKEN': csrfToken
+      },
+      body: JSON.stringify({
+        iditems: ids,
+        address_key: key,
+        paymethod: document.querySelector('input[name="paymethod"]:checked')?.value || 'COD'
+      })
+    });
+    const ct = res.headers.get('content-type') || '';
+    const json = ct.includes('application/json') ? await res.json() : { success:false, error: await res.text() };
+    if (!res.ok || !json.success){
+      console.error('checkout error:', json);
+      const msg = json.message || json.error || 'ไม่ทราบสาเหตุ';
+      throw new Error(msg);
+    }
+    return json;
   }
 
-  function getSelectedItemIds() {
-    const idxs = getSelectedIdxs();
-    return idxs.map(i => window.STATE.items?.[i]?.iditem).filter(Boolean);
-  }
-
-  function getSelectedAddressKey() {
-    const rb = document.querySelector('#addrList input[name="shipaddr"]:checked');
-    return rb ? rb.value : null; // 'main' or '123' (idsubaddress)
-  }
-
-  /* ================== CREATE ORDER ================== */
-async function createOrder(ids) {
-  const res = await fetch(ROUTES.checkout, {
-    method: 'POST',
-    credentials: 'same-origin',
-    headers: {
-      'Accept':'application/json','Content-Type':'application/json','X-CSRF-TOKEN': csrfToken
-    },
-    body: JSON.stringify({
-      iditems: ids,
-      address_key: getSelectedAddressKey() ?? 'main',
-      paymethod: document.querySelector('input[name="paymethod"]:checked')?.value || 'COD'
-    })
-  });
-
-  const ct = res.headers.get('content-type') || '';
-  const json = ct.includes('application/json') ? await res.json() : {success:false, error: await res.text()};
-
-  if (!res.ok || !json.success) {
-    // 👇 แสดงรายละเอียดทั้งหมด
-    console.error('checkout error:', json);
-    const msg = json.message || json.error || 'ไม่ทราบสาเหตุ';
-    alert('สร้างออเดอร์ไม่สำเร็จ\n' + msg);
-    throw new Error(msg);
-  }
-  return json;
-}
-
-  /* ================== HOOK BUTTONS ================== */
-  if (checkoutBtn) {
+  /* ===== Events / Hooks ===== */
+  if (checkoutBtn){
     checkoutBtn.addEventListener('click', () => {
-      // หน้าหลักจะเปิด modal + render รายการสินค้าอยู่แล้ว
-      // ตรงนี้เราแค่ไปโหลดรายการที่อยู่มาขึ้นใน panel
       ensureAddressListLoaded();
     });
   }
 
-  if (confirmBtn) {
+  // กลับจากหน้าเพิ่มที่อยู่ => โหลดใหม่อัตโนมัติ
+  function reloadIfBackFromEdit(){
+    if (sessionStorage.getItem('after_addr_edit') === '1'){
+      ensureAddressListLoaded().finally(() => {
+        sessionStorage.removeItem('after_addr_edit');
+      });
+    }
+  }
+  window.addEventListener('pageshow', reloadIfBackFromEdit);
+  window.addEventListener('focus', reloadIfBackFromEdit);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') reloadIfBackFromEdit();
+  });
+
+  if (confirmBtn){
+    // เริ่มต้นปิดไว้ก่อนจนกว่าจะรู้ว่ามี address
+    setConfirmEnabled(false);
+
     confirmBtn.addEventListener('click', async () => {
-      try {
+      try{
+        if (!requireAddressOrRedirect()) return;
+
         const ids = getSelectedItemIds();
-        if (!ids.length) { alert('กรุณาเลือกสินค้า'); return; }
+        if (!ids.length){ alert('กรุณาเลือกสินค้า'); return; }
+
+        setConfirmEnabled(false);
 
         const out = await createOrder(ids);
-        // อัปเดตตะกร้าในหน้า (ข้อมูลจาก backend)
+
+        // กลับไป marketplace (แก้ route ให้ตรงของจริง)
         window.location.assign('{{ route("test.FLUKE_Marketplace") }}');
-        if (out.cart) {
+
+        if (out.cart){
           window.STATE.items    = Array.isArray(out.cart.items) ? out.cart.items : [];
           window.STATE.totalQty = Number(out.cart.totalQty ?? 0);
           window.STATE.subtotal = Number(out.cart.subtotal ?? 0);
         }
-
-        // ถ้ามีฟังก์ชัน render() จากสคริปต์ตะกร้าเดิม ให้เรียกเพื่อรีเฟรช UI
         if (typeof window.render === 'function') window.render();
 
-        // ปิดโมดอล
         document.getElementById('closeCheckoutModal')?.click();
-      } catch (err) {
+      }catch(err){
         console.error(err);
-        // โชว์ข้อความตาม error
-        const m = String(err.message || '');
-        if (m.includes('no_items')) {
-          alert('กรุณาเลือกสินค้า');
-        } else if (m.includes('no_address')) {
-          // already alerted
-        } else {
-          alert('สร้างออเดอร์ไม่สำเร็จ');
-        }
+        const m = String(err.message || err.code || '');
+        if (m.includes('no_address'))      alert('กรุณาเพิ่ม/เลือกที่อยู่จัดส่ง');
+        else if (m.includes('no_items'))   alert('กรุณาเลือกสินค้า');
+        else                               alert('สร้างออเดอร์ไม่สำเร็จ');
+      }finally{
+        setConfirmEnabled(HAS_ANY_ADDRESS);
       }
     });
   }
 })();
 </script>
+
 
 
 
@@ -659,7 +1161,21 @@ async function createOrder(ids) {
       checkout_btn:'ชำระเงิน', empty_cart:'ยังไม่มีสินค้าในตะกร้า',
       badge_warranty:'รับประกัน 1 ปี', action_remove:'ลบ', action_save_later:'',
       top_user:'ผู้ใช้', top_logout:'ออกจากระบบ',
-      coupon_prefix:'คูปองร้าน FLUKE:', coupon_text:'ซื้อขั้นต่ำ ฿1,500 ส่งฟรี', label_profile:'โปรไฟล์'
+      coupon_prefix:'คูปองร้าน FLUKE:', coupon_text:'ซื้อขั้นต่ำ ฿1,500 ส่งฟรี', label_profile:'โปรไฟล์',  title: "สรุปคำสั่งซื้อ",
+      close: "ปิด",
+      selected_items: "สินค้าที่เลือก",
+      totals: "ยอดรวม",
+      subtotal: "รวมสินค้า",
+      shipping: "ค่าส่ง",
+      grand_total: "ยอดสุทธิ",
+      shipping_address: "ที่อยู่จัดส่ง",
+      payment_method: "วิธีชำระเงิน",
+      pay_cod: "ชำระปลายทาง (COD)",
+      pay_bank: "โอนผ่านบัญชีธนาคาร",
+      pay_card: "บัตรเครดิต/เดบิต",
+      review_note: "ตรวจสอบข้อมูลให้ถูกต้องก่อนยืนยัน",
+      cancel: "ยกเลิก",
+      confirm_order: "ยืนยันสั่งซื้อ"
     },
     'English': {
       brand_name:'FLUKE',
@@ -672,7 +1188,21 @@ async function createOrder(ids) {
       checkout_btn:'Checkout', empty_cart:'Your cart is empty',
       badge_warranty:'1 year warranty', action_remove:'Remove', action_save_later:'',
       top_user:'user', top_logout:'Sign out',
-      coupon_prefix:'FLUKE Coupon:', coupon_text:'Free shipping over ฿1,500', label_profile:'Profile'
+      coupon_prefix:'FLUKE Coupon:', coupon_text:'Free shipping over ฿1,500', label_profile:'Profile', title: "Order Summary",
+      close: "Close",
+      selected_items: "Selected Items",
+      totals: "Totals",
+      subtotal: "Subtotal",
+      shipping: "Shipping",
+      grand_total: "Grand Total",
+      shipping_address: "Shipping Address",
+      payment_method: "Payment Method",
+      pay_cod: "Cash on Delivery (COD)",
+      pay_bank: "Bank Transfer",
+      pay_card: "Credit/Debit Card",
+      review_note: "Please review your details before confirming.",
+      cancel: "Cancel",
+      confirm_order: "Confirm Order"
     }
   };
 
