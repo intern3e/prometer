@@ -15,7 +15,7 @@
 /node_modules
 /public/build
 /public/hot
-# /public/storage
+/public/storage
 # /storage/*.key
 # /storage/pail
 /vendor
@@ -23,8 +23,8 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 /storage/*
-!/storage/app/public
-!/storage/app/public/**
+# !/storage/app/public
+# !/storage/app/public/**
 /storage/logs/*
 !/storage/logs/.gitignore
 !/storage/logs/README.md
