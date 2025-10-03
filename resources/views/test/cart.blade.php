@@ -184,7 +184,7 @@ input[type="checkbox"]{ accent-color: var(--brand); }
 
   $profileUrl = Route::has('profile')
     ? route('profile')
-    : (Route::has('profile.edit') ? route('profile.edit') : url('/profile'));
+    : (Route::has('profile.show') ? route('profile.show') : url('/profile'));
 @endphp
 
 @if (!$email)
@@ -710,7 +710,7 @@ input[type="checkbox"]{ accent-color: var(--brand); }
             <div class="px-4 py-3 bg-gray-50 border-b font-medium" data-i18n="payment_method">วิธีชำระเงิน</div>
             <div class="p-4 grid gap-2 text-sm">
               <label class="flex items-center gap-2">
-                <input type="radio" name="paymethod" value="COD" class="w-4 h-4" checked>
+                <input type="radio" name="paymethod" value="COD" class="form-radio w-5 h-5 text-blue-500">
                 <span data-i18n="pay_cod">ชำระปลายทาง (COD)</span>
               </label>
               <label class="flex items-center gap-2">

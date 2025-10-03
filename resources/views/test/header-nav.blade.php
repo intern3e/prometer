@@ -141,7 +141,7 @@
 
   $profileUrl = Route::has('profile')
     ? route('profile')
-    : (Route::has('profile.edit') ? route('profile.edit') : url('/profile'));
+    : (Route::has('profile.show') ? route('profile.show') : url('/profile'));
 @endphp
 
 @if (!$email)

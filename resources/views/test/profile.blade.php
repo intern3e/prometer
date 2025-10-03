@@ -150,7 +150,7 @@
 
               <div class="card section">
                 <div class="title" data-i18n="company_org">บริษัท/หน่วยงาน</div>
-                <div class="muted mt-2" data-i18n="company_name">ชื่อบริษัท (ถ้ามี)</div><div>{{ $custdetail->company_name ?? '—' }}</div>
+                <div class="muted mt-2" data-i18n="company_name">ชื่อบริษัท (ถ้ามี)</div><div>{{ $custdetail->typecust === 'company' ? ($custdetail->company_name ?? '—') : '—' }}</div>
                 <div class="muted mt-2" data-i18n="customer_type">ที่อยู่จัดส่งหลัก</div><div>{{ $ship !== '' ? e($ship) : '—' }}</div>
               </div>
             </div>
@@ -326,7 +326,7 @@
             <div class="card section">
               <div class="title" data-i18n="company_info">ข้อมูลบริษัท</div>
               <div id="companyInfo" class="ci-list">
-                <div class="list-row"><div class="k" data-i18n="registered_name">ชื่อบริษัท (ตามจดทะเบียน)</div><div class="v" data-field="registered_name">{{ $custdetail->company_name ?? '—' }}</div></div>
+                <div class="list-row"><div class="k" data-i18n="registered_name">ชื่อบริษัท (ตามจดทะเบียน)</div><div class="v" data-field="registered_name">{{ $custdetail->typecust === 'company' ? ($custdetail->company_name ?? '—') : '—' }}</div></div>
                 <div class="list-row"><div class="k" data-i18n="entity_type">ประเภทนิติบุคคล</div><div class="v" data-field="entity_type">{{ $custdetail->Legalentity_type ?? '—' }}</div></div>
                 <div class="list-row"><div class="k" data-i18n="tax_id">เลขประจำตัวผู้เสียภาษี (13 หลัก)</div><div class="v" data-field="tax_id">{{ $custdetail->idtax ?? '—' }}</div></div>
                 <div class="list-row"><div class="k" data-i18n="branch_no">เลขที่สาขา</div><div class="v" data-field="branch_no">{{ $custdetail->Branch_number ?? '—' }}</div></div>
