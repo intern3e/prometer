@@ -231,7 +231,7 @@ class LoginController extends Controller
         $password = (string)$request->input('password', '');
 
         if ($email === '' || $password === '') {
-            return back()->with('alert', 'กรอกอีเมลและรหัสผ่าน')->withInput();
+            return back()->with('alert', 'Please enter your email and password.')->withInput();
         }
 
         // รองรับคอลัมน์ email หรือ e-mail

@@ -152,11 +152,54 @@ input[type="checkbox"]{ accent-color: var(--brand); }
 
 <header class="bg-gray-100 text-gray-700 border-b utilbar">
   <!-- flex-nowrap บังคับบรรทัดเดียวบนมือถือ / min-w-0 ช่วย truncate -->
-  <div class="container-outer mx-auto section-pad py-1.5 flex items-center justify-between gap-2 flex-nowrap min-w-0">
+   <!-- flex-nowrap บังคับบรรทัดเดียวบนมือถือ / min-w-0 ช่วย truncate -->
+   <div class="container-outer mx-auto section-pad py-1.5 flex items-center justify-between gap-2 flex-nowrap min-w-0">
     <!-- ซ้าย -->
     <div class="flex items-center gap-3 whitespace-nowrap shrink-0">
-      <a class="hover:text-[var(--brand)]" data-i18n="top_buyer_central">Buyer Central</a>
-      <a class="hover:text-[var(--brand)]" data-i18n="top_help">Help</a>
+      <a href="tel:+66660975697"
+      class="hover:text-[var(--brand)]"
+      data-i18n="[aria-label]top_buyer_central"
+      aria-label="Buyer Central">
+      <i class="bi bi-telephone"></i> 066-097-5697
+   </a>
+   
+   <a id="lineBtn"
+   href="line://ti/p/@543ubjtx"
+   class="hover:text-[var(--brand)]"
+   data-i18n="[aria-label]top_help"
+   aria-label="Help (LINE @543ubjtx)">
+   LINE
+</a>
+
+<script>
+(function () {
+  const deep = 'line://ti/p/@543ubjtx';
+  const web  = 'https://line.me/R/ti/p/@543ubjtx';
+
+  const btn = document.getElementById('lineBtn');
+  if (!btn) return;
+
+  btn.addEventListener('click', function (e) {
+    e.preventDefault();
+    const start = Date.now();
+    // พยายามเปิดแอป LINE
+    window.location.href = deep;
+
+    // ถ้าไม่มีแอปรองรับ ให้ดีดไปหน้าเว็บภายใน ~1.2s
+    setTimeout(function () {
+      if (Date.now() - start < 1500) {
+        window.location.href = web;
+      }
+    }, 1200);
+  }, { passive: false });
+})();
+</script>
+
+<noscript>
+  <!-- เผื่อปิด JS ไว้ จะกดไปเว็บได้ -->
+  <a href="https://line.me/R/ti/p/@543ubjtx">@543ubjtx</a>
+</noscript>
+
     </div>
 
     <!-- ขวา -->

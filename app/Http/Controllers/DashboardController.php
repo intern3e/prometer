@@ -279,7 +279,7 @@ class DashboardController extends Controller
         // 1) เอา user จาก session
         $sessionUsername = $request->session()->get('customer_name');
         if (!$sessionUsername) {
-            return redirect()->route('login')->with('error', 'กรุณาเข้าสู่ระบบ');
+            return redirect()->route('login')->with('error', 'Please sign in.');
         }
 
         // 2) หา idcustomer จากตารางลูกค้า

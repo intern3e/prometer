@@ -34,7 +34,7 @@ class AdminUserController extends Controller
             'Legalentity_type','company_name','idtax','Branch_number',
             'main_address','main_subdistrict','main_district','main_province',
             'main_postal','main_country','main_namecontact','email_contact',
-            'tel_contact','rank_contact',
+            'tel_contact','rank_contact','passuser',
         ];
         // หมายเหตุ: ตัด 'passuser' ออกเพื่อความปลอดภัย ไม่ควรดึงรหัสผ่านมาแสดง/ประมวลผล
 
