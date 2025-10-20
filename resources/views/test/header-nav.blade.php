@@ -14,7 +14,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
-  <!-- Swiper (ถ้าใช้) -->
+  <!-- Swiper -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
 
@@ -117,12 +117,19 @@
   <div class="container-outer mx-auto section-pad py-1.5 flex items-center justify-between gap-2 flex-nowrap min-w-0">
     <!-- ซ้าย -->
     <div class="flex items-center gap-3 whitespace-nowrap shrink-0">
-      <a href="tel:+66660975697" class="hover:text-[var(--brand)]" aria-label="Buyer Central">
+      <a href="tel:+66660975697"
+         class="hover:text-[var(--brand)]"
+         data-i18n="[aria-label]top_buyer_central"
+         aria-label="Buyer Central">
         <i class="bi bi-telephone"></i> 066-097-5697
       </a>
 
-      <a id="lineBtn" href="line://ti/p/@543ubjtx" class="hover:text-[var(--brand)]" aria-label="Help (LINE @543ubjtx)">
-        LINE
+      <a id="lineBtn"
+         href="line://ti/p/@543ubjtx"
+         class="hover:text-[var(--brand)]"
+         data-i18n="[aria-label]top_help"
+         aria-label="Help (LINE @543ubjtx)">
+         LINE
       </a>
       <noscript>
         <a href="https://line.me/R/ti/p/@543ubjtx">@543ubjtx</a>
@@ -138,7 +145,7 @@
           <i class="bi bi-chevron-down text-[10px]"></i>
         </button>
         <div id="langDropdown" class="absolute right-0 top-full mt-2 w-36 bg-white rounded shadow hidden z-50">
-          <div class="px-3 py-2 text-xs text-gray-500">เลือกภาษา</div>
+          <div class="px-3 py-2 text-xs text-gray-500" data-i18n="top_choose_lang">เลือกภาษา</div>
           <div class="border-t">
             <div class="lang-item px-4 py-2 hover:bg-orange-50" data-lang="ไทย">ไทย</div>
             <div class="lang-item px-4 py-2 hover:bg-orange-50" data-lang="English">English</div>
@@ -147,37 +154,42 @@
       </div>
 
 @php
-  // ===== [Blade safe] ดึงข้อมูลผู้ใช้ + โปรไฟล์ URL (ห้ามใช้ "use ...;" ใน @php) =====
+  use Illuminate\Support\Facades\Route;
+
   $email    = session('customer_email');
   $username = session('customer_name');
 
-  $profileUrl = \Illuminate\Support\Facades\Route::has('profile')
-      ? route('profile')
-      : (\Illuminate\Support\Facades\Route::has('profile.show') ? route('profile.show') : url('/profile'));
+  $profileUrl = Route::has('profile')
+    ? route('profile')
+    : (Route::has('profile.show') ? route('profile.show') : url('/profile'));
 @endphp
 
 @if (!$email)
-      <a href="{{ route('login') }}" class="hover:text-[var(--brand)] shrink-0">เข้าสู่ระบบ</a>
-      <a href="{{ route('Sign_up') }}" class="hover:text-[var(--brand)] shrink-0">สมัครสมาชิกฟรี</a>
+      <a href="{{ route('login') }}" class="hover:text-[var(--brand)] shrink-0" data-i18n="top_login">เข้าสู่ระบบ</a>
+      <a href="{{ route('Sign_up') }}" class="hover:text-[var(--brand)] shrink-0" data-i18n="top_join_free">สมัครสมาชิกฟรี</a>
 @else
       <!-- Desktop -->
       <div class="hidden md:flex items-center gap-2 min-w-0 whitespace-nowrap">
         <span class="text-sm text-gray-700 truncate max-w-[360px] inline-clip" style="max-width:360px">
-          <span>ผู้ใช้</span>:
+          <span data-i18n="top_user">ผู้ใช้</span>:
           <span class="font-medium text-gray-900 inline-clip" style="max-width:180px">{{ $username }}</span>
           <span class="text-xs text-gray-500 ml-1" title="{{ $email }}">
             ({{ \Illuminate\Support\Str::limit($email, 25, '…') }})
           </span>
         </span>
 
-        <a href="{{ $profileUrl }}" class="px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-orange-50 text-gray-700 inline-flex items-center gap-2 shrink-0">
-          <i class="bi bi-person-gear"></i><span>โปรไฟล์</span>
+        <a href="{{ $profileUrl }}"
+           class="px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-orange-50 text-gray-700 inline-flex items-center gap-2 shrink-0"
+           data-i18n="top_profile">
+          <i class="bi bi-person-gear" data-i18n="icon_profile"></i>
+          <span data-i18n="label_profile">โปรไฟล์</span>
         </a>
 
         <form method="POST" action="{{ route('logout') }}" class="shrink-0">
           @csrf
-          <button type="submit" class="px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-orange-50 text-gray-700">
-            <span>ออกจากระบบ</span>
+          <button type="submit"
+                  class="px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-orange-50 text-gray-700">
+            <span data-i18n="top_logout">ออกจากระบบ</span>
           </button>
         </form>
       </div>
@@ -195,21 +207,31 @@
           <span class="sr-only">({{ $email }})</span>
         </button>
 
-        <div id="userMenuDropdown" class="hidden absolute right-0 mt-2 w-56 bg-white border rounded-lg shadow-lg z-50">
+        <div id="userMenuDropdown"
+             class="hidden absolute right-0 mt-2 w-56 bg-white border rounded-lg shadow-lg z-50">
           <div class="px-3 py-2 text-xs text-gray-500 break-all">
-            <span>ผู้ใช้</span>: <span class="font-medium text-gray-800">{{ $username }}</span>
+            <span data-i18n="top_user">ผู้ใช้</span>:
+            <span class="font-medium text-gray-800">{{ $username }}</span>
           </div>
-          <div class="px-3 pb-2 text-[11px] text-gray-500 break-all">{{ $email }}</div>
+          <div class="px-3 pb-2 text-[11px] text-gray-500 break-all">
+            {{ $email }}
+          </div>
+
           <div class="border-t"></div>
 
-          <a href="{{ $profileUrl }}" class="block w-full px-4 py-2 text-sm hover:bg-orange-50 flex items-center gap-2">
-            <i class="bi bi-person-gear"></i><span>โปรไฟล์</span>
+          <a href="{{ $profileUrl }}"
+             class="block w-full px-4 py-2 text-sm hover:bg-orange-50 flex items-center gap-2"
+             data-i18n="top_profile">
+            <i class="bi bi-person-gear"></i>
+            <span data-i18n="label_profile">โปรไฟล์</span>
           </a>
 
           <form method="POST" action="{{ route('logout') }}">
             @csrf
-            <button type="submit" class="w-full text-left px-4 py-2 text-sm hover:bg-orange-50 flex items-center gap-2">
-              <i class="bi bi-box-arrow-right"></i><span>ออกจากระบบ</span>
+            <button type="submit"
+                    class="w-full text-left px-4 py-2 text-sm hover:bg-orange-50 flex items-center gap-2">
+              <i class="bi bi-box-arrow-right"></i>
+              <span data-i18n="top_logout">ออกจากระบบ</span>
             </button>
           </form>
         </div>
@@ -219,7 +241,7 @@
   </div>
 </header>
 
-<!-- User menu dropdown + LINE deep link -->
+<!-- User menu dropdown -->
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     // LINE deep link → เว็บ fallback
@@ -268,6 +290,7 @@
         dd?.classList.add('hidden');
         emit();
       }
+      // init
       const saved = localStorage.getItem(key);
       if (saved && label) label.textContent = saved;
       btn?.addEventListener('click', (e)=>{ e.stopPropagation(); dd?.classList.toggle('hidden'); });
@@ -291,50 +314,55 @@
 
     <!-- Brand -->
     <a href="/" class="flex items-center gap-2 min-w-0">
-      <img src="https://img2.pic.in.th/pic/image032196d0b157d229.png" alt="FLUKE" class="h-8 md:h-10 w-auto">
+      <img src="https://img2.pic.in.th/pic/image032196d0b157d229.png"
+           alt="FLUKE" class="h-8 md:h-10 w-auto" data-i18n="brand_name">
     </a>
 
     <!-- Desktop: All Categories (mega menu) -->
     <div class="hidden md:block">
       <div class="relative" aria-haspopup="true">
         <button id="toggleMegaMenu"
-                class="px-4 py-2 border rounded-lg text-sm font-medium flex items-center gap-2 hover:border-[var(--brand)] hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[var(--brand)] transition"
+                class="px-4 py-2 border rounded-lg text-sm font-medium flex items-center gap-2
+                       hover:border-[var(--brand)] hover:bg-gray-50
+                       focus:outline-none focus:ring-2 focus:ring-[var(--brand)] transition"
                 aria-expanded="false">
           <i class="bi bi-list text-lg" aria-hidden="true"></i>
-          <span>หมวดหมู่ทั้งหมด</span>
+          <span data-i18n="nav_all_categories">หมวดหมู่ทั้งหมด</span>
         </button>
 
-        <div id="megaMenu" class="hidden absolute mt-3 w-[760px] bg-white shadow-2xl rounded-xl p-6 grid grid-cols-3 gap-6 z-50" role="menu">
+        <div id="megaMenu"
+             class="hidden absolute mt-3 w-[760px] bg-white shadow-2xl rounded-xl p-6 grid grid-cols-3 gap-6 z-50"
+             role="menu">
           <!-- Column 1 -->
           <div>
-            <h4 class="text-gray-900 font-semibold mb-3 text-base border-b pb-1">เครื่องมือวัด</h4>
+            <h4 class="text-gray-900 font-semibold mb-3 text-base border-b pb-1" data-i18n="mega_measure">เครื่องมือวัด</h4>
             <ul class="space-y-2 text-sm">
-              <li><a href="{{ route('product.category', ['slug' => 'ClampMeter1']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition">แคลมป์มิเตอร์</a></li>
-              <li><a href="{{ route('product.category', ['slug' => 'Multimeters']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition">มัลติมิเตอร์</a></li>
-              <li><a href="{{ route('product.category', ['slug' => 'ElectricalTesters']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition">เครื่องทดสอบไฟฟ้า</a></li>
-              <li><a href="{{ route('product.category', ['slug' => 'InsulationTesters']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition">เครื่องวัดฉนวน</a></li>
-              <li><a href="{{ route('product.category', ['slug' => 'Thermography']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition">กล้องถ่ายภาพความร้อน</a></li>
+              <li><a href="{{ route('product.category', ['slug' => 'ClampMeter1']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition" data-i18n="cat_left_1">แคลมป์มิเตอร์</a></li>
+              <li><a href="{{ route('product.category', ['slug' => 'Multimeters']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition" data-i18n="cat_left_2">มัลติมิเตอร์</a></li>
+              <li><a href="{{ route('product.category', ['slug' => 'ElectricalTesters']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition" data-i18n="cat_left_3">เครื่องทดสอบไฟฟ้า</a></li>
+              <li><a href="{{ route('product.category', ['slug' => 'InsulationTesters']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition" data-i18n="cat_left_4">เครื่องวัดฉนวน</a></li>
+              <li><a href="{{ route('product.category', ['slug' => 'Thermography']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition" data-i18n="cat_left_5">กล้องถ่ายภาพความร้อน</a></li>
             </ul>
           </div>
 
           <!-- Column 2 -->
           <div>
-            <h4 class="text-gray-900 font-semibold mb-3 text-base border-b pb-1">กระบวนการ/สอบเทียบ</h4>
+            <h4 class="text-gray-900 font-semibold mb-3 text-base border-b pb-1" data-i18n="mega_process">กระบวนการ/สอบเทียบ</h4>
             <ul class="space-y-2 text-sm">
-              <li><a href="{{ route('product.category', ['slug' => 'LoopCalibrators']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition">เครื่องสอบเทียบลูป</a></li>
-              <li><a href="{{ route('product.category', ['slug' => 'CalibrationTools']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition">เครื่องสอบเทียบความดัน</a></li>
-              <li><a href="{{ route('product.category', ['slug' => 'Temperature']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition">เครื่องสอบเทียบอุณหภูมิ</a></li>
-              <li><a href="{{ route('product.category', ['slug' => 'ProcessCalibrators']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition">เครื่องสอบเทียบกระบวนการ</a></li>
+              <li><a href="{{ route('product.category', ['slug' => 'LoopCalibrators']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition" data-i18n="cat_left_p1">เครื่องสอบเทียบลูป</a></li>
+              <li><a href="{{ route('product.category', ['slug' => 'CalibrationTools']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition" data-i18n="cat_left_p2">เครื่องสอบเทียบความดัน</a></li>
+              <li><a href="{{ route('product.category', ['slug' => 'Temperature']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition" data-i18n="cat_left_p3">เครื่องสอบเทียบอุณหภูมิ</a></li>
+              <li><a href="{{ route('product.category', ['slug' => 'ProcessCalibrators']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition" data-i18n="cat_left_p4">เครื่องสอบเทียบกระบวนการ</a></li>
             </ul>
           </div>
 
           <!-- Column 3 -->
           <div>
-            <h4 class="text-gray-900 font-semibold mb-3 text-base border-b pb-1">อุปกรณ์เสริม</h4>
+            <h4 class="text-gray-900 font-semibold mb-3 text-base border-b pb-1" data-i18n="mega_accessories">อุปกรณ์เสริม</h4>
             <ul class="space-y-2 text-sm">
-              <li><a href="{{ route('product.category', ['slug' => 'TestLeadsProbes']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition">สายวัดและโพรบ</a></li>
-              <li><a href="{{ route('product.category', ['slug' => 'BatteriesChargers']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition">แบตเตอรี่และชาร์จ</a></li>
-              <li><a href="{{ route('product.category', ['slug' => 'ToolCases']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition">กล่องเก็บเครื่องมือ</a></li>
+              <li><a href="{{ route('product.category', ['slug' => 'TestLeadsProbes']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition" data-i18n="cat_left_a1">สายวัดและโพรบ</a></li>
+              <li><a href="{{ route('product.category', ['slug' => 'BatteriesChargers']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition" data-i18n="cat_left_a2">แบตเตอรี่และชาร์จ</a></li>
+              <li><a href="{{ route('product.category', ['slug' => 'ToolCases']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition" data-i18n="cat_left_a3">กล่องเก็บเครื่องมือ</a></li>
             </ul>
           </div>
         </div>
@@ -365,12 +393,15 @@
       <label for="globalSearch" class="sr-only">Search</label>
       <div class="relative w-full">
         <div class="flex border rounded-md bg-white w-full focus-within:ring-2 focus-within:ring-[var(--brand)]">
-          <input id="globalSearch" type="text" class="flex-1 px-3 py-2 outline-none" placeholder="คุณต้องการให้เราช่วยค้นหาอะไร" />
+          <input id="globalSearch" type="text" class="flex-1 px-3 py-2 outline-none"
+                 data-i18n="search_placeholder" data-i18n-attr="placeholder"
+                 placeholder="คุณต้องการให้เราช่วยค้นหาอะไร" />
           <button class="px-3" aria-label="Submit search">
             <i class="bi bi-search text-lg"></i>
           </button>
         </div>
-        <div id="searchResultsDesktop" class="absolute left-0 right-0 top-[calc(100%+8px)] hidden bg-white rounded-xl shadow-xl z-[60]"></div>
+        <div id="searchResultsDesktop"
+             class="absolute left-0 right-0 top-[calc(100%+8px)] hidden bg-white rounded-xl shadow-xl z-[60]"></div>
       </div>
     </div>
 
@@ -381,15 +412,18 @@
       <i class="bi bi-search text-lg"></i>
     </button>
 
+<!-- Cart (robust: Auth + session + fallback + guard) -->
 @php
-  // ===== [Blade safe] ตะกร้า: นับจำนวน =====
+  use Illuminate\Support\Facades\Auth;
+  use Illuminate\Support\Facades\DB;
+  use Illuminate\Support\Facades\Schema;
+
   $cartCount = 0;
 
-  // 1) หา uid (Auth -> session('idcustomer') -> map จาก customer_name)
-  $uid = \Illuminate\Support\Facades\Auth::id() ?? session('idcustomer');
+  $uid = Auth::id() ?? session('idcustomer');
   if (!$uid && ($name = session('customer_name'))) {
       try {
-          $uid = \Illuminate\Support\Facades\DB::table('custdetail')
+          $uid = DB::table('custdetail')
               ->where('username', $name)
               ->orWhere('idcustomer', $name)
               ->value('idcustomer');
@@ -397,22 +431,19 @@
       } catch (\Throwable $e) { /* เงียบ */ }
   }
 
-  // 2) นับจาก DB ตาม idcustomer (รองรับ cart/carts และ quantity/count)
   try {
       if ($uid) {
-          $tbl = \Illuminate\Support\Facades\Schema::hasTable('cart') ? 'cart'
-               : (\Illuminate\Support\Facades\Schema::hasTable('carts') ? 'carts' : null);
+          $tbl = Schema::hasTable('cart') ? 'cart' : (Schema::hasTable('carts') ? 'carts' : null);
           if ($tbl) {
-              if (\Illuminate\Support\Facades\Schema::hasColumn($tbl, 'quantity')) {
-                  $cartCount = (int) \Illuminate\Support\Facades\DB::table($tbl)->where('idcustomer', $uid)->sum('quantity');
+              if (Schema::hasColumn($tbl, 'quantity')) {
+                  $cartCount = (int) DB::table($tbl)->where('idcustomer', $uid)->sum('quantity');
               } else {
-                  $cartCount = (int) \Illuminate\Support\Facades\DB::table($tbl)->where('idcustomer', $uid)->count();
+                  $cartCount = (int) DB::table($tbl)->where('idcustomer', $uid)->count();
               }
           }
       }
   } catch (\Throwable $e) { /* เงียบ */ }
 
-  // 3) Fallback: session cart
   if ($cartCount === 0) {
       $sessionCart = session('cart', []);
       if (is_array($sessionCart)) {
@@ -440,12 +471,15 @@
       <label for="mobileSearchInput" class="sr-only">Search</label>
       <div class="relative w-full">
         <div class="flex border rounded-md bg-white w-full focus-within:ring-2 focus-within:ring-[var(--brand)]">
-          <input id="mobileSearchInput" type="text" class="flex-1 px-3 py-2 outline-none" placeholder="คุณต้องการให้เราช่วยค้นหาอะไร" />
+          <input id="mobileSearchInput" type="text" class="flex-1 px-3 py-2 outline-none"
+                 data-i18n="search_placeholder" data-i18n-attr="placeholder"
+                 placeholder="คุณต้องการให้เราช่วยค้นหาอะไร" />
           <button class="px-3" aria-label="Submit search">
             <i class="bi bi-search text-lg"></i>
           </button>
         </div>
-        <div id="searchResultsMobile" class="absolute left-0 right-0 top-[calc(100%+8px)] hidden bg-white rounded-xl shadow-xl z-[90]"></div>
+        <div id="searchResultsMobile"
+             class="absolute left-0 right-0 top-[calc(100%+8px)] hidden bg-white rounded-xl shadow-xl z-[90]"></div>
       </div>
     </div>
   </div>
@@ -458,7 +492,7 @@
       <div class="flex items-center justify-between p-4 border-b">
         <div class="flex items-center gap-2">
           <i class="bi bi-list"></i>
-          <span class="font-semibold">หมวดหมู่ทั้งหมด</span>
+          <span class="font-semibold" data-i18n="nav_all_categories">หมวดหมู่ทั้งหมด</span>
         </div>
         <button class="p-2 rounded-lg hover:bg-gray-100" aria-label="Close menu" data-drawer-close="#mobileMenu">
           <i class="bi bi-x-lg"></i>
@@ -591,38 +625,44 @@
 
       <div class="p-2">
         <section class="border rounded-lg mb-2 overflow-hidden">
-          <button class="w-full flex items-center justify-between px-4 py-3 text-left font-medium" data-collapse-toggle="#mgrp1" aria-expanded="false">
-            <span>เครื่องมือวัด</span><i class="bi bi-caret-down"></i>
+          <button class="w-full flex items-center justify-between px-4 py-3 text-left font-medium"
+                  data-collapse-toggle="#mgrp1" aria-expanded="false">
+            <span data-i18n="mega_measure">เครื่องมือวัด</span>
+            <i class="bi bi-caret-down"></i>
           </button>
           <ul id="mgrp1" class="hidden px-4 pb-3 text-sm space-y-2">
-            <li><a href="{{ route('product.category', ['slug' => 'ClampMeter1']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition">แคลมป์มิเตอร์</a></li>
-            <li><a href="{{ route('product.category', ['slug' => 'Multimeters']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition">มัลติมิเตอร์</a></li>
-            <li><a href="{{ route('product.category', ['slug' => 'ElectricalTesters']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition">เครื่องทดสอบไฟฟ้า</a></li>
-            <li><a href="{{ route('product.category', ['slug' => 'InsulationTesters']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition">เครื่องวัดฉนวน</a></li>
-            <li><a href="{{ route('product.category', ['slug' => 'Thermography']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition">กล้องถ่ายภาพความร้อน</a></li>
+            <li><a href="{{ route('product.category', ['slug' => 'ClampMeter1']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition" data-i18n="cat_left_1">แคลมป์มิเตอร์</a></li>
+            <li><a href="{{ route('product.category', ['slug' => 'Multimeters']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition" data-i18n="cat_left_2">มัลติมิเตอร์</a></li>
+            <li><a href="{{ route('product.category', ['slug' => 'ElectricalTesters']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition" data-i18n="cat_left_3">เครื่องทดสอบไฟฟ้า</a></li>
+            <li><a href="{{ route('product.category', ['slug' => 'InsulationTesters']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition" data-i18n="cat_left_4">เครื่องวัดฉนวน</a></li>
+            <li><a href="{{ route('product.category', ['slug' => 'Thermography']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition" data-i18n="cat_left_5">กล้องถ่ายภาพความร้อน</a></li>
           </ul>
         </section>
 
         <section class="border rounded-lg mb-2 overflow-hidden">
-          <button class="w-full flex items-center justify-between px-4 py-3 text-left font-medium" data-collapse-toggle="#mgrp2" aria-expanded="false">
-            <span>กระบวนการ/สอบเทียบ</span><i class="bi bi-caret-down"></i>
+          <button class="w-full flex items-center justify-between px-4 py-3 text-left font-medium"
+                  data-collapse-toggle="#mgrp2" aria-expanded="false">
+            <span data-i18n="mega_process">กระบวนการ/สอบเทียบ</span>
+            <i class="bi bi-caret-down"></i>
           </button>
           <ul id="mgrp2" class="hidden px-4 pb-3 text-sm space-y-2">
-            <li><a href="{{ route('product.category', ['slug' => 'LoopCalibrators']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition">เครื่องสอบเทียบลูป</a></li>
-            <li><a href="{{ route('product.category', ['slug' => 'CalibrationTools']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition">เครื่องสอบเทียบความดัน</a></li>
-            <li><a href="{{ route('product.category', ['slug' => 'Temperature']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition">เครื่องสอบเทียบอุณหภูมิ</a></li>
-            <li><a href="{{ route('product.category', ['slug' => 'ProcessCalibrators']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition">เครื่องสอบเทียบกระบวนการ</a></li>
+            <li><a href="{{ route('product.category', ['slug' => 'LoopCalibrators']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition" data-i18n="cat_left_p1">เครื่องสอบเทียบลูป</a></li>
+            <li><a href="{{ route('product.category', ['slug' => 'CalibrationTools']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition" data-i18n="cat_left_p2">เครื่องสอบเทียบความดัน</a></li>
+            <li><a href="{{ route('product.category', ['slug' => 'Temperature']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition" data-i18n="cat_left_p3">เครื่องสอบเทียบอุณหภูมิ</a></li>
+            <li><a href="{{ route('product.category', ['slug' => 'ProcessCalibrators']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition" data-i18n="cat_left_p4">เครื่องสอบเทียบกระบวนการ</a></li>
           </ul>
         </section>
 
         <section class="border rounded-lg mb-2 overflow-hidden">
-          <button class="w-full flex items-center justify-between px-4 py-3 text-left font-medium" data-collapse-toggle="#mgrp3" aria-expanded="false">
-            <span>อุปกรณ์เสริม</span><i class="bi bi-caret-down"></i>
+          <button class="w-full flex items-center justify-between px-4 py-3 text-left font-medium"
+                  data-collapse-toggle="#mgrp3" aria-expanded="false">
+            <span data-i18n="mega_accessories">อุปกรณ์เสริม</span>
+            <i class="bi bi-caret-down"></i>
           </button>
           <ul id="mgrp3" class="hidden px-4 pb-3 text-sm space-y-2">
-            <li><a href="{{ route('product.category', ['slug' => 'TestLeadsProbes']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition">สายวัดและโพรบ</a></li>
-            <li><a href="{{ route('product.category', ['slug' => 'BatteriesChargers']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition">แบตเตอรี่และชาร์จ</a></li>
-            <li><a href="{{ route('product.category', ['slug' => 'ToolCases']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition">กล่องเก็บเครื่องมือ</a></li>
+            <li><a href="{{ route('product.category', ['slug' => 'TestLeadsProbes']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition" data-i18n="cat_left_a1">สายวัดและโพรบ</a></li>
+            <li><a href="{{ route('product.category', ['slug' => 'BatteriesChargers']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition" data-i18n="cat_left_a2">แบตเตอรี่และชาร์จ</a></li>
+            <li><a href="{{ route('product.category', ['slug' => 'ToolCases']) }}" class="block hover:text-[var(--brand)] hover:pl-1 transition" data-i18n="cat_left_a3">กล่องเก็บเครื่องมือ</a></li>
           </ul>
         </section>
       </div>
@@ -630,7 +670,7 @@
   </div>
 </nav>
 
-<!-- ===== Core behaviors: Drawer / Collapse / Cart badge ===== -->
+<!-- ===== Core behaviors: Drawer / Collapse / Cart badge / PTR Fallback ===== -->
 <script>
 (function(){
   /* Drawer open/close */
@@ -875,71 +915,56 @@
       });
     })();
   })();
-</script>
 
-<!-- ✅ Pull-to-Refresh Fallback (Spinner โปร่งใส ไม่มีพื้นหลัง) -->
-<script>
-(function () {
-  var THRESHOLD = 70; // ดึงลงกี่ px ถึงจะรีเฟรช
-  var startY = 0, pulling = false, moved = 0;
-  var root = document.documentElement;
+  /* ✅ Pull-to-Refresh Fallback: ดึงลงจากขอบบน ≥ 70px → reload */
+  (function () {
+    var THRESHOLD = 70;
+    var startY = 0, pulling = false, moved = 0;
+    var root = document.documentElement;
 
-  function atTop() {
-    return (window.scrollY || root.scrollTop || document.body.scrollTop || 0) <= 0;
-  }
-
-  // Spinner โปร่งใส (ไม่มีพื้นหลัง)
-  var wrap = document.createElement('div');
-  wrap.id = 'ptrSpinner';
-  wrap.style.cssText =
-    'position:fixed;top:10px;left:50%;transform:translateX(-50%);' +
-    'z-index:9999;pointer-events:none;opacity:0;transition:opacity .15s ease, transform .15s ease;';
-
-  // SVG spinner
-  wrap.innerHTML =
-    '<svg width="28" height="28" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block">' +
-      '<circle cx="22" cy="22" r="20" stroke="currentColor" stroke-opacity=".18" stroke-width="4"/>' +
-      '<defs>' +
-        '<linearGradient id="ptr-g" x1="0" y1="0" x2="44" y2="44">' +
-          '<stop offset="0" stop-color="#ff6a00"/>' +
-          '<stop offset="1" stop-color="#ffa34d"/>' +
-        '</linearGradient>' +
-      '</defs>' +
-      '<path d="M42 22a20 20 0 0 0-20-20" stroke="url(#ptr-g)" stroke-width="4" stroke-linecap="round">' +
-        '<animateTransform attributeName="transform" type="rotate" from="0 22 22" to="360 22 22" dur="0.8s" repeatCount="indefinite"/>' +
-      '</path>' +
-    '</svg>';
-
-  document.addEventListener('DOMContentLoaded', function(){ document.body.appendChild(wrap); });
-
-  window.addEventListener('touchstart', function (e) {
-    if (!atTop()) return;
-    startY = e.touches[0].clientY;
-    pulling = true;
-    moved = 0;
-  }, { passive: true });
-
-  window.addEventListener('touchmove', function (e) {
-    if (!pulling) return;
-    moved = e.touches[0].clientY - startY;
-    if (moved > 0) {
-      wrap.style.opacity = Math.min(1, moved / THRESHOLD);
-      wrap.style.transform = 'translateX(-50%) translateY(' + Math.min(20, moved/4) + 'px)';
+    function atTop() {
+      return (window.scrollY || root.scrollTop || document.body.scrollTop || 0) <= 0;
     }
-  }, { passive: true });
 
-  window.addEventListener('touchend', function () {
-    if (!pulling) return;
-    pulling = false;
+    // === เปลี่ยนข้อความเป็น "รีโหลด" และเอาพื้นหลัง/เงาออก (ส่วนอื่นไม่ยุ่ง) ===
+    var bar = document.createElement('div');
+    bar.id = 'ptrBar';
+    bar.style.cssText =
+      'position:fixed;top:0;left:0;right:0;height:0;overflow:hidden;' +
+      'display:flex;align-items:center;justify-content:center;' +
+      'z-index:9999;transition:height .15s ease';
+    bar.style.background = 'transparent';
+    bar.style.boxShadow = 'none';
+    bar.style.padding = '8px 0';
+    bar.style.font = '500 12px system-ui';
+    bar.style.color = '#555';
 
-    if (moved >= THRESHOLD) {
-      wrap.style.opacity = 1;
-      location.reload();
-    } else {
-      wrap.style.opacity = 0;
-      wrap.style.transform = 'translateX(-50%)';
-    }
-  }, { passive: true });
+    document.addEventListener('DOMContentLoaded', function(){ document.body.appendChild(bar); });
+
+    window.addEventListener('touchstart', function (e) {
+      if (!atTop()) return;
+      startY = e.touches[0].clientY;
+      pulling = true;
+      moved = 0;
+    }, { passive: true });
+
+    window.addEventListener('touchmove', function (e) {
+      if (!pulling) return;
+      moved = e.touches[0].clientY - startY;
+      if (moved > 0) {
+        bar.style.height = Math.min(moved, THRESHOLD) + 'px';
+      }
+    }, { passive: true });
+
+    window.addEventListener('touchend', function () {
+      if (!pulling) return;
+      pulling = false;
+      if (moved >= THRESHOLD) {
+        location.reload();
+      }
+      bar.style.height = '0px';
+    }, { passive: true });
+  })();
 })();
 </script>
 
