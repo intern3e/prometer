@@ -22,15 +22,7 @@
   --bg:#f3f4f6;
   --radius:16px;
 }
-
-html, body{
-  height:100%;
-  margin:0;
-  overscroll-behavior-y:auto; /* ปล่อย native PTR ของ Chrome/Android */
-  touch-action:pan-y;          /* อนุญาตปัดแนวตั้ง */
-}
-
-html, body { height: 100%; margin: 0; overscroll-behavior-y: auto; touch-action: pan-y; }
+html, body { height: 100%; margin: 0; overscroll-behavior: none; }
 body{
   font-family:'Prompt',sans-serif;
   background:var(--bg);
@@ -1769,102 +1761,6 @@ input[type="checkbox"]{ accent-color: var(--brand); }
   })();
 })();
 </script>
-<!-- ✅ Mobile-only Pull-to-Refresh (PTR) with transparent spinner -->
-<script>
-  (function () {
-    // ทำงานเฉพาะอุปกรณ์จอสัมผัส + หน้าจอเล็ก (มือถือ/แท็บเล็ตเล็ก)
-    const isMobileTouch =
-      ('ontouchstart' in window || navigator.maxTouchPoints > 0) &&
-      matchMedia('(pointer:coarse)').matches &&
-      matchMedia('(max-width: 768px)').matches;
-  
-    if (!isMobileTouch) return;
-  
-    var THRESHOLD = 70; // ดึงลงกี่ px ถึงจะรีเฟรช
-    var startY = 0, pulling = false, moved = 0, raf = 0;
-  
-    var SCROLL_EL = document.scrollingElement || document.documentElement;
-  
-    function atTop() {
-      return (SCROLL_EL.scrollTop || window.scrollY || 0) <= 0;
-    }
-  
-    // ถ้าอยู่ใน element ที่เลื่อนภายในตัวเอง ให้ไม่ติด PTR (กันชนกับเมนู/ลิสต์ยาว)
-    function inInnerScrollable(target) {
-      var el = target;
-      while (el && el !== document.body) {
-        var cs = getComputedStyle(el);
-        var canScroll = /(auto|scroll)/.test(cs.overflowY) && el.scrollHeight > el.clientHeight;
-        if (canScroll) {
-          // ถ้ายังเลื่อนไม่สุดบนของกล่องนั้น ให้ไม่ PTR
-          if (el.scrollTop > 0) return true;
-        }
-        el = el.parentElement;
-      }
-      return false;
-    }
-  
-    // สปินเนอร์โปร่งใส (ไม่มีพื้นหลัง)
-    var wrap = document.createElement('div');
-    wrap.id = 'ptrSpinner';
-    wrap.style.cssText =
-      'position:fixed;top:10px;left:50%;transform:translateX(-50%);' +
-      'z-index:9999;pointer-events:none;opacity:0;transition:opacity .15s ease, transform .15s ease;';
-    wrap.innerHTML =
-      '<svg width="28" height="28" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block">' +
-        '<circle cx="22" cy="22" r="20" stroke="currentColor" stroke-opacity=".18" stroke-width="4"/>' +
-        '<defs>' +
-          '<linearGradient id="ptr-g" x1="0" y1="0" x2="44" y2="44">' +
-            '<stop offset="0" stop-color="#ff6a00"/>' +
-            '<stop offset="1" stop-color="#ffa34d"/>' +
-          '</linearGradient>' +
-        '</defs>' +
-        '<path d="M42 22a20 20 0 0 0-20-20" stroke="url(#ptr-g)" stroke-width="4" stroke-linecap="round">' +
-          '<animateTransform attributeName="transform" type="rotate" from="0 22 22" to="360 22 22" dur="0.8s" repeatCount="indefinite"/>' +
-        '</path>' +
-      '</svg>';
-  
-    document.addEventListener('DOMContentLoaded', function(){ document.body.appendChild(wrap); });
-  
-    window.addEventListener('touchstart', function (e) {
-      // ต้องอยู่บนสุด และไม่อยู่ในกล่องที่มีสกรอล์ภายใน
-      if (!atTop() || inInnerScrollable(e.target)) return;
-      startY = e.touches[0].clientY;
-      pulling = true;
-      moved = 0;
-    }, { passive: true });
-  
-    window.addEventListener('touchmove', function (e) {
-      if (!pulling) return;
-      moved = e.touches[0].clientY - startY;
-  
-      // ต้องเป็น "ดึงลง" เท่านั้น (ถ้าปัดขึ้นให้ยกเลิก)
-      if (moved <= 0) return;
-  
-      if (!raf) {
-        raf = requestAnimationFrame(function(){
-          raf = 0;
-          wrap.style.opacity = Math.min(1, moved / THRESHOLD);
-          wrap.style.transform = 'translateX(-50%) translateY(' + Math.min(24, moved/3) + 'px)';
-        });
-      }
-    }, { passive: true });
-  
-    window.addEventListener('touchend', function () {
-      if (!pulling) return;
-      pulling = false;
-  
-      if (moved >= THRESHOLD) {
-        wrap.style.opacity = 1;
-        // ถ้ามี PTR เนทีฟของเบราว์เซอร์อยู่แล้ว มันจะทำงานเอง
-        // ฝั่ง fallback เรารีเฟรชเอง
-        setTimeout(function(){ location.reload(); }, 0);
-      } else {
-        wrap.style.opacity = 0;
-        wrap.style.transform = 'translateX(-50%)';
-      }
-    }, { passive: true });
-  })();
-  </script>
+
 </body>
 </html>
