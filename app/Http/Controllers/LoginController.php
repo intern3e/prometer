@@ -25,7 +25,7 @@ class LoginController extends Controller
     /* -------------------- helper เติม config runtime -------------------- */
     private function bootProvider(string $provider, array $config, string $callbackPath): void
     {
-        $redirect = 'http://prometer.shop' . $callbackPath;
+        $redirect = 'http://myfluketh.com' . $callbackPath;
         \Log::info("OAuth redirect for {$provider} => {$redirect}");
         config(["services.$provider" => array_merge($config, ['redirect' => $redirect])]);
     }
@@ -35,8 +35,7 @@ class LoginController extends Controller
         $cfg = [
             'client_id'     => config('services.google.client_id'),
             'client_secret' => config('services.google.client_secret'),
-            // บังคับเป็น http://prometer.shop ตอนนี้
-            'redirect'      => 'http://prometer.shop/auth/google/callback',
+            'redirect'      => 'http://myfluketh.com/auth/google/callback',
             
         ];
         config(['services.google' => $cfg]);
