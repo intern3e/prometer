@@ -381,7 +381,6 @@ if (request('status_update') === '1') {
                     <th class="col-index">ลำดับ</th>
                     <th class="col-id">รหัสลูกค้า</th>
                     <th>ชื่อผู้ใช้</th>
-                    <th>อีเมล</th>
                     <th>รหัสผ่าน</th>
                     <th>ประเภทนิติบุคคล</th>
                     <th>ชื่อบริษัท/ร้านค้า</th>
@@ -420,15 +419,7 @@ if (request('status_update') === '1') {
                     <td class="nowrap col-index" data-label="ลำดับ">{{ $i+1 }}</td>
                     <td class="nowrap col-id" data-label="รหัสลูกค้า"><code>{{ e($u->idcustomer ?? '—') }}</code></td>
                     <td class="td-long" data-label="ชื่อผู้ใช้">{{ e($u->username ?? '—') }}</td>
-                    <td data-label="อีเมล">
-                      @if(!blank($u->email))
-                        @php
-                          $em = (string)$u->email;
-                          $emHtml = str_replace(['@', '.'], ['@<wbr>', '.<wbr>'], e($em));
-                        @endphp
-                        <a class="mail" href="mailto:{{ e($u->email) }}" title="{{ e($u->email) }}">{!! $emHtml !!}</a>
-                      @else — @endif
-                    </td>
+
                     <td data-label="รหัสผ่าน">
                       @if($pass === '')
                         — 
@@ -518,7 +509,7 @@ if (request('status_update') === '1') {
       ->limit(10000)
       ->get([
           'o.id_order','o.create_at','o.webpriceTHB','o.quantity','o.status','o.address',
-          'o.iditem','o.pic','o.name as order_name',
+          'o.iditem','o.pic','o.name as order_name','o.pay_by',
           'c.company_name','c.username','c.email_contact','c.tel_contact','c.rank_contact','c.main_namecontact',
           'c.main_address','c.main_subdistrict','c.main_district','c.main_province','c.main_postal','c.main_country',
           's.idsubaddress',
@@ -579,6 +570,15 @@ if (request('status_update') === '1') {
           $email        = trim((string)($first->sub_email_contact ?? ''));
           $tel          = trim((string)($first->sub_tel_contact ?? ''));
       }
+            // >>> หลังคำนวณ address/contact และ "ก่อน" return <<<
+      $rawPay = strtoupper(trim((string)($first->pay_by ?? '')));
+      $payMap = [
+          'COD'  => 'ชำระปลายทาง (COD)',
+          'BANK' => 'โอนผ่านบัญชีธนาคาร',
+          'CARD' => 'บัตรเครดิต/เดบิต',
+      ];
+      $payText = $payMap[$rawPay] ?? (string)($first->pay_by ?? '');
+
 
       return (object) [
           'id_order'         => $first->id_order,
@@ -592,6 +592,7 @@ if (request('status_update') === '1') {
           'status'           => $first->status,
           'items'            => $items,
           'items_count'      => count($items),
+          'pay_by'           => $payText, 
       ];
   })->values();
 
@@ -631,13 +632,17 @@ if (request('status_update') === '1') {
             <th>ยอดรวม</th>
             <th>สถานะ</th>
             <th>การทำงาน</th>
+            <th>การชำระ</th>
           </tr>
         </thead>
         <tbody>
           @forelse($orders as $o)
             <tr>
               <td class="nowrap col-index" data-label="ลำดับ">{{ $loop->iteration }}</td>
-              <td class="nowrap" data-label="เลขที่คำสั่งซื้อ"><code>{{ e($o->id_order ?? '') }}</code></td>
+              <td class="nowrap" data-label="เลขที่คำสั่งซื้อ">
+                <code class="fz-12">{{ e($o->id_order ?? '') }}</code>
+              </td>
+              
               <td class="td-long" data-label="ชื่อลูกค้า">{{ e($o->customer_name ?? '') }}</td>
               <td data-label="อีเมล">
                 @if(!blank($o->customer_email))
@@ -670,6 +675,8 @@ if (request('status_update') === '1') {
                   ดูสินค้า ({{ (int)($o->items_count ?? 0) }})
                 </button>
               </td>
+              <td class="nowrap" data-label="การชำระ">{{ e($o->pay_by ?? '—') }}</td>
+
             </tr>
           @empty
             <tr>

@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- CSRF -->
+  <!-- CSRF (เผื่อคุณมีเอ็นด์พอยต์เพิ่มตะกร้า จะได้ใช้ได้ทันที) -->
   <meta name="csrf-token" content="{{ csrf_token() }}">
 
   <!-- Fonts & Icons -->
@@ -26,20 +26,18 @@
     --bg:#f3f4f6;
     --radius:16px;
   }
-
-  /* ✅ เปิด pull-to-refresh ของเบราว์เซอร์ + ยอมให้ pan แนวตั้ง */
   html, body{
-    height:100%;
-    margin:0;
-    overscroll-behavior-y:auto;
-    touch-action:pan-y;
-  }
+  height:100%;
+  margin:0;
+  overscroll-behavior-y:auto; /* ปล่อย native PTR ของ Chrome/Android */
+  touch-action:pan-y;          /* อนุญาตปัดแนวตั้ง */
+}
 
+html, body { height: 100%; margin: 0; overscroll-behavior-y: auto; touch-action: pan-y; }
   body{ font-family:'Prompt',sans-serif; background:var(--bg); color:var(--ink); }
   .container-outer{ max-width:1200px; margin:0 auto; }
   .section-pad{ padding-left:.75rem; padding-right:.75rem; }
   @media (min-width:768px){ .section-pad{ padding-left:1rem; padding-right:1rem; } }
-
   .lift{ transition:transform .2s ease, box-shadow .2s ease; }
   .lift:hover{ transform:translateY(-2px); box-shadow:0 6px 18px rgba(0,0,0,.08); }
   .transition-fast{ transition:all .2s ease; }
@@ -104,8 +102,11 @@
 
 <!-- ===== Top utility bar (one-line on mobile) ===== -->
 <style>
+  /* ปรับให้บาร์นี้บีบตัวเองบนจอเล็ก */
   .utilbar{ font-size:12px; }
   @media (min-width:768px){ .utilbar{ font-size:13px; } }
+
+  /* ตัวช่วยตัดข้อความแบบ inline */
   .inline-clip{
     display:inline-block; max-width:100%;
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
@@ -114,26 +115,55 @@
 </style>
 
 <header class="bg-gray-100 text-gray-700 border-b utilbar">
+  <!-- flex-nowrap บังคับบรรทัดเดียวบนมือถือ / min-w-0 ช่วย truncate -->
   <div class="container-outer mx-auto section-pad py-1.5 flex items-center justify-between gap-2 flex-nowrap min-w-0">
     <!-- ซ้าย -->
     <div class="flex items-center gap-3 whitespace-nowrap shrink-0">
       <a href="tel:+66660975697"
-         class="hover:text-[var(--brand)]"
-         data-i18n="[aria-label]top_buyer_central"
-         aria-label="Buyer Central">
-        <i class="bi bi-telephone"></i> 066-097-5697
-      </a>
+      class="hover:text-[var(--brand)]"
+      data-i18n="[aria-label]top_buyer_central"
+      aria-label="Buyer Central">
+      <i class="bi bi-telephone"></i> 066-097-5697
+   </a>
+   
+   <a id="lineBtn"
+   href="line://ti/p/@543ubjtx"
+   class="hover:text-[var(--brand)]"
+   data-i18n="[aria-label]top_help"
+   aria-label="Help (LINE @543ubjtx)">
+   LINE
+</a>
 
-      <a id="lineBtn"
-         href="line://ti/p/@543ubjtx"
-         class="hover:text-[var(--brand)]"
-         data-i18n="[aria-label]top_help"
-         aria-label="Help (LINE @543ubjtx)">
-         LINE
-      </a>
-      <noscript>
-        <a href="https://line.me/R/ti/p/@543ubjtx">@543ubjtx</a>
-      </noscript>
+<script>
+(function () {
+  const deep = 'line://ti/p/@543ubjtx';
+  const web  = 'https://line.me/R/ti/p/@543ubjtx';
+
+  const btn = document.getElementById('lineBtn');
+  if (!btn) return;
+
+  btn.addEventListener('click', function (e) {
+    e.preventDefault();
+    const start = Date.now();
+    // พยายามเปิดแอป LINE
+    window.location.href = deep;
+
+    // ถ้าไม่มีแอปรองรับ ให้ดีดไปหน้าเว็บภายใน ~1.2s
+    setTimeout(function () {
+      if (Date.now() - start < 1500) {
+        window.location.href = web;
+      }
+    }, 1200);
+  }, { passive: false });
+})();
+</script>
+
+<noscript>
+  <!-- เผื่อปิด JS ไว้ จะกดไปเว็บได้ -->
+  <a href="https://line.me/R/ti/p/@543ubjtx">@543ubjtx</a>
+</noscript>
+
+
     </div>
 
     <!-- ขวา -->
@@ -165,11 +195,13 @@
 @endphp
 
 @if (!$email)
+      <!-- ปุ่ม Login/Register จะไม่ดันตกบรรทัด -->
       <a href="{{ route('login') }}" class="hover:text-[var(--brand)] shrink-0" data-i18n="top_login">เข้าสู่ระบบ</a>
       <a href="{{ route('Sign_up') }}" class="hover:text-[var(--brand)] shrink-0" data-i18n="top_join_free">สมัครสมาชิกฟรี</a>
 @else
       <!-- Desktop -->
       <div class="hidden md:flex items-center gap-2 min-w-0 whitespace-nowrap">
+        <!-- ส่วนนี้ยอมตัดชื่อ/อีเมลด้วย ... -->
         <span class="text-sm text-gray-700 truncate max-w-[360px] inline-clip" style="max-width:360px">
           <span data-i18n="top_user">ผู้ใช้</span>:
           <span class="font-medium text-gray-900 inline-clip" style="max-width:180px">{{ $username }}</span>
@@ -194,12 +226,13 @@
         </form>
       </div>
 
-      <!-- Mobile (ชิปเดียว) -->
+      <!-- Mobile (บีบให้ชิพเดียว ไม่ตกบรรทัด) -->
       <div class="relative md:hidden min-w-0">
         <button id="userMenuBtn"
                 class="flex items-center gap-1.5 px-2 py-1 rounded-lg border hover:bg-gray-50 text-gray-700 min-w-0"
                 aria-haspopup="true" aria-expanded="false" aria-controls="userMenuDropdown">
           <i class="bi bi-person-circle text-sm shrink-0"></i>
+          <!-- ชื่อจะถูกตัด ... และซ่อนอีเมล -->
           <span class="text-[12px] inline-clip" style="max-width:110px">
             {{ \Illuminate\Support\Str::limit($username, 18, '…') }}
           </span>
@@ -241,64 +274,29 @@
   </div>
 </header>
 
-<!-- User menu dropdown -->
+
+    </div>
+  </div>
+</header>
+
 <script>
   document.addEventListener('DOMContentLoaded', () => {
-    // LINE deep link → เว็บ fallback
-    (function () {
-      const deep = 'line://ti/p/@543ubjtx';
-      const web  = 'https://line.me/R/ti/p/@543ubjtx';
-      const btn = document.getElementById('lineBtn');
-      if (!btn) return;
-      btn.addEventListener('click', function (e) {
-        e.preventDefault();
-        const start = Date.now();
-        window.location.href = deep;
-        setTimeout(function () {
-          if (Date.now() - start < 1500) window.location.href = web;
-        }, 1200);
-      }, { passive: false });
-    })();
-
-    // User dropdown
     const btn = document.getElementById('userMenuBtn');
     const dd  = document.getElementById('userMenuDropdown');
-    if (btn && dd){
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        dd.classList.toggle('hidden');
-        btn.setAttribute('aria-expanded', dd.classList.contains('hidden') ? 'false' : 'true');
-      });
-      document.addEventListener('click', (e) => {
-        if (!dd.contains(e.target) && !btn.contains(e.target)) {
-          dd.classList.add('hidden');
-          btn.setAttribute('aria-expanded', 'false');
-        }
-      });
-    }
+    if (!btn || !dd) return;
 
-    // Language dropdown + persist
-    (function(){
-      const btn = document.getElementById('currentLangBtn');
-      const dd  = document.getElementById('langDropdown');
-      const label = document.getElementById('currentLangLabel');
-      const key = 'site_lang';
-      const emit = () => window.dispatchEvent(new CustomEvent('site_lang_changed'));
-      function setLang(lang){
-        localStorage.setItem(key, lang);
-        if (label) label.textContent = lang;
-        dd?.classList.add('hidden');
-        emit();
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dd.classList.toggle('hidden');
+      btn.setAttribute('aria-expanded', dd.classList.contains('hidden') ? 'false' : 'true');
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!dd.contains(e.target) && !btn.contains(e.target)) {
+        dd.classList.add('hidden');
+        btn.setAttribute('aria-expanded', 'false');
       }
-      // init
-      const saved = localStorage.getItem(key);
-      if (saved && label) label.textContent = saved;
-      btn?.addEventListener('click', (e)=>{ e.stopPropagation(); dd?.classList.toggle('hidden'); });
-      document.addEventListener('click', ()=> dd?.classList.add('hidden'));
-      dd?.querySelectorAll('.lang-item').forEach(x => {
-        x.addEventListener('click', ()=> setLang(x.dataset.lang));
-      });
-    })();
+    });
   });
 </script>
 
@@ -314,9 +312,11 @@
 
     <!-- Brand -->
     <a href="/" class="flex items-center gap-2 min-w-0">
-      <img src="https://img2.pic.in.th/pic/image032196d0b157d229.png"
-           alt="FLUKE" class="h-8 md:h-10 w-auto" data-i18n="brand_name">
-    </a>
+          <img src="https://img2.pic.in.th/pic/image032196d0b157d229.png" 
+              alt="FLUKE" 
+              class="h-8 md:h-10 w-auto" 
+              data-i18n="brand_name">
+        </a>
 
     <!-- Desktop: All Categories (mega menu) -->
     <div class="hidden md:block">
@@ -370,7 +370,6 @@
     </div>
 
     <script>
-      // Desktop mega menu
       const toggleBtn = document.getElementById('toggleMegaMenu');
       const megaMenu = document.getElementById('megaMenu');
       if (toggleBtn && megaMenu) {
@@ -420,6 +419,7 @@
 
   $cartCount = 0;
 
+  // 1) หา uid (Auth -> session('idcustomer') -> map จาก customer_name)
   $uid = Auth::id() ?? session('idcustomer');
   if (!$uid && ($name = session('customer_name'))) {
       try {
@@ -431,6 +431,7 @@
       } catch (\Throwable $e) { /* เงียบ */ }
   }
 
+  // 2) นับจาก DB ตาม idcustomer (รองรับ cart/carts และ quantity/count)
   try {
       if ($uid) {
           $tbl = Schema::hasTable('cart') ? 'cart' : (Schema::hasTable('carts') ? 'carts' : null);
@@ -444,6 +445,7 @@
       }
   } catch (\Throwable $e) { /* เงียบ */ }
 
+  // 3) Fallback: session cart
   if ($cartCount === 0) {
       $sessionCart = session('cart', []);
       if (is_array($sessionCart)) {
@@ -452,16 +454,258 @@
   }
 @endphp
 
-    <a href="{{ url('cart') }}" class="nav-cart relative text-gray-700 hover:text-[var(--brand,#ff6a00)] ml-1" aria-label="cart">
-      <i class="bi bi-cart text-2xl"></i>
-      <span
-        id="cartCountDb"
-        data-cart-badge
-        data-count="{{ $cartCount }}"
-        aria-live="polite" aria-atomic="true"
-        class="absolute -top-2 -right-2 bg-[var(--brand,#ff6a00)] text-white text-xs rounded-full min-w-5 h-5 px-1 flex items-center justify-center"
-        style="z-index:60">{{ $cartCount }}</span>
-    </a>
+<a href="{{ url('cart') }}" class="nav-cart relative text-gray-700 hover:text-[var(--brand,#ff6a00)] ml-1" aria-label="cart">
+  <i class="bi bi-cart text-2xl"></i>
+  <span
+    id="cartCountDb"
+    data-cart-badge
+    data-count="{{ $cartCount }}"
+    aria-live="polite" aria-atomic="true"
+    class="absolute -top-2 -right-2 bg-[var(--brand,#ff6a00)] text-white text-xs rounded-full min-w-5 h-5 px-1 flex items-center justify-center"
+    style="z-index:60">{{ $cartCount }}</span>
+</a>
+
+<style>
+@keyframes cartPop { 0%{transform:scale(1)} 50%{transform:scale(1.15)} 100%{transform:scale(1)} }
+.cart-pop { animation: cartPop .3s ease; }
+</style>
+
+<script>
+(function(){
+  // ================= Config =================
+  // ระบุ pattern ของ endpoint เพิ่มสินค้าตะกร้าที่หน้าอื่นอาจเรียกใช้อยู่
+  // เติมลิสต์คำที่เจอบ่อย ๆ ไว้แล้ว เช่น /cart/add, /add-to-cart
+  const CART_MATCH = /(\/cart\/add|\/add-?to-?cart)/i;
+
+  // ================ Badge ===================
+  const BADGES = Array.from(document.querySelectorAll('[data-cart-badge], #cartCountDb'));
+  if (!BADGES.length) return;
+
+  const toInt = (v, d=0) => { const n = parseInt(v,10); return Number.isFinite(n) ? n : d; };
+
+  const get = () =>
+    BADGES.reduce((m, b) => Math.max(m, toInt(b.dataset.count ?? b.textContent ?? '0', 0)), 0);
+
+  const setAll = (n, {pop=true} = {}) => {
+    const v = String(Math.max(0, toInt(n, 0)));
+    BADGES.forEach(b => {
+      b.dataset.count = v;
+      if (b.textContent !== v) {
+        b.textContent = v;
+        if (pop) { b.classList.remove('cart-pop'); void b.offsetWidth; b.classList.add('cart-pop'); }
+      }
+    });
+    window.dispatchEvent(new CustomEvent('cart:count:changed', { detail: { count: toInt(v,0) } }));
+  };
+
+  // ================ Public API ==============
+  window.setCartCount  = (n, opts={}) => setAll(n, opts);
+  window.bumpCartCount = (delta=1) => setAll(Math.max(0, get() + toInt(delta,0)));
+  window.cartAdded     = (qty=1) => window.bumpCartCount(qty); // เผื่อเรียกเองจากโค้ดอื่น
+
+  // ============== Smart Auto-bind ===========
+  const findQtyNear = (btn) => {
+    const scope = btn.closest('[data-product], [data-card], .product, .card, .item, form') || document;
+    const qEl = btn.getAttribute('data-qty') ? null :
+      scope.querySelector('[data-qty-input], input[name="quantity"], input.qty, .qty input');
+    return toInt(btn.getAttribute('data-qty') ?? (qEl ? qEl.value : 1), 1);
+  };
+
+  const extractIdFrom = (el) => {
+    const direct = el.getAttribute('data-iditem') ?? el.dataset.id ?? el.value ?? '';
+    if (direct) return String(direct).trim();
+    const scope = el.closest('[data-product], [data-card], .product, .card, .item, form') || document;
+    const holder =
+      scope.querySelector('[data-iditem], [data-product-id], [data-id]') ||
+      scope.querySelector('input[name="iditem"], input[name="product_id"], input[name="id"]');
+    if (holder) {
+      const v = holder.getAttribute('data-iditem') ?? holder.getAttribute('data-product-id') ?? holder.getAttribute('data-id') ?? holder.value;
+      if (v) return String(v).trim();
+    }
+    const a = el.closest('a[href]');
+    if (a) {
+      try {
+        const u = new URL(a.href, location.origin);
+        const q = u.searchParams.get('iditem') || u.searchParams.get('id');
+        if (q) return String(q).trim();
+      } catch {}
+    }
+    return '';
+  };
+
+  const extractApiFrom = (el) => {
+    const api = el.getAttribute('data-api');
+    if (api) return api;
+    const a = el.closest('a[href]');
+    if (a && CART_MATCH.test(a.getAttribute('href'))) return a.href;
+    const form = el.closest('form[action]');
+    if (form && CART_MATCH.test(form.getAttribute('action'))) return form.getAttribute('action');
+    return null;
+  };
+
+  const extractMethodFrom = (el) => {
+    const m = (el.getAttribute('data-method') || '').toUpperCase();
+    if (m) return m;
+    const form = el.closest('form');
+    if (form && form.method) return form.method.toUpperCase();
+    return 'POST';
+  };
+
+  // คลิก (ใช้ capture เพื่อชนะสคริปต์ที่ stopPropagation)
+  document.addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-add-to-cart], .add-to-cart, a[href*="/cart/add"], a[href*="add-to-cart"]');
+    if (!btn) return;
+    e.preventDefault();
+
+    const id     = extractIdFrom(btn); // ไม่มี id ก็ยังเด้งเลขได้
+    const qty    = findQtyNear(btn);
+    const api    = extractApiFrom(btn);
+    const method = extractMethodFrom(btn);
+
+    await window.cartAdd(id, qty, api ? { api, method } : {});
+  }, true); // <= capture true
+
+  // submit form (capture true)
+  document.addEventListener('submit', async (e) => {
+    const form = e.target.closest('form');
+    if (!form) return;
+    const action = form.getAttribute('action') || '';
+    const marked = form.matches('[data-add-to-cart-form]');
+    if (!marked && !CART_MATCH.test(action)) return;
+
+    e.preventDefault();
+
+    const idInput = form.querySelector('input[name="iditem"], input[name="product_id"], input[name="id"]');
+    const qtyInput= form.querySelector('[data-qty-input], input[name="quantity"], input.qty, .qty input');
+
+    const id     = idInput?.value || '';
+    const qty    = toInt(qtyInput?.value ?? 1, 1);
+    const api    = action || null;
+    const method = (form.method || 'POST').toUpperCase();
+
+    await window.cartAdd(id, qty, api ? { api, method } : {});
+  }, true);
+
+  // =========== Intercept fetch / XHR =========
+  // ครอบ fetch เพื่อดักการเรียก /cart/add ของสคริปต์อื่น ๆ
+  if (!window.__cartFetchPatched) {
+    window.__cartFetchPatched = true;
+    const _fetch = window.fetch;
+    window.fetch = async function(input, init={}) {
+      const url = (typeof input === 'string') ? input : (input?.url || '');
+      const method = (init?.method || (typeof input !== 'string' ? input.method : 'GET') || 'GET').toUpperCase();
+      const isCartAdd = CART_MATCH.test(url);
+
+      // เริ่ม: ถ้าเป็น add → optimistic (+1 ถ้าเดา qty ไม่ได้)
+      let guessedQty = 1;
+      if (isCartAdd) {
+        try {
+          if (init && init.body && typeof init.body === 'string' && init.headers && /json/i.test(init.headers['Content-Type'] || init.headers['content-type'] || '')) {
+            const j = JSON.parse(init.body); guessedQty = toInt(j.quantity ?? j.qty ?? 1, 1);
+          }
+        } catch {}
+        window.cartAdded(guessedQty);
+      }
+
+      const res = await _fetch(input, init);
+      if (isCartAdd) {
+        try {
+          // พยายามอ่าน count จากผลลัพธ์
+          const clone = res.clone();
+          const type = clone.headers.get('content-type') || '';
+          if (/application\/json/i.test(type)) {
+            const data = await clone.json();
+            if (typeof data?.count !== 'undefined') window.setCartCount(data.count);
+          }
+        } catch {}
+      }
+      return res;
+    };
+  }
+
+  // ครอบ XMLHttpRequest เช่นกัน
+  if (!window.__cartXHRPatched) {
+    window.__cartXHRPatched = true;
+    const _open = XMLHttpRequest.prototype.open;
+    const _send = XMLHttpRequest.prototype.send;
+    XMLHttpRequest.prototype.open = function(method, url, async, user, password) {
+      this.__cart_isAdd = CART_MATCH.test(url || '');
+      this.__cart_method = (method || 'GET').toUpperCase();
+      return _open.apply(this, arguments);
+    };
+    XMLHttpRequest.prototype.send = function(body) {
+      if (this.__cart_isAdd) {
+        let guessedQty = 1;
+        try {
+          if (typeof body === 'string') {
+            // ลองเดาจาก JSON
+            const j = JSON.parse(body);
+            guessedQty = toInt(j.quantity ?? j.qty ?? 1, 1);
+          }
+        } catch {}
+        window.cartAdded(guessedQty);
+
+        this.addEventListener('load', () => {
+          try {
+            const type = this.getResponseHeader('content-type') || '';
+            if (/application\/json/i.test(type)) {
+              const data = JSON.parse(this.responseText);
+              if (typeof data?.count !== 'undefined') window.setCartCount(data.count);
+            }
+          } catch {}
+        });
+      }
+      return _send.apply(this, arguments);
+    };
+  }
+
+  // ============== cartAdd core =============
+  window.cartAdd = async function(iditem, qty=1, options={}) {
+    const q  = Math.max(1, toInt(qty, 1));
+    const id = (iditem ?? '').toString().trim();
+
+    // optimistic
+    window.cartAdded(q);
+
+    const api    = options.api || null;
+    const method = (options.method || 'POST').toUpperCase();
+    if (!api) return;
+
+    try {
+      const token  = document.querySelector('meta[name="csrf-token"]')?.content;
+      const payload = method === 'GET' ? undefined : JSON.stringify({ iditem: id, quantity: q });
+
+      const res = await fetch(api, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          ...(token ? { 'X-CSRF-TOKEN': token } : {})
+        },
+        body: payload
+      });
+
+      // (fetch ถูกครอบด้านบนไว้อยู่แล้ว จะ sync count ให้อัตโนมัติถ้ามี)
+      // เผื่อ API ไม่คืน JSON → ไม่เป็นไร คงค่า optimistic
+      return res;
+    } catch (e) {
+      // ล้มเหลว: คงค่า optimistic ไว้
+      return null;
+    }
+  };
+
+  // เริ่มต้นจัดค่าให้ตรงกับ SSR
+  setAll(get(), {pop:false});
+
+  // กันสคริปต์อื่นเขียนทับ textContent
+  BADGES.forEach(badge => {
+    new MutationObserver(() => {
+      const v = String(badge.dataset.count ?? '0');
+      if (badge.textContent !== v) badge.textContent = v;
+    }).observe(badge, { childList: true, characterData: true, subtree: true });
+  });
+})();
+</script>
 
   </div>
 
@@ -669,304 +913,103 @@
     </aside>
   </div>
 </nav>
-
-<!-- ===== Core behaviors: Drawer / Collapse / Cart badge / PTR Fallback ===== -->
+<!-- ✅ Mobile-only Pull-to-Refresh (PTR) with transparent spinner -->
 <script>
-(function(){
-  /* Drawer open/close */
-  document.addEventListener('click', function(e){
-    const opener = e.target.closest('[data-drawer-toggle]');
-    if (opener){
-      const sel = opener.getAttribute('data-drawer-toggle');
-      const panel = document.querySelector(sel);
-      if (!panel) return;
-      panel.classList.remove('hidden');
-      const aside = panel.querySelector('aside');
-      aside && (aside.style.transform = 'translateX(0)');
-      opener.setAttribute('aria-expanded', 'true');
-    }
-    const closer = e.target.closest('[data-drawer-close]');
-    if (closer){
-      const sel = closer.getAttribute('data-drawer-close');
-      const panel = document.querySelector(sel);
-      if (!panel) return;
-      const aside = panel.querySelector('aside');
-      if (aside) aside.style.transform = 'translateX(100%)';
-      setTimeout(()=> panel.classList.add('hidden'), 180);
-      const openerBtn = document.querySelector(`[data-drawer-toggle="${sel}"]`);
-      openerBtn && openerBtn.setAttribute('aria-expanded','false');
-    }
-  });
-
-  /* Collapse toggle (mobile search & accordions) */
-  document.addEventListener('click', function(e){
-    const btn = e.target.closest('[data-collapse-toggle]');
-    if (!btn) return;
-    const sel = btn.getAttribute('data-collapse-toggle');
-    const el  = document.querySelector(sel);
-    if (!el) return;
-    const show = el.classList.contains('hidden');
-    el.classList.toggle('hidden');
-    btn.setAttribute('aria-expanded', show ? 'true' : 'false');
-  });
-
-  /* Cart badge utilities + auto-bind */
-  (function(){
-    const CART_MATCH = /(\/cart\/add|\/add-?to-?cart)/i;
-    const BADGES = Array.from(document.querySelectorAll('[data-cart-badge], #cartCountDb'));
-    if (!BADGES.length) return;
-
-    const toInt = (v, d=0) => { const n = parseInt(v,10); return Number.isFinite(n) ? n : d; };
-    const get = () =>
-      BADGES.reduce((m, b) => Math.max(m, toInt(b.dataset.count ?? b.textContent ?? '0', 0)), 0);
-
-    const setAll = (n, {pop=true} = {}) => {
-      const v = String(Math.max(0, toInt(n, 0)));
-      BADGES.forEach(b => {
-        b.dataset.count = v;
-        if (b.textContent !== v) {
-          b.textContent = v;
-          if (pop) { b.classList.remove('cart-pop'); void b.offsetWidth; b.classList.add('cart-pop'); }
-        }
-      });
-      window.dispatchEvent(new CustomEvent('cart:count:changed', { detail: { count: toInt(v,0) } }));
-    };
-
-    window.setCartCount  = (n, opts={}) => setAll(n, opts);
-    window.bumpCartCount = (delta=1) => setAll(Math.max(0, get() + toInt(delta,0)));
-    window.cartAdded     = (qty=1) => window.bumpCartCount(qty);
-
-    const findQtyNear = (btn) => {
-      const scope = btn.closest('[data-product], [data-card], .product, .card, .item, form') || document;
-      const qEl = btn.getAttribute('data-qty') ? null :
-        scope.querySelector('[data-qty-input], input[name="quantity"], input.qty, .qty input');
-      return toInt(btn.getAttribute('data-qty') ?? (qEl ? qEl.value : 1), 1);
-    };
-
-    const extractIdFrom = (el) => {
-      const direct = el.getAttribute('data-iditem') ?? el.dataset.id ?? el.value ?? '';
-      if (direct) return String(direct).trim();
-      const scope = el.closest('[data-product], [data-card], .product, .card, .item, form') || document;
-      const holder =
-        scope.querySelector('[data-iditem], [data-product-id], [data-id]') ||
-        scope.querySelector('input[name="iditem"], input[name="product_id"], input[name="id"]');
-      if (holder) {
-        const v = holder.getAttribute('data-iditem') ?? holder.getAttribute('data-product-id') ?? holder.getAttribute('data-id') ?? holder.value;
-        if (v) return String(v).trim();
-      }
-      const a = el.closest('a[href]');
-      if (a) {
-        try {
-          const u = new URL(a.href, location.origin);
-          const q = u.searchParams.get('iditem') || u.searchParams.get('id');
-          if (q) return String(q).trim();
-        } catch {}
-      }
-      return '';
-    };
-
-    const extractApiFrom = (el) => {
-      const api = el.getAttribute('data-api');
-      if (api) return api;
-      const a = el.closest('a[href]');
-      if (a && CART_MATCH.test(a.getAttribute('href'))) return a.href;
-      const form = el.closest('form[action]');
-      if (form && CART_MATCH.test(form.getAttribute('action'))) return form.getAttribute('action');
-      return null;
-    };
-
-    const extractMethodFrom = (el) => {
-      const m = (el.getAttribute('data-method') || '').toUpperCase();
-      if (m) return m;
-      const form = el.closest('form');
-      if (form && form.method) return form.method.toUpperCase();
-      return 'POST';
-    };
-
-    document.addEventListener('click', async (e) => {
-      const btn = e.target.closest('[data-add-to-cart], .add-to-cart, a[href*="/cart/add"], a[href*="add-to-cart"]');
-      if (!btn) return;
-      e.preventDefault();
-      const id     = extractIdFrom(btn);
-      const qty    = findQtyNear(btn);
-      const api    = extractApiFrom(btn);
-      const method = extractMethodFrom(btn);
-      await window.cartAdd(id, qty, api ? { api, method } : {});
-    }, true);
-
-    document.addEventListener('submit', async (e) => {
-      const form = e.target.closest('form');
-      if (!form) return;
-      const action = form.getAttribute('action') || '';
-      const marked = form.matches('[data-add-to-cart-form]');
-      if (!marked && !CART_MATCH.test(action)) return;
-      e.preventDefault();
-      const idInput = form.querySelector('input[name="iditem"], input[name="product_id"], input[name="id"]');
-      const qtyInput= form.querySelector('[data-qty-input], input[name="quantity"], input.qty, .qty input');
-      const id     = idInput?.value || '';
-      const qty    = parseInt(qtyInput?.value ?? 1, 10) || 1;
-      const api    = action || null;
-      const method = (form.method || 'POST').toUpperCase();
-      await window.cartAdd(id, qty, api ? { api, method } : {});
-    }, true);
-
-    if (!window.__cartFetchPatched) {
-      window.__cartFetchPatched = true;
-      const _fetch = window.fetch;
-      window.fetch = async function(input, init={}) {
-        const url = (typeof input === 'string') ? input : (input?.url || '');
-        const method = (init?.method || (typeof input !== 'string' ? input.method : 'GET') || 'GET').toUpperCase();
-        const isCartAdd = CART_MATCH.test(url);
-
-        let guessedQty = 1;
-        if (isCartAdd) {
-          try {
-            if (init && init.body && typeof init.body === 'string' && init.headers && /json/i.test(init.headers['Content-Type'] || init.headers['content-type'] || '')) {
-              const j = JSON.parse(init.body); guessedQty = parseInt(j.quantity ?? j.qty ?? 1,10) || 1;
-            }
-          } catch {}
-          window.cartAdded(guessedQty);
-        }
-
-        const res = await _fetch(input, init);
-        if (isCartAdd) {
-          try {
-            const clone = res.clone();
-            const type = clone.headers.get('content-type') || '';
-            if (/application\/json/i.test(type)) {
-              const data = await clone.json();
-              if (typeof data?.count !== 'undefined') window.setCartCount(data.count);
-            }
-          } catch {}
-        }
-        return res;
-      };
-    }
-
-    if (!window.__cartXHRPatched) {
-      window.__cartXHRPatched = true;
-      const _open = XMLHttpRequest.prototype.open;
-      const _send = XMLHttpRequest.prototype.send;
-      XMLHttpRequest.prototype.open = function(method, url, async, user, password) {
-        this.__cart_isAdd = /(\/cart\/add|\/add-?to-?cart)/i.test(url || '');
-        this.__cart_method = (method || 'GET').toUpperCase();
-        return _open.apply(this, arguments);
-      };
-      XMLHttpRequest.prototype.send = function(body) {
-        if (this.__cart_isAdd) {
-          let guessedQty = 1;
-          try {
-            if (typeof body === 'string') {
-              const j = JSON.parse(body);
-              guessedQty = parseInt(j.quantity ?? j.qty ?? 1,10) || 1;
-            }
-          } catch {}
-          window.cartAdded(guessedQty);
-          this.addEventListener('load', () => {
-            try {
-              const type = this.getResponseHeader('content-type') || '';
-              if (/application\/json/i.test(type)) {
-                const data = JSON.parse(this.responseText);
-                if (typeof data?.count !== 'undefined') window.setCartCount(data.count);
-              }
-            } catch {}
-          });
-        }
-        return _send.apply(this, arguments);
-      };
-    }
-
-    window.cartAdd = async function(iditem, qty=1, options={}) {
-      const q  = Math.max(1, parseInt(qty,10) || 1);
-      const id = (iditem ?? '').toString().trim();
-      window.cartAdded(q);
-      const api    = options.api || null;
-      const method = (options.method || 'POST').toUpperCase();
-      if (!api) return;
-      try {
-        const token  = document.querySelector('meta[name="csrf-token"]')?.content;
-        const payload = method === 'GET' ? undefined : JSON.stringify({ iditem: id, quantity: q });
-        const res = await fetch(api, {
-          method,
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-            ...(token ? { 'X-CSRF-TOKEN': token } : {})
-          },
-          body: payload
-        });
-        return res; // count sync ผ่าน fetch patch แล้ว
-      } catch (e) {
-        return null;
-      }
-    };
-
-    // sync badge text กับ SSR ค่าแรก
-    (function syncInit(){
-      const BADGES = document.querySelectorAll('[data-cart-badge], #cartCountDb');
-      let v = 0;
-      BADGES.forEach(b => { v = Math.max(v, parseInt(b.dataset.count ?? b.textContent ?? '0',10) || 0); });
-      window.setCartCount(v, {pop:false});
-      BADGES.forEach(badge => {
-        new MutationObserver(() => {
-          const v = String(badge.dataset.count ?? '0');
-          if (badge.textContent !== v) badge.textContent = v;
-        }).observe(badge, { childList: true, characterData: true, subtree: true });
-      });
-    })();
-  })();
-
-  /* ✅ Pull-to-Refresh Fallback: ดึงลงจากขอบบน ≥ 70px → reload */
   (function () {
-    var THRESHOLD = 70;
-    var startY = 0, pulling = false, moved = 0;
-    var root = document.documentElement;
-
+    // ทำงานเฉพาะอุปกรณ์จอสัมผัส + หน้าจอเล็ก (มือถือ/แท็บเล็ตเล็ก)
+    const isMobileTouch =
+      ('ontouchstart' in window || navigator.maxTouchPoints > 0) &&
+      matchMedia('(pointer:coarse)').matches &&
+      matchMedia('(max-width: 768px)').matches;
+  
+    if (!isMobileTouch) return;
+  
+    var THRESHOLD = 70; // ดึงลงกี่ px ถึงจะรีเฟรช
+    var startY = 0, pulling = false, moved = 0, raf = 0;
+  
+    var SCROLL_EL = document.scrollingElement || document.documentElement;
+  
     function atTop() {
-      return (window.scrollY || root.scrollTop || document.body.scrollTop || 0) <= 0;
+      return (SCROLL_EL.scrollTop || window.scrollY || 0) <= 0;
     }
-
-    // === เปลี่ยนข้อความเป็น "รีโหลด" และเอาพื้นหลัง/เงาออก (ส่วนอื่นไม่ยุ่ง) ===
-    var bar = document.createElement('div');
-    bar.id = 'ptrBar';
-    bar.style.cssText =
-      'position:fixed;top:0;left:0;right:0;height:0;overflow:hidden;' +
-      'display:flex;align-items:center;justify-content:center;' +
-      'z-index:9999;transition:height .15s ease';
-    bar.style.background = 'transparent';
-    bar.style.boxShadow = 'none';
-    bar.style.padding = '8px 0';
-    bar.style.font = '500 12px system-ui';
-    bar.style.color = '#555';
-
-    document.addEventListener('DOMContentLoaded', function(){ document.body.appendChild(bar); });
-
+  
+    // ถ้าอยู่ใน element ที่เลื่อนภายในตัวเอง ให้ไม่ติด PTR (กันชนกับเมนู/ลิสต์ยาว)
+    function inInnerScrollable(target) {
+      var el = target;
+      while (el && el !== document.body) {
+        var cs = getComputedStyle(el);
+        var canScroll = /(auto|scroll)/.test(cs.overflowY) && el.scrollHeight > el.clientHeight;
+        if (canScroll) {
+          // ถ้ายังเลื่อนไม่สุดบนของกล่องนั้น ให้ไม่ PTR
+          if (el.scrollTop > 0) return true;
+        }
+        el = el.parentElement;
+      }
+      return false;
+    }
+  
+    // สปินเนอร์โปร่งใส (ไม่มีพื้นหลัง)
+    var wrap = document.createElement('div');
+    wrap.id = 'ptrSpinner';
+    wrap.style.cssText =
+      'position:fixed;top:10px;left:50%;transform:translateX(-50%);' +
+      'z-index:9999;pointer-events:none;opacity:0;transition:opacity .15s ease, transform .15s ease;';
+    wrap.innerHTML =
+      '<svg width="28" height="28" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block">' +
+        '<circle cx="22" cy="22" r="20" stroke="currentColor" stroke-opacity=".18" stroke-width="4"/>' +
+        '<defs>' +
+          '<linearGradient id="ptr-g" x1="0" y1="0" x2="44" y2="44">' +
+            '<stop offset="0" stop-color="#ff6a00"/>' +
+            '<stop offset="1" stop-color="#ffa34d"/>' +
+          '</linearGradient>' +
+        '</defs>' +
+        '<path d="M42 22a20 20 0 0 0-20-20" stroke="url(#ptr-g)" stroke-width="4" stroke-linecap="round">' +
+          '<animateTransform attributeName="transform" type="rotate" from="0 22 22" to="360 22 22" dur="0.8s" repeatCount="indefinite"/>' +
+        '</path>' +
+      '</svg>';
+  
+    document.addEventListener('DOMContentLoaded', function(){ document.body.appendChild(wrap); });
+  
     window.addEventListener('touchstart', function (e) {
-      if (!atTop()) return;
+      // ต้องอยู่บนสุด และไม่อยู่ในกล่องที่มีสกรอล์ภายใน
+      if (!atTop() || inInnerScrollable(e.target)) return;
       startY = e.touches[0].clientY;
       pulling = true;
       moved = 0;
     }, { passive: true });
-
+  
     window.addEventListener('touchmove', function (e) {
       if (!pulling) return;
       moved = e.touches[0].clientY - startY;
-      if (moved > 0) {
-        bar.style.height = Math.min(moved, THRESHOLD) + 'px';
+  
+      // ต้องเป็น "ดึงลง" เท่านั้น (ถ้าปัดขึ้นให้ยกเลิก)
+      if (moved <= 0) return;
+  
+      if (!raf) {
+        raf = requestAnimationFrame(function(){
+          raf = 0;
+          wrap.style.opacity = Math.min(1, moved / THRESHOLD);
+          wrap.style.transform = 'translateX(-50%) translateY(' + Math.min(24, moved/3) + 'px)';
+        });
       }
     }, { passive: true });
-
+  
     window.addEventListener('touchend', function () {
       if (!pulling) return;
       pulling = false;
+  
       if (moved >= THRESHOLD) {
-        location.reload();
+        wrap.style.opacity = 1;
+        // ถ้ามี PTR เนทีฟของเบราว์เซอร์อยู่แล้ว มันจะทำงานเอง
+        // ฝั่ง fallback เรารีเฟรชเอง
+        setTimeout(function(){ location.reload(); }, 0);
+      } else {
+        wrap.style.opacity = 0;
+        wrap.style.transform = 'translateX(-50%)';
       }
-      bar.style.height = '0px';
     }, { passive: true });
   })();
-})();
-</script>
-
+  </script>
+  
 </body>
 </html>

@@ -283,7 +283,15 @@
               <div class="list-row">
                 <div>
                   <div><strong data-i18n="default_address">ที่อยู่เริ่มต้น</strong></div>
-                  <div><h3><span data-i18n="company_prefix">บริษัท :</span> {{ $custdetail->company_name ?? '—' }}</h3></div>
+                  <div>
+                    <h3>
+                      <span data-i18n="company_prefix">บริษัท :</span>
+                      {{ (strtolower($custdetail->typecust ?? '') === 'company' && filled($custdetail->company_name))
+                          ? $custdetail->company_name
+                          : '-' }}
+                    </h3>
+                  </div>
+                  
                   <div class="muted text-sm">{{ $ship !== '' ? e($ship) : '—' }}</div>
                 </div>
               </div>
@@ -326,12 +334,41 @@
             <div class="card section">
               <div class="title" data-i18n="company_info">ข้อมูลบริษัท</div>
               <div id="companyInfo" class="ci-list">
-                <div class="list-row"><div class="k" data-i18n="registered_name">ชื่อบริษัท (ตามจดทะเบียน)</div><div class="v" data-field="registered_name">{{ $custdetail->typecust === 'company' ? ($custdetail->company_name ?? '—') : '—' }}</div></div>
-                <div class="list-row"><div class="k" data-i18n="entity_type">ประเภทนิติบุคคล</div><div class="v" data-field="entity_type">{{ $custdetail->Legalentity_type ?? '—' }}</div></div>
+                <div class="list-row">
+                  <div class="k" data-i18n="registered_name">ชื่อบริษัท (ตามจดทะเบียน)</div>
+                  <div class="v" data-field="registered_name">
+                    {{ filled(data_get($custdetail, 'company_name')) ? $custdetail->company_name : '—' }}
+                  </div>
+                </div>
+                
+                @php
+                // map โค้ดจาก DB -> ป้ายภาษาไทย + key แปล i18n (เผื่อใช้)
+                $entityMap = [
+                  'limited'      => ['text' => 'บริษัทจำกัด',   'i18n' => 'opt_ltd'],
+                  'public'       => ['text' => 'บริษัทมหาชน',   'i18n' => 'opt_public'],
+                  'partnership'  => ['text' => 'ห้างหุ้นส่วน',   'i18n' => 'opt_partnership'],
+                  'other'        => ['text' => 'อื่นๆ',         'i18n' => 'opt_other'],
+                ];
+              
+                $raw = (string) ($custdetail->Legalentity_type ?? '');
+                $key = strtolower(trim($raw));
+                $entityLabel = $entityMap[$key]['text'] ?? '—';
+                $entityI18n  = $entityMap[$key]['i18n'] ?? null;
+              @endphp
+              
+              <div class="list-row">
+                <div class="k" data-i18n="entity_type">ประเภทนิติบุคคล</div>
+                <div class="v" data-field="entity_type">
+                  @if($entityI18n)
+                    <span data-i18n="{{ $entityI18n }}">{{ $entityLabel }}</span>
+                  @else
+                    —
+                  @endif
+                </div>
+              </div>
+              
                 <div class="list-row"><div class="k" data-i18n="tax_id">เลขประจำตัวผู้เสียภาษี (13 หลัก)</div><div class="v" data-field="tax_id">{{ $custdetail->idtax ?? '—' }}</div></div>
                 <div class="list-row"><div class="k" data-i18n="branch_no">เลขที่สาขา</div><div class="v" data-field="branch_no">{{ $custdetail->Branch_number ?? '—' }}</div></div>
-                <div class="list-row"><div class="k" data-i18n="vat_status">สถานะ VAT</div><div class="v" data-field="vat_status">—</div></div>
-                <div class="list-row"><div class="k" data-i18n="tax_doc_lang">ภาษาเอกสารภาษี</div><div class="v" data-field="tax_doc_lang">—</div></div>
               </div>
             </div>
           </div>
@@ -346,8 +383,17 @@
 
   <!-- I18N dictionary + engine -->
   <script>
-    const I18N={ 'ไทย':{home:'หน้าแรก',profile_page:'โปรไฟล์ของฉัน',account_overview:'ข้อมูลบัญชี',tab_summary:'สรุป',tab_orders:'คำสั่งซื้อ',tab_addresses:'ที่อยู่',tab_warranty:'บริษัท',orders:'คำสั่งซื้อ',addresses:'ที่อยู่',warranty:'ประกันสินค้า',edit_profile:'แก้ไขโปรไฟล์',account_center:'ศูนย์บัญชี',contact_info:'ข้อมูลติดต่อ',full_name:'ชื่อ-สกุล',email:'อีเมล',phone:'เบอร์โทร',company_org:'บริษัท/หน่วยงาน',company_name:'ชื่อบริษัท (ถ้ามี)',customer_type:'ที่อยู่จัดส่งหลัก',b2b:'B2B',industry:'อุตสาหกรรม',language:'ภาษาที่ตั้งค่า',thai:'ไทย',english:'English',recent_items:'รายการล่าสุด',ordered_on:'วันที่สั่ง:',status_shipping:'สถานะ: กำลังจัดส่ง',status_success:'สถานะ: สำเร็จ',details:'รายละเอียด',view_all:'ดูทั้งหมด',order_history:'ประวัติคำสั่งซื้อ',grand_total:'รวมสุทธิ',paid:'ชำระเงินแล้ว',view:'ดู',invoice:'ใบกำกับ',my_addresses:'ที่อยู่ของฉัน',default_address:'ที่อยู่เริ่มต้น',edit:'แก้ไข',all:'ทั้งหมด',warranty_items:'ข้อมูลบริษัท',expires:'หมดอายุ',buy:'วิธีการชำระ',label_profile:'โปรไฟล์',order_id_label:'คำสั่งซื้อ:',items:'สินค้า',total_qty:'จำนวนรวม:',pieces:'ชิ้น',no_orders_found:'ไม่พบคำสั่งซื้อตามเงื่อนไข',prev:'ก่อนหน้า',next:'ถัดไป',company_prefix:'บริษัท :',secondary_address:'ที่อยู่รอง',no_secondary_address:'ยังไม่มีที่อยู่รอง',delete:'ลบ',confirm_delete_address:'ยืนยันการลบที่อยู่นี้?',delete_failed:'ลบไม่สำเร็จ:',network_js_error:'ข้อผิดพลาด Network/JS',status_pending:'รอดำเนินการ',status_paid:'ชำระแล้ว',status_shipped:'จัดส่งแล้ว',status_completed:'สำเร็จ',status_cancelled:'ยกเลิก',status_unknown:'ไม่ทราบสถานะ',registered_name:'ชื่อบริษัท (ตามจดทะเบียน)',entity_type:'ประเภทนิติบุคคล',tax_id:'เลขประจำตัวผู้เสียภาษี (13 หลัก)',branch_no:'เลขที่สาขา',vat_status:'สถานะ VAT',tax_doc_lang:'ภาษาเอกสารภาษี',head_office:'สำนักงานใหญ่',branch_label:'สาขา',vat_registered:'จด VAT',vat_not_registered:'ไม่จด VAT',},
-      'English':{home:'Home',profile_page:'My Profile',account_overview:'Account overview',tab_summary:'Summary',tab_orders:'Orders',tab_addresses:'Addresses',tab_warranty:'Company',orders:'Orders',addresses:'Addresses',warranty:'Warranty',edit_profile:'Edit profile',account_center:'Account center',contact_info:'Contact info',full_name:'Full name',email:'Email',phone:'Phone',company_org:'Company / Organization',company_name:'Company name (if any)',customer_type:'Default Shipping Address',b2b:'B2B',industry:'Industry',language:'Language',thai:'ไทย',english:'English',recent_items:'Recent items',ordered_on:'Ordered on:',status_shipping:'Status: Shipping',status_success:'Status: Completed',details:'Details',view_all:'View all',order_history:'Order history',grand_total:'Grand total',paid:'Paid',view:'View',invoice:'Invoice',my_addresses:'My addresses',default_address:'Default address',edit:'Edit',all:'All',warranty_items:'Company information',expires:'Expires',buy:'Payment method',label_profile:'Profile',order_id_label:'Order:',items:'Items',total_qty:'Total qty:',pieces:'pcs',no_orders_found:'No orders match the criteria',prev:'Previous',next:'Next',company_prefix:'Company:',secondary_address:'Secondary address',no_secondary_address:'No secondary addresses yet',delete:'Delete',confirm_delete_address:'Delete this address?',delete_failed:'Delete failed:',network_js_error:'Network/JS Error',status_pending:'Pending',status_paid:'Paid',status_shipped:'Shipped',status_completed:'Completed',status_cancelled:'Cancelled',status_unknown:'Unknown',registered_name:'Registered company name',entity_type:'Entity type',tax_id:'Tax ID (13 digits)',branch_no:'Branch No.',vat_status:'VAT status',tax_doc_lang:'Tax document language',head_office:'Head Office',branch_label:'Branch',vat_registered:'VAT registered',vat_not_registered:'Not VAT registered',}
+    const I18N={ 'ไทย':{home:'หน้าแรก',profile_page:'โปรไฟล์ของฉัน',account_overview:'ข้อมูลบัญชี',tab_summary:'สรุป',tab_orders:'คำสั่งซื้อ',tab_addresses:'ที่อยู่',tab_warranty:'บริษัท',orders:'คำสั่งซื้อ',addresses:'ที่อยู่',warranty:'ประกันสินค้า',edit_profile:'แก้ไขโปรไฟล์',account_center:'ศูนย์บัญชี',contact_info:'ข้อมูลติดต่อ',full_name:'ชื่อ-สกุล',email:'อีเมล',phone:'เบอร์โทร',company_org:'บริษัท/หน่วยงาน',company_name:'ชื่อบริษัท (ถ้ามี)',customer_type:'ที่อยู่จัดส่งหลัก',b2b:'B2B',industry:'อุตสาหกรรม',language:'ภาษาที่ตั้งค่า',thai:'ไทย',english:'English',recent_items:'รายการล่าสุด',ordered_on:'วันที่สั่ง:',status_shipping:'สถานะ: กำลังจัดส่ง',status_success:'สถานะ: สำเร็จ',details:'รายละเอียด',view_all:'ดูทั้งหมด',order_history:'ประวัติคำสั่งซื้อ',grand_total:'รวมสุทธิ',paid:'ชำระเงินแล้ว',view:'ดู',invoice:'ใบกำกับ',my_addresses:'ที่อยู่ของฉัน',default_address:'ที่อยู่เริ่มต้น',edit:'แก้ไข',all:'ทั้งหมด',warranty_items:'ข้อมูลบริษัท',expires:'หมดอายุ',buy:'วิธีการชำระ',label_profile:'โปรไฟล์',order_id_label:'คำสั่งซื้อ:',items:'สินค้า',total_qty:'จำนวนรวม:',pieces:'ชิ้น',no_orders_found:'ไม่พบคำสั่งซื้อตามเงื่อนไข',prev:'ก่อนหน้า',next:'ถัดไป',company_prefix:'บริษัท :',secondary_address:'ที่อยู่รอง',no_secondary_address:'ยังไม่มีที่อยู่รอง',delete:'ลบ',confirm_delete_address:'ยืนยันการลบที่อยู่นี้?',delete_failed:'ลบไม่สำเร็จ:',network_js_error:'ข้อผิดพลาด Network/JS',status_pending:'รอดำเนินการ',status_paid:'ชำระแล้ว',status_shipped:'จัดส่งแล้ว',status_completed:'สำเร็จ',status_cancelled:'ยกเลิก',status_unknown:'ไม่ทราบสถานะ',registered_name:'ชื่อบริษัท (ตามจดทะเบียน)',entity_type:'ประเภทนิติบุคคล',tax_id:'เลขประจำตัวผู้เสียภาษี (13 หลัก)',branch_no:'เลขที่สาขา',vat_status:'สถานะ VAT',tax_doc_lang:'ภาษาเอกสารภาษี',head_office:'สำนักงานใหญ่',branch_label:'สาขา',vat_registered:'จด VAT',vat_not_registered:'ไม่จด VAT', label_company_type:'ประเภทนิติบุคคล',
+    opt_ltd:'บริษัทจำกัด',
+    opt_public:'บริษัทมหาชน',
+    opt_partnership:'ห้างหุ้นส่วน',
+    opt_other:'อื่นๆ',},
+      'English':{home:'Home',profile_page:'My Profile',account_overview:'Account overview',tab_summary:'Summary',tab_orders:'Orders',tab_addresses:'Addresses',tab_warranty:'Company',orders:'Orders',addresses:'Addresses',warranty:'Warranty',edit_profile:'Edit profile',account_center:'Account center',contact_info:'Contact info',full_name:'Full name',email:'Email',phone:'Phone',company_org:'Company / Organization',company_name:'Company name (if any)',customer_type:'Default Shipping Address',b2b:'B2B',industry:'Industry',language:'Language',thai:'ไทย',english:'English',recent_items:'Recent items',ordered_on:'Ordered on:',status_shipping:'Status: Shipping',status_success:'Status: Completed',details:'Details',view_all:'View all',order_history:'Order history',grand_total:'Grand total',paid:'Paid',view:'View',invoice:'Invoice',my_addresses:'My addresses',default_address:'Default address',edit:'Edit',all:'All',warranty_items:'Company information',expires:'Expires',buy:'Payment method',label_profile:'Profile',order_id_label:'Order:',items:'Items',total_qty:'Total qty:',pieces:'pcs',no_orders_found:'No orders match the criteria',prev:'Previous',next:'Next',company_prefix:'Company:',secondary_address:'Secondary address',no_secondary_address:'No secondary addresses yet',delete:'Delete',confirm_delete_address:'Delete this address?',delete_failed:'Delete failed:',network_js_error:'Network/JS Error',status_pending:'Pending',status_paid:'Paid',status_shipped:'Shipped',status_completed:'Completed',status_cancelled:'Cancelled',status_unknown:'Unknown',registered_name:'Registered company name',entity_type:'Entity type',tax_id:'Tax ID (13 digits)',branch_no:'Branch No.',vat_status:'VAT status',tax_doc_lang:'Tax document language',head_office:'Head Office',branch_label:'Branch',vat_registered:'VAT registered',vat_not_registered:'Not VAT registered', label_company:'Registered company name',
+    label_company_type:'Entity type',
+    opt_ltd:'Limited company',
+    opt_public:'Public company',
+    opt_partnership:'Partnership',
+    opt_other:'Other',}
     };
     function normLang(v){v=String(v||'').toLowerCase();if(v==='th'||v==='ไทย')return'ไทย';if(v==='en'||v==='english')return'English';return(I18N[v]?v:'ไทย');}
     function getCurrentLang(){return normLang(localStorage.getItem('preferredLanguage')||'ไทย');}
