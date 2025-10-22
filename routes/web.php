@@ -14,108 +14,7 @@ use App\Http\Controllers\AccountController;
 use GuzzleHttp\Client;
 use App\Models\Custdetail;
 
-// Route::get('/pdf-proxy', function (Request $req) {
-//     $url = $req->query('url');
 
-//     // validate เบื้องต้น
-//     if (!$url || !preg_match('~^https?://~i', $url) || !preg_match('~\.pdf(\?|#|$)~i', $url)) {
-//         abort(400, 'Invalid url');
-//     }
-
-//     // ป้องกัน SSRF: อนุญาตเฉพาะ host ที่ไว้ใจ (เติมได้เอง)
-//     $host = parse_url($url, PHP_URL_HOST) ?: '';
-//     $allowHosts = ['www.es.co.th', 'es.co.th'];
-//     if (!in_array(strtolower($host), array_map('strtolower', $allowHosts), true)) {
-//         abort(403, 'Host not allowed');
-//     }
-
-//     $client  = new Client([
-//         'timeout'         => 15,
-//         'allow_redirects' => true,
-//         'verify'          => false, // ถ้า TLS โอเคใช้ true
-//     ]);
-
-//     $headers = ['User-Agent' => 'Mozilla/5.0'];
-//     if ($range = $req->header('Range')) {
-//         $headers['Range'] = $range; // ส่งต่อ range เพื่อให้ PDF เลื่อนหน้าไว
-//     }
-
-//     try {
-//         $res  = $client->request('GET', $url, ['stream' => true, 'headers' => $headers]);
-//         $body = $res->getBody();
-//         $status = $res->getStatusCode();
-
-//         // เตรียมหัวข้อให้แสดง inline และกัน CORS/iframe
-//         $respHeaders = [
-//             'Content-Type'                => $res->getHeaderLine('Content-Type') ?: 'application/pdf',
-//             'Content-Disposition'         => 'inline; filename="' . basename(parse_url($url, PHP_URL_PATH)) . '"',
-//             'Cache-Control'               => 'public, max-age=86400',
-//             'Access-Control-Allow-Origin' => '*',
-//             // อย่าคืน X-Frame-Options/ CSP กลับไป (ปล่อยว่างไว้)
-//         ];
-//         foreach (['Content-Length','Content-Range','Accept-Ranges'] as $h) {
-//             $v = $res->getHeaderLine($h);
-//             if ($v) $respHeaders[$h] = $v;
-//         }
-
-//         return response()->stream(function () use ($body) {
-//             while (!$body->eof()) {
-//                 echo $body->read(8192);
-//             }
-//         }, in_array($status, [200,206]) ? $status : 200, $respHeaders);
-
-//     } catch (\Throwable $e) {
-//         abort(404, 'File not found');
-//     }
-// })->name('pdf.proxy');
-
-// routes/web.php
-
-
-// Route::get('/api/monkeybusiness', function () {
-//     try {
-//         // 🔒 Backend ไปดึง API จริง
-//         $response = Http::withoutVerifying()->get('http://127.0.0.1:8000/api/fluke');
-
-//         if ($response->successful()) {
-//             return response()->json($response->json());
-//         } else {
-//             return response()->json(['error' => 'Upstream error'], $response->status());
-//         }
-//     } catch (\Exception $e) {
-//         return response()->json([
-//             'error' => 'Proxy error',
-//             'message' => $e->getMessage()
-//         ], 500);
-//     }
-// });
-
-
-
-// // หน้าแรก
-// Route::get('/', function () {
-//     return view('ToolMaster');
-// });
-
-// // หน้าแคลมป์มิเตอร์
-// Route::get('ClampMeter', function () {
-//     return view('ClampMeter');
-// });
-
-
-// // หน้าตะกร้า
-// Route::get('cart', function () {
-//     return view('cart');
-// });
-
-// Route::get('product-template', function () {
-//     $slug = request('slug');
-//     $name = request('name');
-//     $image = request('image');
-//     $columnJ = request('columnJ'); // ✅ รับค่า
-
-//     return view('product-template', compact('slug','name','image','columnJ'));
-// });
 
 /* -------------------- Public pages (ไม่ต้องล็อกอิน) -------------------- */
 Route::get('/', fn () => view('test.FLUKE_Marketplace'))->name('home');
@@ -216,4 +115,49 @@ use App\Http\Controllers\AdminUserController;
 Route::get('Admin', [AdminUserController::class, 'index'])->name('Admin');
 
 
+use Illuminate\Support\Facades\Response;
+use App\Models\Fluke; // ✅ เพิ่มไว้เพื่อใช้ query สินค้าจากฐานข้อมูล (ลบได้ถ้าไม่มี Model นี้)
 
+// -------------------- SEO Routes -------------------- //
+Route::get('/sitemap.xml', function () {
+    // ✅ หน้าหลักที่ต้องการให้ Google index
+    $urls = [
+        url('/'),
+        url('/products'),
+        url('/contact'),
+    ];
+
+    // ✅ ถ้ามีสินค้าจากฐานข้อมูล ให้เพิ่มลง sitemap อัตโนมัติ
+    if (class_exists(Fluke::class)) {
+        foreach (Fluke::all() as $item) {
+            // สมมติว่ามี route /product/{iditem}
+            $urls[] = url('/product/' . $item->iditem);
+        }
+    }
+
+    // ✅ สร้าง XML Sitemap
+    $xml = new SimpleXMLElement('<urlset/>');
+    $xml->addAttribute('xmlns', 'http://www.sitemaps.org/schemas/sitemap/0.9');
+
+    foreach ($urls as $u) {
+        $url = $xml->addChild('url');
+        $url->addChild('loc', htmlspecialchars($u));
+        $url->addChild('changefreq', 'weekly');
+        $url->addChild('priority', '0.8');
+    }
+
+    return Response::make($xml->asXML(), 200)
+        ->header('Content-Type', 'application/xml');
+});
+
+Route::get('/robots.txt', function () {
+    $robots = <<<TXT
+User-agent: *
+Disallow:
+
+Sitemap: https://myfluketh.com/sitemap.xml
+TXT;
+
+    return response($robots, 200)
+        ->header('Content-Type', 'text/plain');
+});
