@@ -14,19 +14,16 @@ use App\Http\Controllers\AccountController;
 use GuzzleHttp\Client;
 use App\Models\Custdetail;
 
-
-
 /* -------------------- Public pages (ไม่ต้องล็อกอิน) -------------------- */
 Route::get('/', fn () => view('test.FLUKE_Marketplace'))->name('home');
 Route::get('/login', fn () => view('login.Login'))->name('login');
 Route::get('/Sign_up', fn () => view('login.Sign_up'))->name('Sign_up');
 Route::post('/register', [LoginController::class, 'register'])->name('register.post');
 
-
-Route::get('/profile', [ProfileController::class, 'showProfile'])->name('profile.show');          // แสดงโปรไฟล์
-Route::post('/profile/update', [ProfileController::class, 'update'])->name('updateprofile.post');             // บันทึกข้อมูลติดต่อ
-Route::delete('/profile/subaddress/{idsubaddress}',[ProfileController::class, 'delsub'])->name('delsub');
-Route::get('/profile/fetchaddress', [ProfileController::class, 'fetchaddress'])->name('profile.fetchaddress'); // ดึงที่อยู่รอง (JSON)
+Route::get('/profile', [ProfileController::class, 'showProfile'])->name('profile.show');          
+Route::post('/profile/update', [ProfileController::class, 'update'])->name('updateprofile.post');             
+Route::delete('/profile/subaddress/{idsubaddress}', [ProfileController::class, 'delsub'])->name('delsub');
+Route::get('/profile/fetchaddress', [ProfileController::class, 'fetchaddress'])->name('profile.fetchaddress'); 
 Route::get('/account/edit', [ProfileController::class, 'editprofile'])->name('profile.edit'); 
 Route::put('/subaddress/{idsubaddress}', [ProfileController::class, 'updatesub'])->name('subaddress.update');
 
@@ -42,51 +39,50 @@ Route::get('/auth/line/callback', [LoginController::class, 'lineCallback'])->nam
 Route::get('/auth/google/redirect', [LoginController::class, 'googleRedirect'])->name('google.redirect');
 Route::get('/auth/google/callback', [LoginController::class, 'googleCallback'])->name('google.callback');
 
-
 // Mini API (ใช้จากหน้าเว็บได้เลย)
 Route::get('/api/auth/me', [LoginController::class, 'apiMe'])->name('api.auth.me');
 Route::post('/api/auth/logout', [LoginController::class, 'apiLogout'])->name('api.auth.logout');
-Route::post('/auth/login',[LoginController::class, 'login'])->name('auth.login');
+Route::post('/auth/login', [LoginController::class, 'login'])->name('auth.login');
 
 /* -------------------- Protected pages (ต้องล็อกอิน) -------------------- */
 Route::post('/logout', function (Request $request) {
-    // 1) ออกจากระบบทุก guard (กันพลาดถ้าโปรเจกต์มีหลาย guard)
+    // 1) ออกจากระบบทุก guard
     foreach (array_keys(config('auth.guards')) as $guard) {
         if (Auth::guard($guard)->check()) {
             Auth::guard($guard)->logout();
         }
     }
 
-    // 2) ลบ remember-me cookie (ถ้าเคยตั้งไว้)
-    $defaultGuard = Auth::guard(); // SessionGuard ปัจจุบัน
+    // 2) ลบ remember-me cookie
+    $defaultGuard = Auth::guard();
     if (method_exists($defaultGuard, 'getRecallerName')) {
         Cookie::queue(Cookie::forget($defaultGuard->getRecallerName()));
     }
 
-    // 3) ล้าง session ให้หมด + รีเซ็ต ID + ออก CSRF token ใหม่
+    // 3) ล้าง session ทั้งหมด
     $request->session()->flush();
     $request->session()->invalidate();
     $request->session()->regenerateToken();
 
-    // 4) เด้งกลับหน้าแรก (เลี่ยง back() ที่อาจย้อนกลับไป POST page)
+    // 4) เด้งกลับหน้าแรก
     return redirect('/');
 })->name('logout');
 
-
-
+/* -------------------- Dashboard / Products -------------------- */
 use App\Http\Controllers\DashboardController;
+
 Route::get('/', [DashboardController::class, 'Home'])->name('test.FLUKE_Marketplace');
-Route::get('/products', [DashboardController::class, 'showproduct'])
-    ->name('product.index');
+Route::get('/products', [DashboardController::class, 'showproduct'])->name('product.index');
 Route::redirect('/products/category/cart', '/cart')->name('product.category.cart');
 Route::redirect('/product/cart', '/cart')->name('product.cart');
 Route::redirect('/account/cart', '/cart')->name('profile.cart');
+
 Route::get('/products/category/{slug}', [DashboardController::class, 'byCategory'])
     ->where('slug', '^(?!cart$).+')
     ->name('product.category');    
+
 Route::get('/product/{iditem}', [DashboardController::class, 'showItem'])->name('product.detail');
-Route::get('/search/products', [DashboardController::class, 'searchByName'])
-    ->name('search.products');
+Route::get('/search/products', [DashboardController::class, 'searchByName'])->name('search.products');
 Route::post('/cart/add', [DashboardController::class, 'add'])->name('cart.add');
 Route::get('/cart', [DashboardController::class, 'showcart'])->name('cart.show');
 Route::get('/cart/json', [DashboardController::class, 'cartJson'])->name('cart.json');
@@ -94,70 +90,46 @@ Route::post('/cart/qty', [DashboardController::class, 'cartQty'])->name('cart.qt
 Route::delete('/cart/remove', [DashboardController::class, 'cartRemove'])->name('cart.remove');
 Route::post('/cart/remove-many', [DashboardController::class, 'cartRemoveMany'])->name('cart.removeMany');
 Route::post('/cart/checkout', [DashboardController::class, 'checkout'])->name('cart.checkout');
-Route::post('/profile/subaddress', [ProfileController::class, 'store'])
-    ->name('subaddress.address');
-Route::get('/profile/addresses', [ProfileController::class, 'addresses'])
-     ->name('profile.addresses');
-Route::post('/cart/checkout', [CartController::class, 'checkout'])
-    ->name('cart.checkout');
+Route::post('/profile/subaddress', [ProfileController::class, 'store'])->name('subaddress.address');
+Route::get('/profile/addresses', [ProfileController::class, 'addresses'])->name('profile.addresses');
+Route::post('/cart/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
 
-
+/* -------------------- PDF Proxy -------------------- */
 use App\Http\Controllers\PdfProxyController;
-Route::match(['GET','OPTIONS'], '/pdf-proxy', [PdfProxyController::class, 'fetch'])->name('pdf.proxy');
+Route::match(['GET', 'OPTIONS'], '/pdf-proxy', [PdfProxyController::class, 'fetch'])->name('pdf.proxy');
 
-
-
-
-
-
+/* -------------------- Admin -------------------- */
 use App\Http\Controllers\AdminUserController;
-
 Route::get('Admin', [AdminUserController::class, 'index'])->name('Admin');
 
-
 use Illuminate\Support\Facades\Response;
-use App\Models\Fluke; // ✅ เพิ่มไว้เพื่อใช้ query สินค้าจากฐานข้อมูล (ลบได้ถ้าไม่มี Model นี้)
+use Illuminate\Support\Facades\Log;
 
-// -------------------- SEO Routes -------------------- //
 Route::get('/sitemap.xml', function () {
-    // ✅ หน้าหลักที่ต้องการให้ Google index
-    $urls = [
-        url('/'),
-        url('/products'),
-        url('/contact'),
-    ];
+    try {
+        $urls = [
+            url('/'),
+            url('/products'),
+            url('/contact'),
+        ];
 
-    // ✅ ถ้ามีสินค้าจากฐานข้อมูล ให้เพิ่มลง sitemap อัตโนมัติ
-    if (class_exists(Fluke::class)) {
-        foreach (Fluke::all() as $item) {
-            // สมมติว่ามี route /product/{iditem}
-            $urls[] = url('/product/' . $item->iditem);
+        // ✅ สร้าง XML ด้วย SimpleXML
+        $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><urlset/>');
+        $xml->addAttribute('xmlns', 'http://www.sitemaps.org/schemas/sitemap/0.9');
+
+        foreach ($urls as $u) {
+            $url = $xml->addChild('url');
+            $url->addChild('loc', htmlspecialchars($u));
+            $url->addChild('changefreq', 'weekly');
+            $url->addChild('priority', '0.8');
         }
+
+        // ✅ ส่งกลับเป็น XML พร้อม header ที่ถูกต้อง
+        return response($xml->asXML(), 200)
+            ->header('Content-Type', 'application/xml');
+
+    } catch (\Throwable $e) {
+        Log::error('Sitemap Error: ' . $e->getMessage());
+        return response('Error generating sitemap: ' . $e->getMessage(), 500);
     }
-
-    // ✅ สร้าง XML Sitemap
-    $xml = new SimpleXMLElement('<urlset/>');
-    $xml->addAttribute('xmlns', 'http://www.sitemaps.org/schemas/sitemap/0.9');
-
-    foreach ($urls as $u) {
-        $url = $xml->addChild('url');
-        $url->addChild('loc', htmlspecialchars($u));
-        $url->addChild('changefreq', 'weekly');
-        $url->addChild('priority', '0.8');
-    }
-
-    return Response::make($xml->asXML(), 200)
-        ->header('Content-Type', 'application/xml');
-});
-
-Route::get('/robots.txt', function () {
-    $robots = <<<TXT
-User-agent: *
-Disallow:
-
-Sitemap: https://myfluketh.com/sitemap.xml
-TXT;
-
-    return response($robots, 200)
-        ->header('Content-Type', 'text/plain');
 });
