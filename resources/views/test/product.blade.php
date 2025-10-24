@@ -4,8 +4,69 @@
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Product | FLUKE</title>
-  <link rel="icon" type="image/png" href="https://img5.pic.in.th/file/secure-sv1/ChatGPT_Image_18_.._2568_12_03_57-removebg-preview.png">
+
+  <!-- ===================== 🔹 DYNAMIC SEO META ===================== -->
+  <title>{{ trim($product->model ?? $product->name) }} | ราคาและสเปก FLUKE ของแท้ | myFlukeTH ศูนย์ไทย</title>
+  <meta name="description" content="สเปก ราคา รีวิว และรายละเอียด {{ trim($product->model ?? $product->name) }} จาก FLUKE ของแท้ พร้อมบริการคาลิเบรตและจัดส่งทั่วประเทศ โดย myFlukeTH ศูนย์ไทย">
+  <meta name="keywords" content="Fluke, {{ trim($product->model ?? $product->name) }}, เครื่องมือวัดไฟฟ้า, มัลติมิเตอร์, แคลมป์มิเตอร์, กล้องถ่ายภาพความร้อน, เครื่องวัดฉนวน, myfluketh, myFlukeTH, เครื่องมือวัด FLUKE, ศูนย์ไทย">
+
+  <!-- ===================== 🔹 ROBOTS & CANONICAL ===================== -->
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  <link rel="canonical" href="{{ request()->fullUrl() }}">
+
+  <!-- ===================== 🔹 OPEN GRAPH ===================== -->
+  <meta property="og:type" content="product">
+  <meta property="og:site_name" content="myFlukeTH">
+  <meta property="og:title" content="{{ trim($product->model ?? $product->name) }} | FLUKE ของแท้ | myFlukeTH">
+  <meta property="og:description" content="ดูราคาและรายละเอียด {{ trim($product->model ?? $product->name) }} เครื่องมือวัดไฟฟ้า FLUKE ของแท้ พร้อมจัดส่งทั่วประเทศ">
+  <meta property="og:url" content="{{ request()->fullUrl() }}">
+  <meta property="og:image" content="{{ $product->pic ?? 'https://myfluketh.com/images/og-fluke.jpg' }}">
+  <meta property="og:image:alt" content="{{ trim($product->model ?? $product->name) }}">
+  <meta property="og:locale" content="th_TH">
+
+  <!-- ===================== 🔹 TWITTER CARD ===================== -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ trim($product->model ?? $product->name) }} | FLUKE ของแท้ | myFlukeTH">
+  <meta name="twitter:description" content="รายละเอียดและราคา {{ trim($product->model ?? $product->name) }} จากศูนย์ไทย myFlukeTH">
+  <meta name="twitter:image" content="{{ $product->pic ?? 'https://myfluketh.com/images/og-fluke.jpg' }}">
+
+  <!-- ===================== 🔹 ICON ===================== -->
+  <link rel="icon" type="image/png" href="https://myfluketh.com/images/fluke-icon.png">
+
+  <!-- ===================== 🔹 STRUCTURED DATA ===================== -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "{{ trim($product->model ?? $product->name) }}",
+    "brand": { "@type": "Brand", "name": "FLUKE" },
+    "sku": "{{ $product->sku ?? '' }}",
+    "image": ["{{ $product->pic ?? 'https://myfluketh.com/images/og-fluke.jpg' }}"],
+    "description": "{{ Str::limit(strip_tags($product->short_desc ?? $product->name), 180) }}",
+    "offers": {
+      "@type": "Offer",
+      "priceCurrency": "THB",
+      "price": "{{ number_format((float)($product->priceTHB ?? 0), 2, '.', '') }}",
+      "availability": "https://schema.org/{{ ($product->stock ?? 0) > 0 ? 'InStock' : 'PreOrder' }}",
+      "url": "{{ request()->fullUrl() }}"
+    }
+  }
+  </script>
+
+  <!-- ===================== 🔹 STRUCTURED DATA (Breadcrumb) ===================== -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "หน้าแรก", "item": "https://myfluketh.com/" },
+      { "@type": "ListItem", "position": 2, "name": "{{ $categoryName ?? 'สินค้า FLUKE' }}", "item": "{{ url()->previous() }}" },
+      { "@type": "ListItem", "position": 3, "name": "{{ trim($product->model ?? $product->name) }}", "item": "{{ request()->fullUrl() }}" }
+    ]
+  }
+  </script>
+</head>
+
 
   <!-- ====== BASE THEME ====== -->
   <style>

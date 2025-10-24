@@ -110,7 +110,7 @@ Route::get('/sitemap.xml', function () {
         $urls = [
             url('/'),
             url('/products'),
-            url('/contact'),
+            url('/products/category/ClampMeter1'),
         ];
 
         // ✅ สร้าง XML ด้วย SimpleXML

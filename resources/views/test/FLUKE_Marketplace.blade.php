@@ -4,35 +4,59 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- 🔹 TITLE & DESCRIPTION -->
-  <title>myFlukeTH — เครื่องมือวัดไฟฟ้า Fluke ของแท้ | ศูนย์ไทย</title>
-  <meta name="description" content="ซื้อเครื่องมือวัดไฟฟ้า Fluke ของแท้ มัลติมิเตอร์ แคลมป์มิเตอร์ กล้องถ่ายภาพความร้อน พร้อมบริการคาลิเบรตตามมาตรฐาน มั่นใจศูนย์ไทย myFlukeTH">
-  <meta name="keywords" content="Fluke, ฟลุค, เครื่องมือวัดไฟฟ้า, มัลติมิเตอร์, แคลมป์มิเตอร์, กล้องถ่ายภาพความร้อน, เครื่องวัดฉนวน, เครื่องตรวจไฟ, myfluketh.com, Myfluketh, myfluketh, prometer,Hikari Power">
+  <!-- ===================== 🔹 TITLE & DESCRIPTION ===================== -->
+  <title>myFlukeTH — เครื่องมือวัดไฟฟ้า FLUKE ของแท้ | ศูนย์ไทย</title>
+  <meta name="description" content="ศูนย์รวมเครื่องมือวัดไฟฟ้า FLUKE ของแท้จากศูนย์ไทย — มัลติมิเตอร์ แคลมป์มิเตอร์ กล้องถ่ายภาพความร้อน พร้อมบริการคาลิเบรตมาตรฐานสากล สอบถามได้ที่ 066-097-5697 (คุณผาบุ้ง) | Info@hikaripower.com | LINE: @hikaridenki — มั่นใจคุณภาพจาก myFlukeTH">
+  <meta name="keywords" content="Fluke, ฟลุค, เครื่องมือวัดไฟฟ้า, มัลติมิเตอร์, แคลมป์มิเตอร์, กล้องถ่ายภาพความร้อน, เครื่องวัดฉนวน, เครื่องตรวจไฟ, myfluketh.com, Myfluketh, myfluketh, prometer, Hikari Power">
 
-  <!-- 🔹 SEO SETTINGS -->
-  <meta name="robots" content="index, follow">
+  <!-- ===================== 🔹 ROBOTS & CANONICAL ===================== -->
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
   <link rel="canonical" href="https://myfluketh.com/">
 
-  <!-- 🔹 GOOGLE SITE VERIFICATION -->
-  <meta name="google-site-verification" content="tpmhTAxPUzD7bh4163L-tqG21SpSCOJC_N0nNxfNt3k" />
+  <!-- ===================== 🔹 GOOGLE VERIFICATION ===================== -->
+  <meta name="google-site-verification" content="tpmhTAxPUzD7bh4163L-tqG21SpSCOJC_N0nNxfNt3k">
 
-  <!-- 🔹 OPEN GRAPH (Facebook / LINE / etc.) -->
+  <!-- ===================== 🔹 OPEN GRAPH ===================== -->
   <meta property="og:type" content="website">
-  <meta property="og:title" content="myFlukeTH — เครื่องมือวัดไฟฟ้า Fluke ของแท้ | ศูนย์ไทย">
-  <meta property="og:description" content="ศูนย์รวมเครื่องมือวัด Fluke ของแท้ในไทย พร้อมบริการคาลิเบรต และทีมวิศวกรมืออาชีพ">
+  <meta property="og:site_name" content="myFlukeTH">
+  <meta property="og:title" content="myFlukeTH — เครื่องมือวัดไฟฟ้า FLUKE ของแท้ | ศูนย์ไทย">
+  <meta property="og:description" content="ศูนย์รวมเครื่องมือวัดไฟฟ้า FLUKE ของแท้ในไทย พร้อมบริการคาลิเบรต และทีมวิศวกรมืออาชีพ">
   <meta property="og:url" content="https://myfluketh.com/">
-  <meta property="og:image" content="https://img5.pic.in.th/file/secure-sv1/ChatGPT_Image_18_.._2568_12_03_57-removebg-preview.png">
+  <meta property="og:image" content="https://myfluketh.com/images/og-fluke.jpg">
+  <meta property="og:image:alt" content="myFlukeTH – เครื่องมือวัดไฟฟ้า FLUKE ของแท้">
   <meta property="og:locale" content="th_TH">
 
-  <!-- 🔹 TWITTER CARD -->
+  <!-- ===================== 🔹 TWITTER CARD ===================== -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="myFlukeTH — เครื่องมือวัดไฟฟ้า Fluke ของแท้">
-  <meta name="twitter:description" content="ศูนย์รวมเครื่องมือวัด Fluke ของแท้จากศูนย์ไทย พร้อมบริการคาลิเบรตและจัดส่งทั่วประเทศ">
-  <meta name="twitter:image" content="https://img5.pic.in.th/file/secure-sv1/ChatGPT_Image_18_.._2568_12_03_57-removebg-preview.png">
+  <meta name="twitter:title" content="myFlukeTH — เครื่องมือวัดไฟฟ้า FLUKE ของแท้">
+  <meta name="twitter:description" content="ศูนย์รวมเครื่องมือวัดไฟฟ้า FLUKE ของแท้จากศูนย์ไทย พร้อมบริการคาลิเบรตและจัดส่งทั่วประเทศ">
+  <meta name="twitter:image" content="https://myfluketh.com/images/og-fluke.jpg">
 
-  <!-- 🔹 ICON -->
-  <link rel="icon" type="image/png" href="https://img5.pic.in.th/file/secure-sv1/ChatGPT_Image_18_.._2568_12_03_57-removebg-preview.png">
+  <!-- ===================== 🔹 ICON ===================== -->
+  <link rel="icon" type="image/png" href="https://myfluketh.com/images/fluke-icon.png">
+
+  <!-- ===================== 🔹 STRUCTURED DATA ===================== -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "myFlukeTH",
+    "url": "https://myfluketh.com/",
+    "logo": "https://myfluketh.com/images/fluke-icon.png",
+    "sameAs": [
+      "https://line.me/R/ti/p/@543ubjtx"
+    ],
+    "contactPoint": [{
+      "@type": "ContactPoint",
+      "telephone": "+66-66-097-5697",
+      "contactType": "customer service",
+      "areaServed": "TH",
+      "availableLanguage": ["Thai","English"]
+    }]
+  }
+  </script>
 </head>
+
 
 <body>
   {{-- Header --}}

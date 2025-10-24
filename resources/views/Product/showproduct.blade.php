@@ -3,10 +3,122 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FLUKE | Product</title>
-  <link rel="icon" type="image/png" href="https://img5.pic.in.th/file/secure-sv1/ChatGPT_Image_18_.._2568_12_03_57-removebg-preview.png">
-  <!-- (ถ้าใช้ Swiper ให้ include ไว้ที่ layout หลักตามเดิม) -->
+
+  @php
+    // ===== Dynamic vars (ปรับให้เข้ากับตัวแปรจริงในหน้า) =====
+    $catName   = trim($categoryName ?? 'สินค้า FLUKE');
+    $catSlug   = trim($categorySlug ?? Str::slug($catName));
+    $page      = max(1, (int)request('page', 1));
+    $perPage   = (int)($perPage ?? 24);               // ถ้ามีตัวแปร per page
+    $items     = $products ?? $items ?? [];           // คอลเลกชันรายการสินค้า
+    $imageOG   = 'https://myfluketh.com/images/og-fluke.jpg';
+
+    // canonical: อนุญาตเฉพาะ page (กัน faceted duplicates)
+    $qs        = request()->except(['page']); // query อื่นให้ noindex
+    $hasFacet  = count($qs) > 0;
+    $canonBase = request()->url();
+    $canonical = $page > 1 ? $canonBase.'?page='.$page : $canonBase;
+
+    // prev/next สำหรับ pagination
+    $hasNext   = isset($totalPages) ? ($page < (int)$totalPages) : (count($items) >= $perPage);
+    $prevUrl   = $page > 1 ? ($page === 2 ? $canonBase : $canonBase.'?page='.($page-1)) : null;
+    $nextUrl   = $hasNext  ? ($canonBase.'?page='.($page+1)) : null;
+
+    // robots: ถ้ามีพารามิเตอร์ facet ให้ noindex,follow
+    $robots    = $hasFacet ? 'noindex, follow' : 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1';
+
+    // ชื่อเรื่อง & คำอธิบาย
+    $titleTxt  = $page > 1 ? "$catName — หน้า $page | myFlukeTH" : "$catName | myFlukeTH";
+    $descTxt   = "รวมสินค้า FLUKE ประเภท $catName ของแท้จากศูนย์ไทย สเปก ราคา เปรียบเทียบรุ่น พร้อมบริการคาลิเบรตและจัดส่งทั่วประเทศ";
+  @endphp
+
+  <!-- ===================== 🔹 TITLE & DESCRIPTION ===================== -->
+  <title>{{ $titleTxt }}</title>
+  <meta name="description" content="{{ $descTxt }}">
+
+  <!-- ===================== 🔹 ROBOTS & CANONICAL ===================== -->
+  <meta name="robots" content="{{ $robots }}">
+  <link rel="canonical" href="{{ $canonical }}">
+  <link rel="alternate" href="{{ request()->url() }}" hreflang="th">
+  <link rel="alternate" href="{{ request()->url() }}" hreflang="x-default">
+  @if($prevUrl)<link rel="prev" href="{{ $prevUrl }}">@endif
+  @if($nextUrl)<link rel="next" href="{{ $nextUrl }}">@endif
+
+  <!-- ===================== 🔹 OPEN GRAPH ===================== -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="myFlukeTH">
+  <meta property="og:title" content="{{ $titleTxt }}">
+  <meta property="og:description" content="{{ $descTxt }}">
+  <meta property="og:url" content="{{ $canonical }}">
+  <meta property="og:image" content="{{ $imageOG }}">
+  <meta property="og:image:alt" content="FLUKE — {{ $catName }}">
+  <meta property="og:locale" content="th_TH">
+
+  <!-- ===================== 🔹 TWITTER CARD ===================== -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ $titleTxt }}">
+  <meta name="twitter:description" content="{{ $descTxt }}">
+  <meta name="twitter:image" content="{{ $imageOG }}">
+
+  <!-- ===================== 🔹 ICON ===================== -->
+  <link rel="icon" type="image/png" href="https://myfluketh.com/images/fluke-icon.png">
+
+  <!-- ===================== 🔹 STRUCTURED DATA ===================== -->
+
+  {{-- BreadcrumbList --}}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "หน้าแรก", "item": "https://myfluketh.com/" },
+      { "@type": "ListItem", "position": 2, "name": "{{ $catName }}", "item": "{{ $canonical }}" }
+    ]
+  }
+  </script>
+
+  {{-- CollectionPage + ItemList ของสินค้าที่แสดงในหน้านี้ --}}
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"CollectionPage",
+    "name":"{{ $catName }}",
+    "url":"{{ $canonical }}",
+    "hasPart":{
+      "@type":"ItemList",
+      "itemListElement":[
+        @php $i=1; @endphp
+        @foreach($items as $p)
+          {
+            "@type":"ListItem",
+            "position": {{ $i++ }},
+            "url": "{{ url('/product/' . urlencode($p->iditem ?? $p->id ?? '')) }}",
+            "name": "{{ trim($p->model ?? $p->name ?? '') }}",
+            "image": "{{ $p->pic ?? 'https://myfluketh.com/images/og-fluke.jpg' }}"
+          }@if(!$loop->last),@endif
+        @endforeach
+      ]
+    }
+  }
+  </script>
+
+  {{-- (ทางเลือก) FAQ ต่อหมวด – เติมเมื่อมีคอนเทนต์จริง จะช่วยกินพื้นที่ SERP --}}
+  {{-- 
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"FAQPage",
+    "mainEntity":[
+      {"@type":"Question","name":"เลือกมัลติมิเตอร์ FLUKE รุ่นไหนดี?",
+       "acceptedAnswer":{"@type":"Answer","text":"งานซ่อมบำรุงทั่วไปแนะนำ 17x Series; งานอุตสาหกรรมแนะนำ 28II/87V เป็นต้น"}},
+      {"@type":"Question","name":"มีบริการคาลิเบรตไหม?",
+       "acceptedAnswer":{"@type":"Answer","text":"มีบริการคาลิเบรตตามมาตรฐาน พร้อมใบรับรองจากศูนย์ไทย"}}
+    ]
+  }
+  </script>
+  --}}
 </head>
+
 <body>
   {{-- Header --}}
   @include('test.header-nav')
