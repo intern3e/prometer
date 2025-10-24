@@ -156,21 +156,24 @@ input[type="checkbox"]{ accent-color: var(--brand); }
     <!-- flex-nowrap บังคับบรรทัดเดียวบนมือถือ / min-w-0 ช่วย truncate -->
     <div class="container-outer mx-auto section-pad py-1.5 flex items-center justify-between gap-2 flex-nowrap min-w-0">
       <!-- ซ้าย -->
-      <div class="flex items-center gap-3 whitespace-nowrap shrink-0">
-        <a href="tel:+66660975697"
-        class="hover:text-[var(--brand)]"
-        data-i18n="[aria-label]top_buyer_central"
-        aria-label="Buyer Central">
-        <i class="bi bi-telephone"></i> 066-097-5697
-     </a>
-     
-     <a id="lineBtn"
-     href="line://ti/p/@543ubjtx"
-     class="hover:text-[var(--brand)]"
-     data-i18n="[aria-label]top_help"
-     aria-label="Help (LINE @543ubjtx)">
-     LINE
-  </a>
+        <div class="flex items-center gap-3 whitespace-nowrap shrink-0">
+<a href="tel:+66660975697"
+   class="hover:text-[var(--brand)]"
+   data-i18n="[aria-label]top_buyer_central"
+   aria-label="Buyer Central">
+   <i class="bi bi-telephone"></i> 066-097-5697 
+   <span class="hidden md:inline text-black/75">(คุณ ผักบุ้ง)</span>
+</a>
+
+   
+ <a id="lineBtn"
+   href="line://ti/p/@543ubjtx"
+   class="hover:text-white"
+   style="background-color:#06C755; color:white; padding:2px 8px; border-radius:4px; text-decoration:none;"
+   data-i18n="[aria-label]top_help"
+   aria-label="Help (LINE @543ubjtx)">
+   LINE
+</a>
   
   <script>
   (function () {

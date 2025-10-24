@@ -7,7 +7,7 @@
   <!-- 🔹 TITLE & DESCRIPTION -->
   <title>myFlukeTH — เครื่องมือวัดไฟฟ้า Fluke ของแท้ | ศูนย์ไทย</title>
   <meta name="description" content="ซื้อเครื่องมือวัดไฟฟ้า Fluke ของแท้ มัลติมิเตอร์ แคลมป์มิเตอร์ กล้องถ่ายภาพความร้อน พร้อมบริการคาลิเบรตตามมาตรฐาน มั่นใจศูนย์ไทย myFlukeTH">
-  <meta name="keywords" content="Fluke, ฟลุค, เครื่องมือวัดไฟฟ้า, มัลติมิเตอร์, แคลมป์มิเตอร์, กล้องถ่ายภาพความร้อน, เครื่องวัดฉนวน, เครื่องตรวจไฟ">
+  <meta name="keywords" content="Fluke, ฟลุค, เครื่องมือวัดไฟฟ้า, มัลติมิเตอร์, แคลมป์มิเตอร์, กล้องถ่ายภาพความร้อน, เครื่องวัดฉนวน, เครื่องตรวจไฟ, myfluketh.com, Myfluketh, myfluketh, prometer,Hikari Power">
 
   <!-- 🔹 SEO SETTINGS -->
   <meta name="robots" content="index, follow">
@@ -132,7 +132,6 @@
   </div>
 </section>
 
-<!-- template แยกออกมาอยู่นอก flashGrid -->
 <template id="dealTileTemplate">
   <a class="block hover:shadow transition-fast">
     <div class="border rounded-lg overflow-hidden bg-white">
@@ -141,11 +140,23 @@
       </div>
     </div>
     <div class="p-2">
-      <p class="deal-name text-xs text-gray-700 line-clamp-2">ชื่อสินค้า</p>
+      <!-- Model -->
+      <div class="flex items-center gap-1 text-xs text-gray-700">
+        <span class="flex-shrink-0">Model:</span>
+        <span class="deal-model text-gray-800 font-semibold truncate block">—</span>
+      </div>
+    <!-- Detail -->
+    <div class="flex items-center gap-1 text-sm text-gray-700 mt-1 overflow-hidden">
+      <span class="text-[10px] text-gray-600 flex-shrink-0">Detail:</span>
+      <span class="deal-name text-sm text-gray-700 font-normal truncate block">—</span>
+    </div>
+
+      <!-- Price -->
       <p class="deal-price text-[var(--brand)] font-semibold mt-1">฿—</p>
     </div>
   </a>
 </template>
+
 <br>
   <!-- ===== หมวดหมู่สินค้า ===== -->
   <section class="container-outer mx-auto section-pad mt-10">
@@ -436,40 +447,93 @@
     try{ localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), items })); }catch{}
   }
 
+ // เติมพารามฯ ต่อท้าย URL แบบปลอดภัย
+  function addQuery(u, q){
+    try{
+      const url = new URL(u, location.origin);
+      Object.entries(q || {}).forEach(([k,v]) => url.searchParams.set(k, v));
+      return url.toString();
+    }catch(_){
+      const join = u.includes('?') ? '&' : '?';
+      const tail = Object.entries(q||{}).map(([k,v]) => k+'='+encodeURIComponent(v)).join('&');
+      return u + join + tail;
+    }
+  }
+
   function createCard(item){
-    const node = tpl.content.cloneNode(true);
-    const a    = node.querySelector('a');
-    const img  = node.querySelector('img.deal-img');
-    const name = node.querySelector('.deal-name');
-    const price= node.querySelector('.deal-price');
+    if (!item) return document.createDocumentFragment();
+
+    const node     = tpl.content.cloneNode(true);
+    const a        = node.querySelector('a');
+    const img      = node.querySelector('img.deal-img');
+    const modelEl  = node.querySelector('.deal-model');
+    const nameEl   = node.querySelector('.deal-name');
+    const priceEl  = node.querySelector('.deal-price');
 
     a.classList.add('w-32','md:w-36','shrink-0');
 
-    const n = (item.name || '').trim() || '—';
-    const valTHB = parseTHB(item.webpriceTHB);
+    // ---- normalize
+    const nameTxt  = (item?.name ?? '').toString().trim();
+    const modelTxt = (item?.model ?? item?.num_model ?? '').toString().trim();
+    const showLine1 = modelTxt || nameTxt || '—'; // บรรทัดบน: รุ่น ถ้ามี ไม่มีก็ใช้ชื่อ
+    const showLine2 = nameTxt || '';              // บรรทัดล่าง: ชื่อ (ถ้าไม่มีจะเว้น)
 
-    a.href = '/product/' + encodeURIComponent(item.iditem);
-    a.title = n;
+    const valTHB = (typeof parseTHB === 'function') ? parseTHB(item?.webpriceTHB) : item?.webpriceTHB;
+
+    if (item?.iditem){
+      a.href = '/product/' + encodeURIComponent(item.iditem);
+    }
+    // title รวมทั้งรุ่นและชื่อ
+    a.title = (modelTxt ? modelTxt + ' — ' : '') + (nameTxt || '—');
+
+    // data-* สำหรับใช้งานต่อ/ดีบัก
+    a.dataset.iditem = item?.iditem || '';
+    a.dataset.model  = modelTxt;
+    a.dataset.name   = nameTxt;
 
     if (img){
-      if (item.pic){
-        img.src = item.pic;
-        img.alt = n;
+      let pic = item?.pic || item?.image || item?.img || '';
+      if (pic){
+        // แปะ query ด้วยรุ่น+ชื่อเพื่อ bust cache ให้รูปออกใหม่เมื่อข้อมูลเปลี่ยน
+        pic = addQuery(pic, {
+          m: (modelTxt || '').slice(0, 20),
+          n: (nameTxt  || '').slice(0, 20)
+        });
+        img.src = pic;
+        img.alt = a.title; // รวมรุ่น+ชื่อ
         img.loading = 'lazy';
         img.decoding = 'async';
+        img.referrerPolicy = 'no-referrer';
       } else {
         img.remove();
       }
     }
 
-    if (name){
-      name.textContent = n;
-      name.classList.add('text-[11px]','md:text-[12px]','leading-tight');
+    // แสดง "รุ่น" (บรรทัดบน)
+    if (modelEl){
+      modelEl.textContent = showLine1;
+      modelEl.classList.add('text-[11px]','md:text-[12px]','leading-tight');
     }
 
-    if (price){
-      price.textContent = renderPriceText(valTHB);
-      price.classList.add('text-[12px]','md:text-[13px]','leading-tight','font-medium');
+    // แสดง "ชื่อ" (บรรทัดล่าง) — ถ้าไม่มีชื่อจริงๆ คงไว้เป็นค่าว่าง
+    if (nameEl){
+      if (showLine2){
+        nameEl.textContent = showLine2;
+      } else {
+        nameEl.remove(); // ไม่มีชื่อก็ซ่อนบรรทัดนี้
+      }
+      nameEl.classList.add('text-[8px]','md:text-[10px]','leading-tight');
+    }
+
+    if (priceEl){
+      try {
+        priceEl.textContent = (typeof renderPriceText === 'function')
+          ? renderPriceText(valTHB)
+          : (valTHB != null ? String(valTHB) : '฿—');
+      } catch(_){
+        priceEl.textContent = '฿—';
+      }
+      priceEl.classList.add('text-[12px]','md:text-[13px]','leading-tight','font-medium');
     }
 
     return node;
