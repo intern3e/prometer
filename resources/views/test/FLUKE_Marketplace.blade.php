@@ -36,6 +36,7 @@
   <link rel="icon" type="image/png" href="https://myfluketh.com/images/fluke-icon.png">
 
   <!-- ===================== 🔹 STRUCTURED DATA ===================== -->
+  @verbatim
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -43,9 +44,7 @@
     "name": "myFlukeTH",
     "url": "https://myfluketh.com/",
     "logo": "https://myfluketh.com/images/fluke-icon.png",
-    "sameAs": [
-      "https://line.me/R/ti/p/@543ubjtx"
-    ],
+    "sameAs": ["https://line.me/R/ti/p/@543ubjtx"],
     "contactPoint": [{
       "@type": "ContactPoint",
       "telephone": "+66-66-097-5697",
@@ -55,6 +54,23 @@
     }]
   }
   </script>
+
+  <!-- WebSite + SearchAction (sitelinks search box) -->
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"WebSite",
+    "name":"myFlukeTH",
+    "url":"https://myfluketh.com/",
+    "inLanguage": "th-TH",
+    "potentialAction":{
+      "@type":"SearchAction",
+      "target":"https://myfluketh.com/search?q={search_term_string}",
+      "query-input":"required name=search_term_string"
+    }
+  }
+  </script>
+  @endverbatim
 </head>
 
 

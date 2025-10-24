@@ -5,68 +5,74 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- ===================== 🔹 DYNAMIC SEO META ===================== -->
-  <title>{{ trim($product->model ?? $product->name) }} | ราคาและสเปก FLUKE ของแท้ | myFlukeTH ศูนย์ไทย</title>
-  <meta name="description" content="สเปก ราคา รีวิว และรายละเอียด {{ trim($product->model ?? $product->name) }} จาก FLUKE ของแท้ พร้อมบริการคาลิเบรตและจัดส่งทั่วประเทศ โดย myFlukeTH ศูนย์ไทย">
-  <meta name="keywords" content="Fluke, {{ trim($product->model ?? $product->name) }}, เครื่องมือวัดไฟฟ้า, มัลติมิเตอร์, แคลมป์มิเตอร์, กล้องถ่ายภาพความร้อน, เครื่องวัดฉนวน, myfluketh, myFlukeTH, เครื่องมือวัด FLUKE, ศูนย์ไทย">
+  @php
+    $model   = trim($product->model ?? $product->name ?? 'FLUKE');
+    $title   = $model . ' | ราคาและสเปก FLUKE ของแท้ | myFlukeTH ศูนย์ไทย';
+    $desc    = 'สเปก ราคา รีวิว และรายละเอียด '.$model.' จาก FLUKE ของแท้ พร้อมบริการคาลิเบรตและจัดส่งทั่วประเทศ โดย myFlukeTH ศูนย์ไทย';
+    $img     = $product->pic ?? 'https://myfluketh.com/images/og-fluke.jpg';
+    $sku     = $product->sku ?? '';
+    $price   = number_format((float)($product->priceTHB ?? 0), 2, '.', '');
+    $avail   = ($product->stock ?? 0) > 0 ? 'InStock' : 'PreOrder';
+    $url     = request()->fullUrl();
 
-  <!-- ===================== 🔹 ROBOTS & CANONICAL ===================== -->
+    $productJson = [
+      '@context' => 'https://schema.org',
+      '@type'    => 'Product',
+      'name'     => $model,
+      'brand'    => ['@type' => 'Brand', 'name' => 'FLUKE'],
+      'sku'      => $sku,
+      'image'    => [$img],
+      'description' => Str::limit(strip_tags($product->short_desc ?? $product->name ?? $model), 180),
+      'offers'   => [
+        '@type' => 'Offer',
+        'priceCurrency' => 'THB',
+        'price' => $price,
+        'availability' => "https://schema.org/{$avail}",
+        'url' => $url,
+      ],
+    ];
+
+    $breadcrumbJson = [
+      '@context' => 'https://schema.org',
+      '@type'    => 'BreadcrumbList',
+      'itemListElement' => [
+        ['@type'=>'ListItem','position'=>1,'name'=>'หน้าแรก','item'=>'https://myfluketh.com/'],
+        ['@type'=>'ListItem','position'=>2,'name'=>$categoryName ?? 'สินค้า FLUKE','item'=>url()->previous()],
+        ['@type'=>'ListItem','position'=>3,'name'=>$model,'item'=>$url],
+      ],
+    ];
+  @endphp
+
+  <!-- ===================== 🔹 META ===================== -->
+  <title>{{ $title }}</title>
+  <meta name="description" content="{{ $desc }}">
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
-  <link rel="canonical" href="{{ request()->fullUrl() }}">
+  <link rel="canonical" href="{{ $url }}">
 
-  <!-- ===================== 🔹 OPEN GRAPH ===================== -->
+  <!-- OG / Twitter -->
   <meta property="og:type" content="product">
   <meta property="og:site_name" content="myFlukeTH">
-  <meta property="og:title" content="{{ trim($product->model ?? $product->name) }} | FLUKE ของแท้ | myFlukeTH">
-  <meta property="og:description" content="ดูราคาและรายละเอียด {{ trim($product->model ?? $product->name) }} เครื่องมือวัดไฟฟ้า FLUKE ของแท้ พร้อมจัดส่งทั่วประเทศ">
-  <meta property="og:url" content="{{ request()->fullUrl() }}">
-  <meta property="og:image" content="{{ $product->pic ?? 'https://myfluketh.com/images/og-fluke.jpg' }}">
-  <meta property="og:image:alt" content="{{ trim($product->model ?? $product->name) }}">
+  <meta property="og:title" content="{{ $title }}">
+  <meta property="og:description" content="{{ $desc }}">
+  <meta property="og:url" content="{{ $url }}">
+  <meta property="og:image" content="{{ $img }}">
+  <meta property="og:image:alt" content="{{ $model }}">
   <meta property="og:locale" content="th_TH">
-
-  <!-- ===================== 🔹 TWITTER CARD ===================== -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="{{ trim($product->model ?? $product->name) }} | FLUKE ของแท้ | myFlukeTH">
-  <meta name="twitter:description" content="รายละเอียดและราคา {{ trim($product->model ?? $product->name) }} จากศูนย์ไทย myFlukeTH">
-  <meta name="twitter:image" content="{{ $product->pic ?? 'https://myfluketh.com/images/og-fluke.jpg' }}">
+  <meta name="twitter:title" content="{{ $title }}">
+  <meta name="twitter:description" content="{{ $desc }}">
+  <meta name="twitter:image" content="{{ $img }}">
 
-  <!-- ===================== 🔹 ICON ===================== -->
   <link rel="icon" type="image/png" href="https://myfluketh.com/images/fluke-icon.png">
 
-  <!-- ===================== 🔹 STRUCTURED DATA ===================== -->
+  <!-- JSON-LD: Product + Breadcrumb -->
   <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    "name": "{{ trim($product->model ?? $product->name) }}",
-    "brand": { "@type": "Brand", "name": "FLUKE" },
-    "sku": "{{ $product->sku ?? '' }}",
-    "image": ["{{ $product->pic ?? 'https://myfluketh.com/images/og-fluke.jpg' }}"],
-    "description": "{{ Str::limit(strip_tags($product->short_desc ?? $product->name), 180) }}",
-    "offers": {
-      "@type": "Offer",
-      "priceCurrency": "THB",
-      "price": "{{ number_format((float)($product->priceTHB ?? 0), 2, '.', '') }}",
-      "availability": "https://schema.org/{{ ($product->stock ?? 0) > 0 ? 'InStock' : 'PreOrder' }}",
-      "url": "{{ request()->fullUrl() }}"
-    }
-  }
+    {!! json_encode($productJson, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES) !!}
   </script>
-
-  <!-- ===================== 🔹 STRUCTURED DATA (Breadcrumb) ===================== -->
   <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [
-      { "@type": "ListItem", "position": 1, "name": "หน้าแรก", "item": "https://myfluketh.com/" },
-      { "@type": "ListItem", "position": 2, "name": "{{ $categoryName ?? 'สินค้า FLUKE' }}", "item": "{{ url()->previous() }}" },
-      { "@type": "ListItem", "position": 3, "name": "{{ trim($product->model ?? $product->name) }}", "item": "{{ request()->fullUrl() }}" }
-    ]
-  }
+    {!! json_encode($breadcrumbJson, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES) !!}
   </script>
 </head>
-
 
   <!-- ====== BASE THEME ====== -->
   <style>
