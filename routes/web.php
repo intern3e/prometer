@@ -136,16 +136,17 @@ Route::get('/fluke-marketplace', function () {
 /* ---------- Sitemap (XML) ---------- */
 Route::get('/sitemap.xml', function () {
     try {
-        $now = now()->toAtomString();
+        $now = now()->toAtomString(); // หรือ now('Asia/Bangkok')->toAtomString()
 
-        // กำหนดค่าราย URL ได้เอง
         $urls = [
+            // หน้าแรก: daily + priority สูงสุด และ (ถ้าอยากมี / ท้ายโดเมน) ให้ต่อ '/' เพิ่ม
             [
-                'loc'        => url('/'),
+                'loc'        => url('/') . '/',   // ได้ https://myfluketh.com/
                 'lastmod'    => $now,
                 'changefreq' => 'daily',
                 'priority'   => '1.0',
             ],
+            // หน้ารอง
             [
                 'loc'        => route('fluke.marketplace'),
                 'lastmod'    => $now,
@@ -171,7 +172,6 @@ Route::get('/sitemap.xml', function () {
 
         foreach ($urls as $item) {
             $url = $xml->addChild('url');
-            // ใช้ ENT_XML1 กันตัวอักษรพิเศษ
             $url->addChild('loc',        htmlspecialchars($item['loc'], ENT_XML1, 'UTF-8'));
             $url->addChild('lastmod',    $item['lastmod']);
             $url->addChild('changefreq', $item['changefreq']);
