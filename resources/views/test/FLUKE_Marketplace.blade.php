@@ -10,11 +10,24 @@
 
   $seo = is_array($seo ?? null) ? $seo : [];
 
-  $title     = $seo['title']       ?? 'myFlukeTH — เครื่องมือวัดไฟฟ้า FLUKE ของแท้ | ศูนย์ไทย';
-  $desc      = $seo['description'] ?? 'ศูนย์รวม FLUKE ของแท้จากศูนย์ไทย—มัลติมิเตอร์ แคลมป์มิเตอร์ กล้องถ่ายภาพความร้อน คาลิเบรตมาตรฐานสากล | สอบถาม 066-097-5697 (คุณผาบุ้ง) | info@hikaripower.com | LINE @hikaridenki';
-  $keywords  = $seo['keywords']    ?? 'Fluke, ฟลุค, เครื่องมือวัดไฟฟ้า, มัลติมิเตอร์, แคลมป์มิเตอร์, กล้องถ่ายภาพความร้อน, เครื่องวัดฉนวน, เครื่องตรวจไฟ, myfluketh.com, Myfluketh, myfluketh, prometer, Hikari Power';
-  $canonical = $seo['canonical']   ?? url()->current();
-  $ogImage   = $seo['image']       ?? asset('images/og-fluke.png'); // ใช้ .png ที่อัปแล้ว
+  $title        = $seo['title'] ?? 'myFlukeTH — เครื่องมือวัดไฟฟ้า FLUKE ของแท้ | ศูนย์ไทย';
+
+  // ✅ SERP: สั้นเพื่อไม่โดนตัดในผลค้นหา
+  $desc_serp    = $seo['desc_serp']
+    ?? 'FLUKE ของแท้จากศูนย์ไทย—มัลติมิเตอร์ แคลมป์มิเตอร์ กล้องถ่ายภาพความร้อน คาลิเบรตมาตรฐาน | โทร 066-097-5697 | LINE @hikaridenki';
+
+  // ✅ Social: ยาว ใส่ข้อมูลติดต่อครบ
+  $desc_social  = $seo['desc_social']
+    ?? 'ศูนย์รวม FLUKE ของแท้จากศูนย์ไทย—มัลติมิเตอร์ แคลมป์มิเตอร์ กล้องถ่ายภาพความร้อน คาลิเบรตมาตรฐานสากล | สอบถาม 066-097-5697 (คุณผาบุ้ง) | info@hikaripower.com | LINE @hikaridenki';
+
+  $keywords     = $seo['keywords']  ?? 'Fluke, ฟลุค, เครื่องมือวัดไฟฟ้า, มัลติมิเตอร์, แคลมป์มิเตอร์, กล้องถ่ายภาพความร้อน, เครื่องวัดฉนวน, เครื่องตรวจไฟ, myfluketh.com, Myfluketh, myfluketh, prometer, Hikari Power';
+
+  // Canonical: หน้าแรกบังคับให้มี '/' ท้ายโดเมน
+  $homeUrl      = rtrim(url('/'), '/') . '/';
+  $currentUrl   = url()->current();
+  $canonical    = $seo['canonical'] ?? (rtrim($currentUrl,'/') === rtrim($homeUrl,'/') ? $homeUrl : $currentUrl);
+
+  $ogImage      = $seo['image']     ?? asset('images/og-fluke.png'); // ใช้ .png ที่อัปแล้ว
 
   // เพจที่ไม่ควรติด index
   $noindex = $seo['noindex']
@@ -22,10 +35,9 @@
     || request()->is('test/*');
 @endphp
 
-
   {{-- ===================== 🔹 TITLE & DESCRIPTION ===================== --}}
   <title>{{ $title }}</title>
-  <meta name="description" content="{{ $desc }}">
+  <meta name="description" content="{{ $desc_serp }}">
   <meta name="keywords" content="{{ $keywords }}">
 
   {{-- ===================== 🔹 ROBOTS & CANONICAL ===================== --}}
@@ -43,7 +55,7 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="myFlukeTH">
   <meta property="og:title" content="{{ $title }}">
-  <meta property="og:description" content="{{ $desc }}">
+  <meta property="og:description" content="{{ $desc_social }}">
   <meta property="og:url" content="{{ $canonical }}">
   <meta property="og:image" content="{{ $ogImage }}">
   <meta property="og:image:alt" content="myFlukeTH – เครื่องมือวัดไฟฟ้า FLUKE ของแท้">
@@ -52,7 +64,7 @@
   {{-- ===================== 🔹 TWITTER CARD ===================== --}}
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="{{ $title }}">
-  <meta name="twitter:description" content="{{ $desc }}">
+  <meta name="twitter:description" content="{{ $desc_social }}">
   <meta name="twitter:image" content="{{ $ogImage }}">
 
   {{-- ===================== 🔹 ICON ===================== --}}
