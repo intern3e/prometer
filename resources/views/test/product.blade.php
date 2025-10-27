@@ -1,11 +1,91 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta name="csrf-token" content="{{ csrf_token() }}">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Product | FLUKE</title>
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+
+  @php
+    use Illuminate\Support\Str;
+
+    // รองรับได้หลายชื่อ ตัวแปรจาก controller
+    $p = $product ?? $item ?? $data ?? null;
+
+    $name   = trim($p->name   ?? $p['name']   ?? '');
+    $model  = trim($p->model  ?? $p['model']  ?? ($p->num_model ?? $p['num_model'] ?? ''));
+    $iditem = trim($p->iditem ?? $p['iditem'] ?? '');
+    $img    = $p->image ?? $p['image'] ?? $p->pic ?? $p['pic'] ?? asset('images/og-fluke.png');
+    $priceT = trim($p->webpriceTHB ?? $p['webpriceTHB'] ?? '');                  // ตัวอักษร
+    $priceN = preg_replace('/[^\d\.]/', '', $priceT);                            // ตัวเลขล้วนเพื่อ schema
+
+    // Canonical แบบมี slug
+    $slug       = $name ? Str::slug($name, '-') : 'fluke';
+    $canonical  = url('/product/'.$iditem.'/'.$slug);
+
+    // TITLE: ใส่ชื่อ + รุ่น + id
+    $title = trim(($name ?: 'สินค้า FLUKE')
+              .' '.($model ? "รุ่น $model " : '')
+              .($iditem ? "($iditem)" : '')
+              .' | myFlukeTH');
+
+    // DESCRIPTION (≤160 อักษร) โฟกัสชื่อ/รุ่น/รหัส/ราคา
+    $descSerpBase = trim(($name ?: 'สินค้า FLUKE')
+              .($model ? " รุ่น $model" : '')
+              .($iditem ? " • รหัส $iditem" : '')
+              .($priceT ? " • ราคา $priceT" : '')
+              .' • ของแท้ศูนย์ไทย');
+
+    $desc_serp = Str::limit($descSerpBase, 160, '');     // ไม่ให้เกิน 160 อักษร
+    $desc_social = $descSerpBase.' | สอบถาม 066-097-5697 • LINE @hikaridenki';
+  @endphp
+
+  <title>{{ $title }}</title>
   <link rel="icon" type="image/png" href="https://img5.pic.in.th/file/secure-sv1/ChatGPT_Image_18_.._2568_12_03_57-removebg-preview.png">
+
+  {{-- ✅ index เฉพาะเพจสินค้า และจำกัดสไนเป็ต 160 อักษร --}}
+  <meta name="robots" content="index, follow, max-snippet:160, max-image-preview:large">
+  <meta name="googlebot" content="max-snippet:160">
+  <link rel="canonical" href="{{ $canonical }}"/>
+
+  {{-- META สำหรับ SERP + SOCIAL --}}
+  <meta name="description" content="{{ $desc_serp }}">
+  <meta property="og:type" content="product">
+  <meta property="og:title" content="{{ $title }}">
+  <meta property="og:description" content="{{ $desc_social }}">
+  <meta property="og:url" content="{{ $canonical }}">
+  <meta property="og:image" content="{{ $img }}">
+  <meta property="og:site_name" content="myFlukeTH">
+  <meta property="og:locale" content="th_TH">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ $title }}">
+  <meta name="twitter:description" content="{{ $desc_social }}">
+  <meta name="twitter:image" content="{{ $img }}">
+
+  {{-- ✅ Product JSON-LD: ช่วยแมตช์ตามชื่อ/รุ่น/รหัส และแสดงราคา --}}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "{{ $name ?: 'FLUKE Product' }}",
+    "sku": "{{ $iditem }}",
+    "mpn": "{{ $model }}",
+    "brand": { "@type": "Brand", "name": "Fluke" },
+    "image": ["{{ $img }}"],
+    "description": "{{ $desc_serp }}",
+    "url": "{{ $canonical }}",
+    "offers": {
+      "@type": "Offer",
+      "price": "{{ $priceN ?: '' }}",
+      "priceCurrency": "THB",
+      "availability": "https://schema.org/InStock",
+      "url": "{{ $canonical }}",
+      "seller": { "@type": "Organization", "name": "myFlukeTH" }
+    }
+  }
+  </script>
+
+  <!-- ====== BASE THEME / YOUR CSS ====== -->
+</head>
 
   <!-- ====== BASE THEME ====== -->
   <style>

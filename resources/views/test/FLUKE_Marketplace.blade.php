@@ -4,54 +4,50 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  {{-- ===================== 🔧 SEO VARS ===================== --}}
 @php
   use Illuminate\Support\Facades\Route;
 
   $seo = is_array($seo ?? null) ? $seo : [];
 
-  $title        = $seo['title'] ?? 'myFlukeTH — เครื่องมือวัดไฟฟ้า FLUKE ของแท้ | ศูนย์ไทย';
+  $title = $seo['title'] ?? 'myFlukeTH — เครื่องมือวัดไฟฟ้า FLUKE ของแท้ | ศูนย์ไทย';
 
-  // ✅ SERP: สั้นเพื่อไม่โดนตัดในผลค้นหา
-  $desc_serp    = $seo['desc_serp']
+  // SERP (≤160 ตัวอักษร)
+  $desc_serp = $seo['desc_serp']
     ?? 'FLUKE ของแท้จากศูนย์ไทย—มัลติมิเตอร์ แคลมป์มิเตอร์ กล้องถ่ายภาพความร้อน คาลิเบรตมาตรฐาน | โทร 066-097-5697 | LINE @hikaridenki';
 
-  // ✅ Social: ยาว ใส่ข้อมูลติดต่อครบ
-  $desc_social  = $seo['desc_social']
+  // Social (ยาว ใส่ช่องทางครบ)
+  $desc_social = $seo['desc_social']
     ?? 'ศูนย์รวม FLUKE ของแท้จากศูนย์ไทย—มัลติมิเตอร์ แคลมป์มิเตอร์ กล้องถ่ายภาพความร้อน คาลิเบรตมาตรฐานสากล | สอบถาม 066-097-5697 (คุณผาบุ้ง) | info@hikaripower.com | LINE @hikaridenki';
 
-  $keywords     = $seo['keywords']  ?? 'Fluke, ฟลุค, เครื่องมือวัดไฟฟ้า, มัลติมิเตอร์, แคลมป์มิเตอร์, กล้องถ่ายภาพความร้อน, เครื่องวัดฉนวน, เครื่องตรวจไฟ, myfluketh.com, Myfluketh, myfluketh, prometer, Hikari Power';
+  $keywords  = $seo['keywords'] ?? 'Fluke, ฟลุค, เครื่องมือวัดไฟฟ้า, มัลติมิเตอร์, แคลมป์มิเตอร์, กล้องถ่ายภาพความร้อน, เครื่องวัดฉนวน, เครื่องตรวจไฟ';
+  $homeUrl   = rtrim(url('/'), '/') . '/';
+  $current   = url()->current();
+  $canonical = $seo['canonical'] ?? (rtrim($current,'/') === rtrim($homeUrl,'/') ? $homeUrl : $current);
+  $ogImage   = $seo['image'] ?? asset('images/og-fluke.png');
 
-  // Canonical: หน้าแรกบังคับให้มี '/' ท้ายโดเมน
-  $homeUrl      = rtrim(url('/'), '/') . '/';
-  $currentUrl   = url()->current();
-  $canonical    = $seo['canonical'] ?? (rtrim($currentUrl,'/') === rtrim($homeUrl,'/') ? $homeUrl : $currentUrl);
-
-  $ogImage      = $seo['image']     ?? asset('images/og-fluke.png'); // ใช้ .png ที่อัปแล้ว
-
-  // เพจที่ไม่ควรติด index
   $noindex = $seo['noindex']
     ?? in_array(Route::currentRouteName(), ['login','Sign_up'])
     || request()->is('test/*');
 @endphp
 
-  {{-- ===================== 🔹 TITLE & DESCRIPTION ===================== --}}
+  {{-- TITLE & DESCRIPTION --}}
   <title>{{ $title }}</title>
   <meta name="description" content="{{ $desc_serp }}">
   <meta name="keywords" content="{{ $keywords }}">
 
-  {{-- ===================== 🔹 ROBOTS & CANONICAL ===================== --}}
+  {{-- ROBOTS & CANONICAL (จำกัดความยาวสไนเป็ต) --}}
   @if($noindex)
     <meta name="robots" content="noindex, nofollow">
   @else
-    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+    <meta name="robots" content="index, follow, max-snippet:160, max-image-preview:large, max-video-preview:-1">
+    <meta name="googlebot" content="max-snippet:160">
   @endif
   <link rel="canonical" href="{{ $canonical }}"/>
 
-  {{-- ===================== 🔹 GOOGLE VERIFICATION ===================== --}}
+  {{-- GOOGLE VERIFICATION --}}
   <meta name="google-site-verification" content="tpmhTAxPUzD7bh4163L-tqG21SpSCOJC_N0nNxfNt3k">
 
-  {{-- ===================== 🔹 OPEN GRAPH ===================== --}}
+  {{-- OPEN GRAPH / SOCIAL --}}
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="myFlukeTH">
   <meta property="og:title" content="{{ $title }}">
@@ -61,24 +57,22 @@
   <meta property="og:image:alt" content="myFlukeTH – เครื่องมือวัดไฟฟ้า FLUKE ของแท้">
   <meta property="og:locale" content="th_TH">
 
-  {{-- ===================== 🔹 TWITTER CARD ===================== --}}
+  {{-- TWITTER --}}
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="{{ $title }}">
   <meta name="twitter:description" content="{{ $desc_social }}">
   <meta name="twitter:image" content="{{ $ogImage }}">
 
-  {{-- ===================== 🔹 ICON ===================== --}}
+  {{-- ICON --}}
   <link rel="icon" type="image/png" href="https://img5.pic.in.th/file/secure-sv1/ChatGPT_Image_18_.._2568_12_03_57-removebg-preview.png" />
-  {{-- (ถ้าจะใช้ไฟล์ในโปรเจกต์แทน ให้เปลี่ยนเป็น {{ asset('images/og-fluke.png') }}) --}}
 
-  {{-- ===================== 🔹 Swiper (CDN) ===================== --}}
+  {{-- Swiper --}}
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css">
 
-  <style>
-    :root { --brand:#ff6a00; }
-  </style>
+  <style>:root { --brand:#ff6a00; }</style>
 </head>
+
 
 <body>
 
