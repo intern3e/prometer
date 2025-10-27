@@ -180,14 +180,23 @@ use Illuminate\Support\Str;
 |--------------------------------------------------------------------------
 */
 
+// robots.txt
+Route::get('/robots.txt', function () {
+    $host = rtrim(url('/'), '/');
+    $txt  = "User-agent: *\nAllow: /\nSitemap: {$host}/sitemap.xml\n"; // \n ปิดท้ายไฟล์
+
+    return response($txt, 200, [
+        'Content-Type'  => 'text/plain; charset=UTF-8',
+        'Cache-Control' => 'public, max-age=3600',
+    ]);
+});
+
+// sitemap.xml (Home เท่านั้น)
 Route::get('/sitemap.xml', function () {
     $tz  = 'Asia/Bangkok';
     $now = now($tz)->toAtomString();
-
-    // ให้ URL หน้าแรกมี / ปิดท้ายเสมอ
     $home = rtrim(url('/'), '/') . '/';
 
-    // สร้าง XML
     $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><urlset/>');
     $xml->addAttribute('xmlns', 'http://www.sitemaps.org/schemas/sitemap/0.9');
 
@@ -202,4 +211,5 @@ Route::get('/sitemap.xml', function () {
         'Cache-Control' => 'public, max-age=3600',
     ]);
 })->name('sitemap.xml');
+
 
