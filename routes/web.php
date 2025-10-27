@@ -176,66 +176,31 @@ use Illuminate\Support\Str;
 
 /*
 |--------------------------------------------------------------------------
-| Sitemap (XML) — index เฉพาะหน้า Home + หน้า "สินค้าเป็นรายตัว"
+| Sitemap (XML) — เฉพาะหน้า Home
 |--------------------------------------------------------------------------
 */
+use Illuminate\Support\Facades\Route;
+
 Route::get('/sitemap.xml', function () {
-    try {
-        $tz  = 'Asia/Bangkok';
-        $now = now($tz)->toAtomString();
+    $tz  = 'Asia/Bangkok';
+    $now = now($tz)->toAtomString();
 
-        // ✅ Home page only (ตัด marketplace / products ออก)
-        $home = rtrim(url('/'), '/') . '/';
-        $urls = [[
-            'loc'        => $home,
-            'lastmod'    => $now,
-            'changefreq' => 'daily',
-            'priority'   => '1.0',
-        ]];
+    // ให้ URL หน้าแรกมี / ปิดท้ายเสมอ
+    $home = rtrim(url('/'), '/') . '/';
 
-        // ✅ ใส่เฉพาะหน้า "สินค้าเป็นรายตัว" เท่านั้น (สูงสุด 2000 รายการล่าสุด)
-        $products = Fluke::query()
-            ->select(['iditem', 'name', 'updated_at'])
-            ->whereNotNull('iditem')
-            ->whereNotNull('name')
-            ->orderByDesc('updated_at')
-            ->take(2000)
-            ->get();
+    // สร้าง XML
+    $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><urlset/>');
+    $xml->addAttribute('xmlns', 'http://www.sitemaps.org/schemas/sitemap/0.9');
 
-        foreach ($products as $p) {
-            $slug = Str::slug($p->name ?? 'fluke', '-');
+    $url = $xml->addChild('url');
+    $url->addChild('loc',        htmlspecialchars($home, ENT_XML1, 'UTF-8'));
+    $url->addChild('lastmod',    $now);
+    $url->addChild('changefreq', 'daily');
+    $url->addChild('priority',   '1.0');
 
-            $urls[] = [
-                'loc'        => url('/product/' . $p->iditem . '/' . $slug),
-                'lastmod'    => optional($p->updated_at)->timezone($tz)->toAtomString() ?: $now,
-                'changefreq' => 'weekly',
-                'priority'   => '0.6',
-            ];
-        }
-
-        // Build XML
-        $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><urlset/>');
-        $xml->addAttribute('xmlns', 'http://www.sitemaps.org/schemas/sitemap/0.9');
-
-        foreach ($urls as $item) {
-            $url = $xml->addChild('url');
-            $url->addChild('loc',        htmlspecialchars($item['loc'], ENT_XML1, 'UTF-8'));
-            $url->addChild('lastmod',    $item['lastmod']);
-            $url->addChild('changefreq', $item['changefreq']);
-            $url->addChild('priority',   $item['priority']);
-        }
-
-        return response($xml->asXML(), 200, [
-            'Content-Type'  => 'application/xml; charset=UTF-8',
-            'Cache-Control' => 'public, max-age=3600',
-        ]);
-    } catch (\Throwable $e) {
-        \Log::error('Sitemap Error: ' . $e->getMessage());
-        return response('Error generating sitemap: ' . $e->getMessage(), 500);
-    }
+    return response($xml->asXML(), 200, [
+        'Content-Type'  => 'application/xml; charset=UTF-8',
+        'Cache-Control' => 'public, max-age=3600',
+    ]);
 })->name('sitemap.xml');
 
-Route::get('/products', function () {
-    return response()->view('test.product_index')
-        ->header('X-Robots-Tag', 'noindex, follow');
-})->name('products.index');

@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Product | FLUKE</title>
   <link rel="icon" type="image/png" href="https://img5.pic.in.th/file/secure-sv1/ChatGPT_Image_18_.._2568_12_03_57-removebg-preview.png">
-  <meta name="robots" content="noindex,follow">
+
   <!-- ====== BASE THEME ====== -->
   <style>
     :root{
