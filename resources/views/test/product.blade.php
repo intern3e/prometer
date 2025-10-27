@@ -4,8 +4,75 @@
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Product | FLUKE</title>
+
+@php
+  use Illuminate\Support\Str;
+
+  $p        = $product ?? (object)[];
+  $pName    = trim((string)($p->name ?? ''));
+  $pModel   = trim((string)($p->model ?? $p->num_model ?? ''));
+  $brand    = trim((string)($p->brand ?? 'FLUKE'));
+  $iditem   = trim((string)($p->iditem ?? ''));
+  $pic      = $p->pic ?? $p->image ?? null;
+
+  $title    = ($pModel ? "{$pModel} — " : '') . ($pName ?: 'Product') . ' | myFlukeTH';
+  $desc     = Str::limit(
+                trim(strip_tags($p->short_desc ?? $pName ?? 'เครื่องมือ FLUKE ของแท้ ศูนย์ไทย')),
+                150, '…'
+              );
+  $canonical = $iditem ? url('/product/' . rawurlencode($iditem)) : url()->current();
+  $ogImage   = $pic ?: asset('images/og-fluke.png');
+
+  $priceTHB  = is_numeric($p->webpriceTHB ?? null) ? (float)$p->webpriceTHB : null;
+  $inStock   = (($p->stock ?? 0) > 0) ? 'InStock' : 'OutOfStock';
+@endphp
+
+  {{-- TITLE & DESCRIPTION --}}
+  <title>{{ $title }}</title>
+  <meta name="description" content="{{ $desc }}">
+
+  {{-- ✅ เปิด index สำหรับหน้าสินค้า --}}
+  <meta name="robots" content="index, follow, max-snippet:160, max-image-preview:large, max-video-preview:-1">
+  <meta name="googlebot" content="max-snippet:160">
+  <link rel="canonical" href="{{ $canonical }}"/>
+
+  {{-- Open Graph / Twitter --}}
+  <meta property="og:type" content="product">
+  <meta property="og:site_name" content="myFlukeTH">
+  <meta property="og:title" content="{{ $title }}">
+  <meta property="og:description" content="{{ $desc }}">
+  <meta property="og:url" content="{{ $canonical }}">
+  <meta property="og:image" content="{{ $ogImage }}">
+  <meta property="og:locale" content="th_TH">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ $title }}">
+  <meta name="twitter:description" content="{{ $desc }}">
+  <meta name="twitter:image" content="{{ $ogImage }}">
+
+  {{-- Favicon --}}
   <link rel="icon" type="image/png" href="https://img5.pic.in.th/file/secure-sv1/ChatGPT_Image_18_.._2568_12_03_57-removebg-preview.png">
+
+  {{-- ✅ Product JSON-LD ช่วยให้ Google เข้าใจว่าเป็นหน้าสินค้า --}}
+  @php
+    $productLd = [
+      '@context' => 'https://schema.org',
+      '@type'    => 'Product',
+      'name'     => trim(($pModel ? $pModel.' — ' : '').($pName ?: 'Product')),
+      'image'    => array_values(array_filter([$ogImage])),
+      'sku'      => $p->sku ?? $iditem ?: null,
+      'brand'    => ['@type'=>'Brand','name'=> $brand ?: 'FLUKE'],
+      'offers'   => [
+        '@type'         => 'Offer',
+        'url'           => $canonical,
+        'priceCurrency' => 'THB',
+        'price'         => $priceTHB ?: null,
+        'availability'  => "https://schema.org/{$inStock}"
+      ]
+    ];
+  @endphp
+  <script type="application/ld+json">{!! json_encode($productLd, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES) !!}</script>
+</head>
 
   <!-- ====== BASE THEME ====== -->
   <style>

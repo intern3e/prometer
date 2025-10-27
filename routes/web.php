@@ -12,8 +12,9 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\PdfProxyController;
-
-use App\Models\Fluke;
+use Illuminate\Support\Facades\URL;
+use App\Models\Fluke; // <-- ใช้ตารางสินค้าของคุณ
+use Illuminate\Support\Facades\Route as Router;
 
 /* -------------------- Public pages (ไม่ต้องล็อกอิน) -------------------- */
 Route::get('/login', fn () => view('login.Login'))->name('login');
@@ -172,44 +173,87 @@ Route::get('/fluke-marketplace', function () {
 /* ---------- Sitemap (XML) ---------- */
 
 
-use Illuminate\Support\Str;
-
-/*
-|--------------------------------------------------------------------------
-| Sitemap (XML) — เฉพาะหน้า Home
-|--------------------------------------------------------------------------
-*/
-
 // robots.txt
 Route::get('/robots.txt', function () {
     $host = rtrim(url('/'), '/');
-    $txt  = "User-agent: *\nAllow: /\nSitemap: {$host}/sitemap.xml\n"; // \n ปิดท้ายไฟล์
-
-    return response($txt, 200, [
+    $lines = [
+        'User-agent: *',
+        'Allow: /',
+        'Disallow: /test/',
+        'Disallow: /login',
+        'Disallow: /Sign_up',
+        "Sitemap: {$host}/sitemap.xml",
+        '' // newline ท้ายไฟล์
+    ];
+    return response(implode("\n", $lines), 200, [
         'Content-Type'  => 'text/plain; charset=UTF-8',
         'Cache-Control' => 'public, max-age=3600',
     ]);
 });
 
-// sitemap.xml (Home เท่านั้น)
+// sitemap.xml (Home + หมวด + สินค้าจริง)
 Route::get('/sitemap.xml', function () {
-    $tz  = 'Asia/Bangkok';
-    $now = now($tz)->toAtomString();
+    $tz   = 'Asia/Bangkok';
+    $now  = now($tz)->toAtomString();
     $home = rtrim(url('/'), '/') . '/';
 
     $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><urlset/>');
     $xml->addAttribute('xmlns', 'http://www.sitemaps.org/schemas/sitemap/0.9');
 
-    $url = $xml->addChild('url');
-    $url->addChild('loc',        htmlspecialchars($home, ENT_XML1, 'UTF-8'));
-    $url->addChild('lastmod',    $now);
-    $url->addChild('changefreq', 'daily');
-    $url->addChild('priority',   '1.0');
+    $add = function(string $loc, string $lastmod, string $freq, string $prio) use ($xml) {
+        $u = $xml->addChild('url');
+        $u->addChild('loc', htmlspecialchars($loc, ENT_XML1, 'UTF-8'));
+        $u->addChild('lastmod', $lastmod);
+        $u->addChild('changefreq', $freq);
+        $u->addChild('priority', $prio);
+    };
+
+    // Home
+    $add($home, $now, 'daily', '1.0');
+
+    // หมวดหมู่หลัก (ใช้ route จริงของคุณ)
+    $catUrls = [
+        route('product.category', ['slug' => 'ClampMeter1']),
+        route('product.category', ['slug' => 'Multimeters']),
+        route('product.category', ['slug' => 'ElectricalTesters']),
+        route('product.category', ['slug' => 'Thermography']),
+        route('product.category', ['slug' => 'InsulationTesters']),
+        route('product.category', ['slug' => 'PowerQuality']),
+        route('product.category', ['slug' => 'LoopCalibrators']),
+        route('product.category', ['slug' => 'Accessories']),
+    ];
+    foreach ($catUrls as $loc) {
+        $add($loc, $now, 'weekly', '0.6');
+    }
+
+    // สินค้า (limit 5k ต่อไฟล์ เพื่อความปลอดภัย)
+    $products = Fluke::query()
+        ->select('iditem','updated_at')
+        ->latest('updated_at')
+        ->limit(5000)
+        ->get();
+
+    foreach ($products as $p) {
+        $loc = url('/product/' . rawurlencode($p->iditem));
+        $last = optional($p->updated_at)->toAtomString() ?? $now;
+        $add($loc, $last, 'weekly', '0.8');
+    }
 
     return response($xml->asXML(), 200, [
         'Content-Type'  => 'application/xml; charset=UTF-8',
         'Cache-Control' => 'public, max-age=3600',
     ]);
 })->name('sitemap.xml');
+
+// SearchAction target (สำหรับ JSON-LD ให้ Google แสดง searchbox ใต้ผลลัพธ์แบรนด์)
+Route::get('/search', function (\Illuminate\Http\Request $req) {
+    $q = trim($req->query('q', ''));
+    if ($q === '') {
+        return redirect()->route('product.index');
+    }
+    // เปลี่ยนตามระบบค้นหาที่คุณใช้จริง
+    return redirect()->route('product.index', ['q' => $q]);
+})->name('site.search');
+
 
 

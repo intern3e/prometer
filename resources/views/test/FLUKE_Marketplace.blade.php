@@ -28,6 +28,10 @@
   $noindex = $seo['noindex']
     ?? in_array(Route::currentRouteName(), ['login','Sign_up'])
     || request()->is('test/*');
+
+  // สำหรับ JSON-LD
+  $logoUrl = asset('storage/logo.jpg');
+  $telE164 = '+66660975697';
 @endphp
 
   {{-- TITLE & DESCRIPTION --}}
@@ -35,7 +39,7 @@
   <meta name="description" content="{{ $desc_serp }}">
   <meta name="keywords" content="{{ $keywords }}">
 
-  {{-- ROBOTS & CANONICAL (จำกัดความยาวสไนเป็ต) --}}
+  {{-- ROBOTS & CANONICAL --}}
   @if($noindex)
     <meta name="robots" content="noindex, nofollow">
   @else
@@ -71,7 +75,50 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css">
 
   <style>:root { --brand:#ff6a00; }</style>
+
+  {{-- ============== JSON-LD: WebSite + Organization (ช่วยให้ค้นชื่อแบรนด์เจอ) ============== --}}
+  @php
+    $websiteLd = [
+      '@context' => 'https://schema.org',
+      '@type'    => 'WebSite',
+      'name'     => 'myFlukeTH',
+      'url'      => $homeUrl,
+      'potentialAction' => [
+        '@type'       => 'SearchAction',
+        'target'      => url('/search').'?q={search_term_string}',
+        'query-input' => 'required name=search_term_string'
+      ]
+    ];
+
+    $orgLd = [
+      '@context' => 'https://schema.org',
+      '@type'    => 'Organization',
+      'name'     => 'myFlukeTH',
+      'url'      => $homeUrl,
+      'logo'     => $logoUrl,
+      'contactPoint' => [[
+        '@type' => 'ContactPoint',
+        'telephone' => $telE164,
+        'contactType' => 'customer service',
+        'areaServed'  => 'TH',
+        'availableLanguage' => ['Thai','English']
+      ]],
+      // เติมโปรไฟล์จริงถ้ามี
+      'sameAs' => array_values(array_filter([
+        // 'https://www.facebook.com/yourpage',
+        // 'https://www.youtube.com/@yourchannel',
+        // 'https://line.me/R/ti/p/@hikaridenki',
+      ]))
+    ];
+  @endphp
+
+  <script type="application/ld+json">{!! json_encode($websiteLd, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE) !!}</script>
+  <script type="application/ld+json">{!! json_encode($orgLd,     JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE) !!}</script>
 </head>
+
+<style>
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+</style>
 
 
 <body>
@@ -81,8 +128,13 @@
 
   {{-- Content --}}
   <main>
+    <h1 class="sr-only">
+      myFlukeTH — เครื่องมือวัดไฟฟ้า FLUKE ประเทศไทย | คาลิเบรตมาตรฐาน | โทร 066-097-5697 | LINE @hikaridenki
+    </h1>
+
     @yield('content')
   </main>
+
 
   <br>
 
