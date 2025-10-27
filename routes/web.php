@@ -172,59 +172,48 @@ Route::get('/fluke-marketplace', function () {
 /* ---------- Sitemap (XML) ---------- */
 
 
+use Illuminate\Support\Str;
+
+/*
+|--------------------------------------------------------------------------
+| Sitemap (XML) — index เฉพาะหน้า Home + หน้า "สินค้าเป็นรายตัว"
+|--------------------------------------------------------------------------
+*/
 Route::get('/sitemap.xml', function () {
     try {
         $tz  = 'Asia/Bangkok';
         $now = now($tz)->toAtomString();
 
-        // หน้า static หลัก ๆ
+        // ✅ Home page only (ตัด marketplace / products ออก)
         $home = rtrim(url('/'), '/') . '/';
-        $urls = [
-            [
-                'loc'        => $home,
-                'lastmod'    => $now,
-                'changefreq' => 'daily',
-                'priority'   => '1.0',
-            ],
-            [
-                'loc'        => route('fluke.marketplace'),
-                'lastmod'    => $now,
-                'changefreq' => 'weekly',
-                'priority'   => '0.8',
-            ],
-            [
-                'loc'        => url('/products'),
-                'lastmod'    => $now,
-                'changefreq' => 'weekly',
-                'priority'   => '0.8',
-            ],
-            [
-                'loc'        => url('/products/category/ClampMeter1'),
-                'lastmod'    => $now,
-                'changefreq' => 'weekly',
-                'priority'   => '0.8',
-            ],
-        ];
+        $urls = [[
+            'loc'        => $home,
+            'lastmod'    => $now,
+            'changefreq' => 'daily',
+            'priority'   => '1.0',
+        ]];
 
-        // ✅ เพิ่มสินค้าเป็นรายตัว (สูงสุด 2000 รายการแรกที่อัปเดตล่าสุด)
+        // ✅ ใส่เฉพาะหน้า "สินค้าเป็นรายตัว" เท่านั้น (สูงสุด 2000 รายการล่าสุด)
         $products = Fluke::query()
-            ->select(['iditem','name','updated_at'])
+            ->select(['iditem', 'name', 'updated_at'])
             ->whereNotNull('iditem')
+            ->whereNotNull('name')
             ->orderByDesc('updated_at')
             ->take(2000)
             ->get();
 
         foreach ($products as $p) {
             $slug = Str::slug($p->name ?? 'fluke', '-');
+
             $urls[] = [
-                'loc'        => url('/product/'.$p->iditem.'/'.$slug),
+                'loc'        => url('/product/' . $p->iditem . '/' . $slug),
                 'lastmod'    => optional($p->updated_at)->timezone($tz)->toAtomString() ?: $now,
                 'changefreq' => 'weekly',
                 'priority'   => '0.6',
             ];
         }
 
-        // สร้าง XML
+        // Build XML
         $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><urlset/>');
         $xml->addAttribute('xmlns', 'http://www.sitemaps.org/schemas/sitemap/0.9');
 
@@ -241,7 +230,12 @@ Route::get('/sitemap.xml', function () {
             'Cache-Control' => 'public, max-age=3600',
         ]);
     } catch (\Throwable $e) {
-        \Log::error('Sitemap Error: '.$e->getMessage());
-        return response('Error generating sitemap: '.$e->getMessage(), 500);
+        \Log::error('Sitemap Error: ' . $e->getMessage());
+        return response('Error generating sitemap: ' . $e->getMessage(), 500);
     }
 })->name('sitemap.xml');
+
+Route::get('/products', function () {
+    return response()->view('test.product_index')
+        ->header('X-Robots-Tag', 'noindex, follow');
+})->name('products.index');
