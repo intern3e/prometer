@@ -3,90 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  @php
-    $catName   = trim($categoryName ?? 'สินค้า FLUKE');
-    $page      = max(1, (int)request('page', 1));
-    $urlBase   = request()->url();
-    $canonical = $page > 1 ? $urlBase.'?page='.$page : $urlBase;
-
-    $qsExceptPage = request()->except(['page']);
-    $hasFacet = count($qsExceptPage) > 0;
-
-    $robots   = $hasFacet ? 'noindex, follow' : 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1';
-    $title    = $page > 1 ? "{$catName} — หน้า {$page} | myFlukeTH" : "{$catName} | myFlukeTH";
-    $desc     = "รวมสินค้า FLUKE ประเภท {$catName} ของแท้จากศูนย์ไทย สเปก ราคา เปรียบเทียบรุ่น พร้อมบริการคาลิเบรตและจัดส่งทั่วประเทศ";
-
-    $imageOG  = 'https://myfluketh.com/images/og-fluke.jpg';
-
-    $items    = $products ?? $items ?? [];
-    $itemList = [];
-    $pos = 1;
-    foreach ($items as $p) {
-      $itemList[] = [
-        '@type' => 'ListItem',
-        'position' => $pos++,
-        'url' => url('/product/' . urlencode($p->iditem ?? $p->id ?? '')),
-        'name'=> trim($p->model ?? $p->name ?? ''),
-        'image'=> $p->pic ?? $imageOG,
-      ];
-    }
-
-    $breadcrumbJson = [
-      '@context'=>'https://schema.org',
-      '@type'=>'BreadcrumbList',
-      'itemListElement'=>[
-        ['@type'=>'ListItem','position'=>1,'name'=>'หน้าแรก','item'=>'https://myfluketh.com/'],
-        ['@type'=>'ListItem','position'=>2,'name'=>$catName,'item'=>$canonical],
-      ],
-    ];
-
-    $collectionJson = [
-      '@context'=>'https://schema.org',
-      '@type'=>'CollectionPage',
-      'name'=>$catName,
-      'url'=>$canonical,
-      'hasPart'=>[
-        '@type'=>'ItemList',
-        'itemListElement'=>$itemList,
-      ],
-    ];
-  @endphp
-
-  <!-- ===================== 🔹 META ===================== -->
-  <title>{{ $title }}</title>
-  <meta name="description" content="{{ $desc }}">
-  <meta name="robots" content="{{ $robots }}">
-  <link rel="canonical" href="{{ $canonical }}">
-  <link rel="alternate" href="{{ $urlBase }}" hreflang="th">
-  <link rel="alternate" href="{{ $urlBase }}" hreflang="x-default">
-
-  <!-- OG / Twitter -->
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="myFlukeTH">
-  <meta property="og:title" content="{{ $title }}">
-  <meta property="og:description" content="{{ $desc }}">
-  <meta property="og:url" content="{{ $canonical }}">
-  <meta property="og:image" content="{{ $imageOG }}">
-  <meta property="og:image:alt" content="FLUKE — {{ $catName }}">
-  <meta property="og:locale" content="th_TH">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="{{ $title }}">
-  <meta name="twitter:description" content="{{ $desc }}">
-  <meta name="twitter:image" content="{{ $imageOG }}">
-
-  <link rel="icon" type="image/png" href="https://myfluketh.com/images/fluke-icon.png">
-
-  <!-- JSON-LD -->
-  <script type="application/ld+json">
-    {!! json_encode($breadcrumbJson, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES) !!}
-  </script>
-  <script type="application/ld+json">
-    {!! json_encode($collectionJson, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES) !!}
-  </script>
+  <title>FLUKE | Product</title>
+  <link rel="icon" type="image/png" href="https://img5.pic.in.th/file/secure-sv1/ChatGPT_Image_18_.._2568_12_03_57-removebg-preview.png">
+  <!-- (ถ้าใช้ Swiper ให้ include ไว้ที่ layout หลักตามเดิม) -->
 </head>
-
-
 <body>
   {{-- Header --}}
   @include('test.header-nav')

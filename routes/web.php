@@ -1,33 +1,25 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
+
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CartController;
-use Illuminate\Support\Str;
-use Illuminate\Http\Request;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\AdminUserController;
+use App\Http\Controllers\PdfProxyController;
+
 use App\Models\Fluke;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cookie;
-use App\Http\Controllers\AccountController;
-use GuzzleHttp\Client;
-use App\Models\Custdetail;
 
 /* -------------------- Public pages (ไม่ต้องล็อกอิน) -------------------- */
-Route::get('/', fn () => view('test.FLUKE_Marketplace'))->name('home');
 Route::get('/login', fn () => view('login.Login'))->name('login');
 Route::get('/Sign_up', fn () => view('login.Sign_up'))->name('Sign_up');
 Route::post('/register', [LoginController::class, 'register'])->name('register.post');
 
-Route::get('/profile', [ProfileController::class, 'showProfile'])->name('profile.show');          
-Route::post('/profile/update', [ProfileController::class, 'update'])->name('updateprofile.post');             
-Route::delete('/profile/subaddress/{idsubaddress}', [ProfileController::class, 'delsub'])->name('delsub');
-Route::get('/profile/fetchaddress', [ProfileController::class, 'fetchaddress'])->name('profile.fetchaddress'); 
-Route::get('/account/edit', [ProfileController::class, 'editprofile'])->name('profile.edit'); 
-Route::put('/subaddress/{idsubaddress}', [ProfileController::class, 'updatesub'])->name('subaddress.update');
-
-Route::get('cart', fn () => view('test.cart'));
 Route::get('/expend', fn () => view('test.expend'))->name('expend');
 Route::get('header-nav', fn () => view('test.header-nav'));
 Route::get('footer', fn () => view('test.footer'));
@@ -39,39 +31,29 @@ Route::get('/auth/line/callback', [LoginController::class, 'lineCallback'])->nam
 Route::get('/auth/google/redirect', [LoginController::class, 'googleRedirect'])->name('google.redirect');
 Route::get('/auth/google/callback', [LoginController::class, 'googleCallback'])->name('google.callback');
 
-// Mini API (ใช้จากหน้าเว็บได้เลย)
+/* -------------------- Mini API -------------------- */
 Route::get('/api/auth/me', [LoginController::class, 'apiMe'])->name('api.auth.me');
 Route::post('/api/auth/logout', [LoginController::class, 'apiLogout'])->name('api.auth.logout');
 Route::post('/auth/login', [LoginController::class, 'login'])->name('auth.login');
 
-/* -------------------- Protected pages (ต้องล็อกอิน) -------------------- */
+/* -------------------- Logout (ทุก guard) -------------------- */
 Route::post('/logout', function (Request $request) {
-    // 1) ออกจากระบบทุก guard
     foreach (array_keys(config('auth.guards')) as $guard) {
-        if (Auth::guard($guard)->check()) {
-            Auth::guard($guard)->logout();
-        }
+        if (Auth::guard($guard)->check()) Auth::guard($guard)->logout();
     }
-
-    // 2) ลบ remember-me cookie
     $defaultGuard = Auth::guard();
     if (method_exists($defaultGuard, 'getRecallerName')) {
         Cookie::queue(Cookie::forget($defaultGuard->getRecallerName()));
     }
-
-    // 3) ล้าง session ทั้งหมด
     $request->session()->flush();
     $request->session()->invalidate();
     $request->session()->regenerateToken();
-
-    // 4) เด้งกลับหน้าแรก
     return redirect('/');
 })->name('logout');
 
-/* -------------------- Dashboard / Products -------------------- */
-use App\Http\Controllers\DashboardController;
+/* -------------------- หน้า Home / สินค้า -------------------- */
+Route::get('/', [DashboardController::class, 'Home'])->name('home');
 
-Route::get('/', [DashboardController::class, 'Home'])->name('test.FLUKE_Marketplace');
 Route::get('/products', [DashboardController::class, 'showproduct'])->name('product.index');
 Route::redirect('/products/category/cart', '/cart')->name('product.category.cart');
 Route::redirect('/product/cart', '/cart')->name('product.cart');
@@ -79,57 +61,106 @@ Route::redirect('/account/cart', '/cart')->name('profile.cart');
 
 Route::get('/products/category/{slug}', [DashboardController::class, 'byCategory'])
     ->where('slug', '^(?!cart$).+')
-    ->name('product.category');    
+    ->name('product.category');
 
 Route::get('/product/{iditem}', [DashboardController::class, 'showItem'])->name('product.detail');
 Route::get('/search/products', [DashboardController::class, 'searchByName'])->name('search.products');
-Route::post('/cart/add', [DashboardController::class, 'add'])->name('cart.add');
+
+/* ----- Cart ----- */
 Route::get('/cart', [DashboardController::class, 'showcart'])->name('cart.show');
 Route::get('/cart/json', [DashboardController::class, 'cartJson'])->name('cart.json');
 Route::post('/cart/qty', [DashboardController::class, 'cartQty'])->name('cart.qty');
 Route::delete('/cart/remove', [DashboardController::class, 'cartRemove'])->name('cart.remove');
 Route::post('/cart/remove-many', [DashboardController::class, 'cartRemoveMany'])->name('cart.removeMany');
-Route::post('/cart/checkout', [DashboardController::class, 'checkout'])->name('cart.checkout');
-Route::post('/profile/subaddress', [ProfileController::class, 'store'])->name('subaddress.address');
-Route::get('/profile/addresses', [ProfileController::class, 'addresses'])->name('profile.addresses');
+// ใช้อันนี้อันเดียว
 Route::post('/cart/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
 
+/* -------------------- โปรไฟล์ -------------------- */
+Route::get('/profile', [ProfileController::class, 'showProfile'])->name('profile.show');
+Route::post('/profile/update', [ProfileController::class, 'update'])->name('updateprofile.post');
+Route::delete('/profile/subaddress/{idsubaddress}', [ProfileController::class, 'delsub'])->name('delsub');
+Route::get('/profile/fetchaddress', [ProfileController::class, 'fetchaddress'])->name('profile.fetchaddress');
+Route::get('/account/edit', [ProfileController::class, 'editprofile'])->name('profile.edit');
+Route::put('/subaddress/{idsubaddress}', [ProfileController::class, 'updatesub'])->name('subaddress.update');
+Route::post('/profile/subaddress', [ProfileController::class, 'store'])->name('subaddress.address');
+Route::get('/profile/addresses', [ProfileController::class, 'addresses'])->name('profile.addresses');
+
 /* -------------------- PDF Proxy -------------------- */
-use App\Http\Controllers\PdfProxyController;
 Route::match(['GET', 'OPTIONS'], '/pdf-proxy', [PdfProxyController::class, 'fetch'])->name('pdf.proxy');
 
 /* -------------------- Admin -------------------- */
-use App\Http\Controllers\AdminUserController;
 Route::get('Admin', [AdminUserController::class, 'index'])->name('Admin');
 
-use Illuminate\Support\Facades\Response;
-use Illuminate\Support\Facades\Log;
+/* ---------- หน้า FLUKE Marketplace (ส่งข้อมูลเข้า Blade) ---------- */
+/*  View: resources/views/test/FLUKE_Marketplace.blade.php
+    ต้องการตัวแปร $flashDeals และ $products */
+Route::get('/fluke-marketplace', function () {
+    // ปรับ fields ให้ตรง schema จริงของ Fluke
+    $flashDeals = Fluke::query()
+        ->whereNotNull('webpriceTHB')
+        ->where('webpriceTHB', '!=', '')
+        ->where(function($q){
+            $q->whereNotNull('pic')->orWhereNotNull('image');
+        })
+        ->orderByDesc('updated_at')
+        ->take(80)
+        ->get(['iditem','name','model','num_model','pic','image','webpriceTHB'])
+        ->map(function($p){
+            return [
+                'iditem'      => $p->iditem,
+                'name'        => trim($p->name ?? ''),
+                'model'       => trim($p->model ?? ''),
+                'num_model'   => trim($p->num_model ?? ''),
+                'pic'         => $p->pic ?: $p->image,   // JS รองรับ pic/image
+                'webpriceTHB' => $p->webpriceTHB,
+            ];
+        });
 
+    $products = Fluke::query()
+        ->orderBy('name')
+        ->take(500)
+        ->get(['name','category','pic','image','webpriceTHB','columnJ'])
+        ->map(function($p){
+            return [
+                'name'        => trim($p->name ?? ''),
+                'category'    => trim($p->category ?? ''),
+                'image'       => $p->image ?: $p->pic,
+                'webpriceTHB' => $p->webpriceTHB,
+                'columnJ'     => $p->columnJ ?? '',
+            ];
+        });
+
+    return view('test.FLUKE_Marketplace', compact('flashDeals','products'));
+})->name('fluke.marketplace');
+
+/* ---------- Sitemap (XML) ---------- */
 Route::get('/sitemap.xml', function () {
     try {
         $urls = [
             url('/'),
+            route('fluke.marketplace'),
             url('/products'),
             url('/products/category/ClampMeter1'),
         ];
+        $now = now()->toAtomString();
 
-        // ✅ สร้าง XML ด้วย SimpleXML
         $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><urlset/>');
         $xml->addAttribute('xmlns', 'http://www.sitemaps.org/schemas/sitemap/0.9');
 
         foreach ($urls as $u) {
             $url = $xml->addChild('url');
             $url->addChild('loc', htmlspecialchars($u));
+            $url->addChild('lastmod', $now);
             $url->addChild('changefreq', 'weekly');
             $url->addChild('priority', '0.8');
         }
 
-        // ✅ ส่งกลับเป็น XML พร้อม header ที่ถูกต้อง
-        return response($xml->asXML(), 200)
-            ->header('Content-Type', 'application/xml');
-
+        return response($xml->asXML(), 200, [
+            'Content-Type'  => 'application/xml; charset=UTF-8',
+            'Cache-Control' => 'public, max-age=3600',
+        ]);
     } catch (\Throwable $e) {
-        Log::error('Sitemap Error: ' . $e->getMessage());
-        return response('Error generating sitemap: ' . $e->getMessage(), 500);
+        Log::error('Sitemap Error: '.$e->getMessage());
+        return response('Error generating sitemap: '.$e->getMessage(), 500);
     }
-});
+})->name('sitemap.xml');

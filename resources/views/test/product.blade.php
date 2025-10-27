@@ -4,75 +4,8 @@
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  @php
-    $model   = trim($product->model ?? $product->name ?? 'FLUKE');
-    $title   = $model . ' | ราคาและสเปก FLUKE ของแท้ | myFlukeTH ศูนย์ไทย';
-    $desc    = 'สเปก ราคา รีวิว และรายละเอียด '.$model.' จาก FLUKE ของแท้ พร้อมบริการคาลิเบรตและจัดส่งทั่วประเทศ โดย myFlukeTH ศูนย์ไทย';
-    $img     = $product->pic ?? 'https://myfluketh.com/images/og-fluke.jpg';
-    $sku     = $product->sku ?? '';
-    $price   = number_format((float)($product->priceTHB ?? 0), 2, '.', '');
-    $avail   = ($product->stock ?? 0) > 0 ? 'InStock' : 'PreOrder';
-    $url     = request()->fullUrl();
-
-    $productJson = [
-      '@context' => 'https://schema.org',
-      '@type'    => 'Product',
-      'name'     => $model,
-      'brand'    => ['@type' => 'Brand', 'name' => 'FLUKE'],
-      'sku'      => $sku,
-      'image'    => [$img],
-      'description' => Str::limit(strip_tags($product->short_desc ?? $product->name ?? $model), 180),
-      'offers'   => [
-        '@type' => 'Offer',
-        'priceCurrency' => 'THB',
-        'price' => $price,
-        'availability' => "https://schema.org/{$avail}",
-        'url' => $url,
-      ],
-    ];
-
-    $breadcrumbJson = [
-      '@context' => 'https://schema.org',
-      '@type'    => 'BreadcrumbList',
-      'itemListElement' => [
-        ['@type'=>'ListItem','position'=>1,'name'=>'หน้าแรก','item'=>'https://myfluketh.com/'],
-        ['@type'=>'ListItem','position'=>2,'name'=>$categoryName ?? 'สินค้า FLUKE','item'=>url()->previous()],
-        ['@type'=>'ListItem','position'=>3,'name'=>$model,'item'=>$url],
-      ],
-    ];
-  @endphp
-
-  <!-- ===================== 🔹 META ===================== -->
-  <title>{{ $title }}</title>
-  <meta name="description" content="{{ $desc }}">
-  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
-  <link rel="canonical" href="{{ $url }}">
-
-  <!-- OG / Twitter -->
-  <meta property="og:type" content="product">
-  <meta property="og:site_name" content="myFlukeTH">
-  <meta property="og:title" content="{{ $title }}">
-  <meta property="og:description" content="{{ $desc }}">
-  <meta property="og:url" content="{{ $url }}">
-  <meta property="og:image" content="{{ $img }}">
-  <meta property="og:image:alt" content="{{ $model }}">
-  <meta property="og:locale" content="th_TH">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="{{ $title }}">
-  <meta name="twitter:description" content="{{ $desc }}">
-  <meta name="twitter:image" content="{{ $img }}">
-
-  <link rel="icon" type="image/png" href="https://myfluketh.com/images/fluke-icon.png">
-
-  <!-- JSON-LD: Product + Breadcrumb -->
-  <script type="application/ld+json">
-    {!! json_encode($productJson, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES) !!}
-  </script>
-  <script type="application/ld+json">
-    {!! json_encode($breadcrumbJson, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES) !!}
-  </script>
-</head>
+  <title>Product | FLUKE</title>
+  <link rel="icon" type="image/png" href="https://img5.pic.in.th/file/secure-sv1/ChatGPT_Image_18_.._2568_12_03_57-removebg-preview.png">
 
   <!-- ====== BASE THEME ====== -->
   <style>
