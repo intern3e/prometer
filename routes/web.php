@@ -136,23 +136,46 @@ Route::get('/fluke-marketplace', function () {
 /* ---------- Sitemap (XML) ---------- */
 Route::get('/sitemap.xml', function () {
     try {
-        $urls = [
-            url('/'),
-            route('fluke.marketplace'),
-            url('/products'),
-            url('/products/category/ClampMeter1'),
-        ];
         $now = now()->toAtomString();
+
+        // กำหนดค่าราย URL ได้เอง
+        $urls = [
+            [
+                'loc'        => url('/'),
+                'lastmod'    => $now,
+                'changefreq' => 'daily',
+                'priority'   => '1.0',
+            ],
+            [
+                'loc'        => route('fluke.marketplace'),
+                'lastmod'    => $now,
+                'changefreq' => 'weekly',
+                'priority'   => '0.8',
+            ],
+            [
+                'loc'        => url('/products'),
+                'lastmod'    => $now,
+                'changefreq' => 'weekly',
+                'priority'   => '0.8',
+            ],
+            [
+                'loc'        => url('/products/category/ClampMeter1'),
+                'lastmod'    => $now,
+                'changefreq' => 'weekly',
+                'priority'   => '0.8',
+            ],
+        ];
 
         $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><urlset/>');
         $xml->addAttribute('xmlns', 'http://www.sitemaps.org/schemas/sitemap/0.9');
 
-        foreach ($urls as $u) {
+        foreach ($urls as $item) {
             $url = $xml->addChild('url');
-            $url->addChild('loc', htmlspecialchars($u));
-            $url->addChild('lastmod', $now);
-            $url->addChild('changefreq', 'weekly');
-            $url->addChild('priority', '0.8');
+            // ใช้ ENT_XML1 กันตัวอักษรพิเศษ
+            $url->addChild('loc',        htmlspecialchars($item['loc'], ENT_XML1, 'UTF-8'));
+            $url->addChild('lastmod',    $item['lastmod']);
+            $url->addChild('changefreq', $item['changefreq']);
+            $url->addChild('priority',   $item['priority']);
         }
 
         return response($xml->asXML(), 200, [
@@ -160,7 +183,7 @@ Route::get('/sitemap.xml', function () {
             'Cache-Control' => 'public, max-age=3600',
         ]);
     } catch (\Throwable $e) {
-        Log::error('Sitemap Error: '.$e->getMessage());
+        \Log::error('Sitemap Error: '.$e->getMessage());
         return response('Error generating sitemap: '.$e->getMessage(), 500);
     }
 })->name('sitemap.xml');
