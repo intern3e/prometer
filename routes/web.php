@@ -136,17 +136,19 @@ Route::get('/fluke-marketplace', function () {
 /* ---------- Sitemap (XML) ---------- */
 Route::get('/sitemap.xml', function () {
     try {
-        $now = now()->toAtomString(); // หรือ now('Asia/Bangkok')->toAtomString()
+        // ใช้เวลาโซนไทย และแปลงเป็น RFC3339 (Atom)
+        $now = now('Asia/Bangkok')->toAtomString();
+
+        // หน้าแรก: บังคับให้มี / ท้ายโดเมน + daily/1.0
+        $home = rtrim(url('/'), '/') . '/';
 
         $urls = [
-            // หน้าแรก: daily + priority สูงสุด และ (ถ้าอยากมี / ท้ายโดเมน) ให้ต่อ '/' เพิ่ม
             [
-                'loc'        => url('/') . '/',   // ได้ https://myfluketh.com/
+                'loc'        => $home,
                 'lastmod'    => $now,
                 'changefreq' => 'daily',
                 'priority'   => '1.0',
             ],
-            // หน้ารอง
             [
                 'loc'        => route('fluke.marketplace'),
                 'lastmod'    => $now,
@@ -178,9 +180,10 @@ Route::get('/sitemap.xml', function () {
             $url->addChild('priority',   $item['priority']);
         }
 
+        // ลด cache ตอนเทสต์ให้เห็นผลไว (ค่อยปรับกลับทีหลัง)
         return response($xml->asXML(), 200, [
             'Content-Type'  => 'application/xml; charset=UTF-8',
-            'Cache-Control' => 'public, max-age=3600',
+            'Cache-Control' => 'public, max-age=60',
         ]);
     } catch (\Throwable $e) {
         \Log::error('Sitemap Error: '.$e->getMessage());
