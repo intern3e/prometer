@@ -179,7 +179,6 @@ use Illuminate\Support\Str;
 | Sitemap (XML) — เฉพาะหน้า Home
 |--------------------------------------------------------------------------
 */
-use Illuminate\Support\Facades\Route;
 
 Route::get('/sitemap.xml', function () {
     $tz  = 'Asia/Bangkok';
