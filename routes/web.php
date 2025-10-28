@@ -1,22 +1,26 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cookie;
+use Illuminate\Http\Request;
 
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\AccountController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\PdfProxyController;
-use Illuminate\Support\Facades\URL;
-use App\Models\Fluke; // <-- ใช้ตารางสินค้าของคุณ
-use Illuminate\Support\Facades\Route as Router;
+use App\Http\Controllers\AdminUserController;
 
+use GuzzleHttp\Client;
+use App\Models\Custdetail;
+// ❗️อย่า import App\Models\Fluke ซ้ำ เพื่อเลี่ยงชื่อชนกัน (จะใช้ FQCN ตรง ๆ แทน)
+Route::redirect('/showproduct', '/products', 301);
 /* -------------------- Public pages (ไม่ต้องล็อกอิน) -------------------- */
+Route::get('/', [DashboardController::class, 'Home'])->name('home'); // หน้าแรก (ตัวเดียวเท่านั้น)
 Route::get('/login', fn () => view('login.Login'))->name('login');
 Route::get('/Sign_up', fn () => view('login.Sign_up'))->name('Sign_up');
 Route::post('/register', [LoginController::class, 'register'])->name('register.post');
@@ -25,22 +29,34 @@ Route::get('/expend', fn () => view('test.expend'))->name('expend');
 Route::get('header-nav', fn () => view('test.header-nav'));
 Route::get('footer', fn () => view('test.footer'));
 
-/* -------------------- Google/LINE OAuth (สาธารณะ) -------------------- */
-Route::get('/auth/line/redirect',   [LoginController::class, 'lineRedirect'])->name('line.redirect');
-Route::get('/auth/line/callback',   [LoginController::class, 'lineCallback'])->name('line.callback');
+/* -------------------- OAuth -------------------- */
+Route::get('/auth/line/redirect', [LoginController::class, 'lineRedirect'])->name('line.redirect');
+Route::get('/auth/line/callback', [LoginController::class, 'lineCallback'])->name('line.callback');
 
 Route::get('/auth/google/redirect', [LoginController::class, 'googleRedirect'])->name('google.redirect');
 Route::get('/auth/google/callback', [LoginController::class, 'googleCallback'])->name('google.callback');
 
-/* -------------------- Mini API -------------------- */
-Route::get('/api/auth/me',      [LoginController::class, 'apiMe'])->name('api.auth.me');
+/* -------------------- Mini API (auth) -------------------- */
+Route::get('/api/auth/me', [LoginController::class, 'apiMe'])->name('api.auth.me');
 Route::post('/api/auth/logout', [LoginController::class, 'apiLogout'])->name('api.auth.logout');
-Route::post('/auth/login',      [LoginController::class, 'login'])->name('auth.login');
+Route::post('/auth/login',[LoginController::class, 'login'])->name('auth.login');
+
+/* -------------------- Profile -------------------- */
+Route::get('/profile', [ProfileController::class, 'showProfile'])->name('profile.show');
+Route::post('/profile/update', [ProfileController::class, 'update'])->name('updateprofile.post');
+Route::delete('/profile/subaddress/{idsubaddress}',[ProfileController::class, 'delsub'])->name('delsub');
+Route::get('/profile/fetchaddress', [ProfileController::class, 'fetchaddress'])->name('profile.fetchaddress');
+Route::get('/account/edit', [ProfileController::class, 'editprofile'])->name('profile.edit');
+Route::put('/subaddress/{idsubaddress}', [ProfileController::class, 'updatesub'])->name('subaddress.update');
+Route::post('/profile/subaddress', [ProfileController::class, 'store'])->name('subaddress.address');
+Route::get('/profile/addresses', [ProfileController::class, 'addresses'])->name('profile.addresses');
 
 /* -------------------- Logout (ทุก guard) -------------------- */
 Route::post('/logout', function (Request $request) {
     foreach (array_keys(config('auth.guards')) as $guard) {
-        if (Auth::guard($guard)->check()) Auth::guard($guard)->logout();
+        if (Auth::guard($guard)->check()) {
+            Auth::guard($guard)->logout();
+        }
     }
     $defaultGuard = Auth::guard();
     if (method_exists($defaultGuard, 'getRecallerName')) {
@@ -52,208 +68,69 @@ Route::post('/logout', function (Request $request) {
     return redirect('/');
 })->name('logout');
 
-/* -------------------- หน้า Home / สินค้า -------------------- */
-Route::get('/', [DashboardController::class, 'Home'])->name('home');
-
+/* -------------------- Products & Search -------------------- */
 Route::get('/products', [DashboardController::class, 'showproduct'])->name('product.index');
-Route::redirect('/products/category/cart', '/cart')->name('product.category.cart');
-Route::redirect('/product/cart',           '/cart')->name('product.cart');
-Route::redirect('/account/cart',           '/cart')->name('profile.cart');
-
 Route::get('/products/category/{slug}', [DashboardController::class, 'byCategory'])
     ->where('slug', '^(?!cart$).+')
     ->name('product.category');
-
-Route::get('/product/{iditem}',     [DashboardController::class, 'showItem'])->name('product.detail');
-Route::get('/search/products',      [DashboardController::class, 'searchByName'])->name('search.products');
+Route::get('/product/{iditem}', [DashboardController::class, 'showItem'])->name('product.detail');
+Route::get('/search/products', [DashboardController::class, 'searchByName'])->name('search.products');
 
 /* -------------------- Cart -------------------- */
-Route::get('/cart',           [DashboardController::class, 'showcart'])->name('cart.show');
-Route::get('/cart/json',      [DashboardController::class, 'cartJson'])->name('cart.json');
-Route::post('/cart/qty',      [DashboardController::class, 'cartQty'])->name('cart.qty');
+Route::get('/cart', [CartController::class, 'showcart'])->name('cart.show');
+Route::get('/cart/json', [DashboardController::class, 'cartJson'])->name('cart.json');
+Route::post('/cart/add', [DashboardController::class, 'add'])->name('cart.add');
+Route::post('/cart/qty', [DashboardController::class, 'cartQty'])->name('cart.qty');
 Route::delete('/cart/remove', [DashboardController::class, 'cartRemove'])->name('cart.remove');
 Route::post('/cart/remove-many', [DashboardController::class, 'cartRemoveMany'])->name('cart.removeMany');
+Route::post('/cart/checkout', [CartController::class, 'checkout'])->name('cart.checkout'); // ✅ เลือกตัวเดียว
 
-/* ✅ เพิ่ม route ที่หายไป: cart.add (รับทั้ง GET/POST เพื่อกันหน้าเด้งพัง)
-   - ใช้ session เป็นตะกร้า: ['IDสินค้า' => จำนวน]
-   - รองรับพารามิเตอร์ได้ทั้ง product_id และ iditem
-*/
-Route::match(['GET','POST'], '/cart/add', function (Request $request) {
-    $id  = $request->input('product_id')
-        ?? $request->input('iditem')
-        ?? $request->query('product_id')
-        ?? $request->query('iditem');
-
-    $qty = (int) ($request->input('qty', $request->query('qty', 1)));
-    $qty = max(1, $qty);
-
-    if (!$id) {
-        return back()->with('error', 'ไม่พบรหัสสินค้า (product_id / iditem)');
-    }
-
-    // ตรวจว่าสินค้ามีจริงในตาราง Fluke (ถ้ามีโมเดล)
-    if (class_exists(Fluke::class)) {
-        $exists = Fluke::where('iditem', $id)->exists();
-        if (!$exists) {
-            return back()->with('error', 'ไม่พบสินค้า iditem: '.$id);
-        }
-    }
-
-    $cart = session()->get('cart', []);
-    $cart[$id] = ($cart[$id] ?? 0) + $qty;
-    session()->put('cart', $cart);
-
-    if ($request->wantsJson() || $request->ajax()) {
-        return response()->json(['ok' => true, 'cart' => $cart]);
-    }
-    return back()->with('success', 'เพิ่มสินค้าเข้าตะกร้าแล้ว');
-})->name('cart.add');
-
-/* ใช้อันนี้อันเดียวสำหรับชำระเงิน */
-Route::post('/cart/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
-
-/* -------------------- โปรไฟล์ -------------------- */
-Route::get('/profile',                     [ProfileController::class, 'showProfile'])->name('profile.show');
-Route::post('/profile/update',             [ProfileController::class, 'update'])->name('updateprofile.post');
-Route::delete('/profile/subaddress/{idsubaddress}', [ProfileController::class, 'delsub'])->name('delsub');
-Route::get('/profile/fetchaddress',        [ProfileController::class, 'fetchaddress'])->name('profile.fetchaddress');
-Route::get('/account/edit',                [ProfileController::class, 'editprofile'])->name('profile.edit');
-Route::put('/subaddress/{idsubaddress}',   [ProfileController::class, 'updatesub'])->name('subaddress.update');
-Route::post('/profile/subaddress',         [ProfileController::class, 'store'])->name('subaddress.address');
-Route::get('/profile/addresses',           [ProfileController::class, 'addresses'])->name('profile.addresses');
+/* -------------------- Redirect helper -------------------- */
+Route::redirect('/products/category/cart', '/cart')->name('product.category.cart');
+Route::redirect('/product/cart', '/cart')->name('product.cart');
+Route::redirect('/account/cart', '/cart')->name('profile.cart');
 
 /* -------------------- PDF Proxy -------------------- */
-Route::match(['GET', 'OPTIONS'], '/pdf-proxy', [PdfProxyController::class, 'fetch'])->name('pdf.proxy');
+Route::match(['GET','OPTIONS'], '/pdf-proxy', [PdfProxyController::class, 'fetch'])->name('pdf.proxy');
 
 /* -------------------- Admin -------------------- */
 Route::get('Admin', [AdminUserController::class, 'index'])->name('Admin');
 
-/* ---------- หน้า FLUKE Marketplace (ส่งข้อมูลเข้า Blade) ---------- */
-/*  View: resources/views/test/FLUKE_Marketplace.blade.php
-    ต้องการตัวแปร $flashDeals และ $products */
-Route::get('/fluke-marketplace', function () {
-    // ปรับ fields ให้ตรง schema จริงของ Fluke
-    $flashDeals = Fluke::query()
-        ->whereNotNull('webpriceTHB')
-        ->where('webpriceTHB', '!=', '')
-        ->where(function($q){
-            $q->whereNotNull('pic')->orWhereNotNull('image');
-        })
-        ->orderByDesc('updated_at')
-        ->take(80)
-        ->get(['iditem','name','model','num_model','pic','image','webpriceTHB'])
-        ->map(function($p){
-            return [
-                'iditem'      => $p->iditem,
-                'name'        => trim($p->name ?? ''),
-                'model'       => trim($p->model ?? ''),
-                'num_model'   => trim($p->num_model ?? ''),
-                'pic'         => $p->pic ?: $p->image,   // JS รองรับ pic/image
-                'webpriceTHB' => $p->webpriceTHB,
-            ];
-        });
 
-    $products = Fluke::query()
-        ->orderBy('name')
-        ->take(500)
-        ->get(['name','category','pic','image','webpriceTHB','columnJ'])
-        ->map(function($p){
-            return [
-                'name'        => trim($p->name ?? ''),
-                'category'    => trim($p->category ?? ''),
-                'image'       => $p->image ?: $p->pic,
-                'webpriceTHB' => $p->webpriceTHB,
-                'columnJ'     => $p->columnJ ?? '',
-            ];
-        });
-
-    return view('test.FLUKE_Marketplace', compact('flashDeals','products'));
-})->name('fluke.marketplace');
-
-/* ---------- Sitemap (XML) ---------- */
-
-
-// robots.txt
-Route::get('/robots.txt', function () {
-    $host = rtrim(url('/'), '/');
-    $lines = [
-        'User-agent: *',
-        'Allow: /',
-        'Disallow: /test/',
-        'Disallow: /login',
-        'Disallow: /Sign_up',
-        "Sitemap: {$host}/sitemap.xml",
-        '' // newline ท้ายไฟล์
-    ];
-    return response(implode("\n", $lines), 200, [
-        'Content-Type'  => 'text/plain; charset=UTF-8',
-        'Cache-Control' => 'public, max-age=3600',
-    ]);
-});
-
-// sitemap.xml (Home + หมวด + สินค้าจริง)
 Route::get('/sitemap.xml', function () {
-    $tz   = 'Asia/Bangkok';
-    $now  = now($tz)->toAtomString();
-    $home = rtrim(url('/'), '/') . '/';
-
-    $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><urlset/>');
-    $xml->addAttribute('xmlns', 'http://www.sitemaps.org/schemas/sitemap/0.9');
-
-    $add = function(string $loc, string $lastmod, string $freq, string $prio) use ($xml) {
-        $u = $xml->addChild('url');
-        $u->addChild('loc', htmlspecialchars($loc, ENT_XML1, 'UTF-8'));
-        $u->addChild('lastmod', $lastmod);
-        $u->addChild('changefreq', $freq);
-        $u->addChild('priority', $prio);
-    };
-
-    // Home
-    $add($home, $now, 'daily', '1.0');
-
-    // หมวดหมู่หลัก (ใช้ route จริงของคุณ)
-    $catUrls = [
-        route('product.category', ['slug' => 'ClampMeter1']),
-        route('product.category', ['slug' => 'Multimeters']),
-        route('product.category', ['slug' => 'ElectricalTesters']),
-        route('product.category', ['slug' => 'Thermography']),
-        route('product.category', ['slug' => 'InsulationTesters']),
-        route('product.category', ['slug' => 'PowerQuality']),
-        route('product.category', ['slug' => 'LoopCalibrators']),
-        route('product.category', ['slug' => 'Accessories']),
+    $urls = [
+        ['loc' => url('/'),        'changefreq' => 'weekly',  'priority' => '1.0'],
+        // ไม่ใส่ /products และ /showproduct
+        // ใส่หน้าอื่นที่อยาก index เพิ่มได้ เช่น /contact
     ];
-    foreach ($catUrls as $loc) {
-        $add($loc, $now, 'weekly', '0.6');
+
+    // รวมหน้าสินค้าเดี่ยว (ถ้าอยากให้ติดดัชนี)
+    if (class_exists(\App\Models\Fluke::class)) {
+        try {
+            \App\Models\Fluke::query()
+                ->select(['iditem','updated_at'])
+                ->orderBy('iditem')
+                ->chunk(1000, function ($rows) use (&$urls) {
+                    foreach ($rows as $item) {
+                        $urls[] = [
+                            'loc'        => url('/product/' . $item->iditem),
+                            'lastmod'    => optional($item->updated_at)->toAtomString(),
+                            'changefreq' => 'weekly',
+                            'priority'   => '0.5',
+                        ];
+                    }
+                });
+        } catch (\Throwable $e) {}
     }
 
-    // สินค้า (limit 5k ต่อไฟล์ เพื่อความปลอดภัย)
-    $products = Fluke::query()
-        ->select('iditem','updated_at')
-        ->latest('updated_at')
-        ->limit(5000)
-        ->get();
-
-    foreach ($products as $p) {
-        $loc = url('/product/' . rawurlencode($p->iditem));
-        $last = optional($p->updated_at)->toAtomString() ?? $now;
-        $add($loc, $last, 'weekly', '0.8');
+    $xml = new \SimpleXMLElement('<urlset/>');
+    $xml->addAttribute('xmlns', 'http://www.sitemaps.org/schemas/sitemap/0.9');
+    foreach ($urls as $u) {
+        $url = $xml->addChild('url');
+        $url->addChild('loc', htmlspecialchars($u['loc'], ENT_XML1));
+        if (!empty($u['lastmod'])) $url->addChild('lastmod', $u['lastmod']);
+        $url->addChild('changefreq', $u['changefreq'] ?? 'weekly');
+        $url->addChild('priority',   $u['priority']   ?? '0.8');
     }
-
-    return response($xml->asXML(), 200, [
-        'Content-Type'  => 'application/xml; charset=UTF-8',
-        'Cache-Control' => 'public, max-age=3600',
-    ]);
-})->name('sitemap.xml');
-
-// SearchAction target (สำหรับ JSON-LD ให้ Google แสดง searchbox ใต้ผลลัพธ์แบรนด์)
-Route::get('/search', function (\Illuminate\Http\Request $req) {
-    $q = trim($req->query('q', ''));
-    if ($q === '') {
-        return redirect()->route('product.index');
-    }
-    // เปลี่ยนตามระบบค้นหาที่คุณใช้จริง
-    return redirect()->route('product.index', ['q' => $q]);
-})->name('site.search');
-
-
-
+    return response($xml->asXML(), 200)->header('Content-Type', 'application/xml');
+});
