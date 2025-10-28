@@ -1,2 +1,7 @@
-@php($allowIndex = $allowIndex ?? true)
-<meta name="robots" content="{{ $allowIndex ? 'index, follow' : 'noindex, nofollow' }}">
+@props(['allowIndex' => false])
+
+@if ($allowIndex)
+  <meta name="robots" content="index,follow">
+@else
+  <meta name="robots" content="noindex,follow">
+@endif

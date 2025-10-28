@@ -1,49 +1,81 @@
+{{-- resources/views/test/FLUKE_Marketplace.blade.php --}}
 <!DOCTYPE html>
 <html lang="th">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- ===================== SEO ===================== -->
-  <title>เครื่องมืออุตสาหกรรม FLUKE</title>
-  <meta name="description" content="ศูนย์รวม FLUKE ของแท้ — คาลิเบรตมาตรฐานสากล | สอบถาม 066-097-5697 (คุณผาบุ้ง) | info@hikaripower.com | LINE @hikaridenki">
-  @include('test.seo-robots', ['allowIndex' => true])  {{-- หน้าแรก: index, follow --}}
+  {{-- ===================== SEO ===================== --}}
+  <title>myFlukeTH — เครื่องมืออุตสาหกรรม FLUKE ของแท้ | ศูนย์ไทย</title>
+  <meta name="description"
+        content="ศูนย์รวมเครื่องมือวัดไฟฟ้า FLUKE ของแท้จากศูนย์ไทย — คาลิเบรตมาตรฐานสากล | สอบถาม 066-097-5697 (คุณผาบุ้ง) | info@hikaripower.com | LINE @hikaridenki">
+  <meta name="keywords"
+        content="myfluketh, myfluke, fluke, fluketh, เครื่องมือวัดไฟฟ้า, ฟลุค, ฟลุคไทย, มัลติมิเตอร์, คาลิเบรต, FLUKE Thailand, ศูนย์ไทย, Hikari Power">
+  <meta name="author" content="myFlukeTH">
+  @include('test.seo-robots', ['allowIndex' => true]) {{-- index, follow --}}
   <link rel="canonical" href="https://myfluketh.com/">
 
-  <!-- (ถ้าต้องใช้) Site Verification -->
+  {{-- Google Verification --}}
   <meta name="google-site-verification" content="tpmhTAxPUzD7bh4163L-tqG21SpSCOJC_N0nNxfNt3k" />
 
-  <!-- Open Graph -->
+  {{-- Open Graph --}}
   <meta property="og:type" content="website">
-  <meta property="og:title" content="เครื่องมืออุตสาหกรรม FLUKE">
-  <meta property="og:description" content="ศูนย์รวม FLUKE ของแท้ — คาลิเบรตมาตรฐานสากล | สอบถาม 066-097-5697 (คุณผาบุ้ง) | info@hikaripower.com | LINE @hikaridenki">
+  <meta property="og:title" content="myFlukeTH — เครื่องมืออุตสาหกรรม FLUKE ของแท้ | ศูนย์ไทย">
+  <meta property="og:description"
+        content="FLUKE ของแท้จากศูนย์ไทย — คาลิเบรตมาตรฐาน | โทร 066-097-5697 | info@hikaripower.com | LINE @hikaridenki">
   <meta property="og:url" content="https://myfluketh.com/">
-  <meta property="og:image" content="https://img5.pic.in.th/file/secure-sv1/ChatGPT_Image_18_.._2568_12_03_57-removebg-preview.png">
+  <meta property="og:image"
+        content="https://img5.pic.in.th/file/secure-sv1/ChatGPT_Image_18_.._2568_12_03_57-removebg-preview.png">
   <meta property="og:locale" content="th_TH">
 
-  <!-- Twitter -->
+  {{-- Twitter --}}
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="เครื่องมืออุตสาหกรรม FLUKE">
-  <meta name="twitter:description" content="ศูนย์รวม FLUKE ของแท้ — คาลิเบรตมาตรฐานสากล | สอบถาม 066-097-5697 (คุณผาบุ้ง) | info@hikaripower.com | LINE @hikaridenki">
-  <meta name="twitter:image" content="https://img5.pic.in.th/file/secure-sv1/ChatGPT_Image_18_.._2568_12_03_57-removebg-preview.png">
+  <meta name="twitter:title" content="myFlukeTH — เครื่องมืออุตสาหกรรม FLUKE ของแท้ | ศูนย์ไทย">
+  <meta name="twitter:description"
+        content="FLUKE ของแท้จากศูนย์ไทย — คาลิเบรตมาตรฐาน | โทร 066-097-5697 | info@hikaripower.com | LINE @hikaridenki">
+  <meta name="twitter:image"
+        content="https://img5.pic.in.th/file/secure-sv1/ChatGPT_Image_18_.._2568_12_03_57-removebg-preview.png">
 
-  <!-- Icon + Swiper (ถ้ามี) -->
-  <link rel="icon" type="image/png" href="https://img5.pic.in.th/file/secure-sv1/ChatGPT_Image_18_.._2568_12_03_57-removebg-preview.png">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css"/>
+  {{-- Icon + Swiper --}}
+  <link rel="icon" type="image/png"
+        href="https://img5.pic.in.th/file/secure-sv1/ChatGPT_Image_18_.._2568_12_03_57-removebg-preview.png">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+
+  {{-- Schema.org JSON-LD (สำคัญ: พ่น JSON ด้วย PHP เพื่อไม่ให้ Blade จับ @context/@type) --}}
+  @php
+    $jsonLd = [
+      '@context'   => 'https://schema.org',
+      '@type'      => 'WebSite',
+      'url'        => 'https://myfluketh.com/',
+      'name'       => 'myFlukeTH',
+      'description'=> 'ศูนย์รวมเครื่องมือวัดไฟฟ้า FLUKE ของแท้จากศูนย์ไทย — คาลิเบรตมาตรฐานสากล | โทร 066-097-5697',
+      'publisher'  => [
+        '@type' => 'Organization',
+        'name'  => 'Hikari Power',
+        'logo'  => 'https://img5.pic.in.th/file/secure-sv1/ChatGPT_Image_18_.._2568_12_03_57-removebg-preview.png',
+      ],
+      'sameAs'     => [
+        'https://www.facebook.com/hikaridenki',
+        'https://line.me/R/ti/p/@hikaridenki',
+      ],
+    ];
+  @endphp
+  <script type="application/ld+json">{!! json_encode($jsonLd, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES) !!}</script>
 </head>
+
 <body>
   @include('test.header-nav')
 
+  <br>
   <main>
-    <!-- SEO-only (ให้ Google อ่าน แต่ไม่แสดงผลบนหน้า) -->
+    <!-- SEO-only -->
     <div class="sr-only">
       <h1>เครื่องมืออุตสาหกรรม FLUKE</h1>
-      <p>ศูนย์รวม FLUKE ของแท้ — คาลิเบรตมาตรฐานสากล | สอบถาม 066-097-5697 (คุณผาบุ้ง) | info@hikaripower.com | LINE @hikaridenki</p>
+      <p> — คาลิเบรตมาตรฐานสากล | สอบถาม 066-097-5697 (คุณผาบุ้ง) | info@hikaripower.com | LINE @hikaridenki</p>
     </div>
 
     <!-- ===== Hero area ===== -->
     <section class="container-outer mx-auto section-pad mt-3 md:mt-5 grid grid-cols-1 md:grid-cols-12 gap-4">
-      <!-- left categories (desktop) -->
       <aside class="hidden md:block md:col-span-3 card p-2 left-cat">
         <ul class="text-sm divide-y">
           <li><a href="{{ route('product.category', ['slug' => 'ClampMeter1']) }}" class="px-3 py-2" data-i18n="left_c1">แคลมป์มิเตอร์</a></li>
@@ -57,7 +89,6 @@
         </ul>
       </aside>
 
-      <!-- hero slider -->
       <div class="md:col-span-6">
         <div class="swiper mySwiper swiper-pro card">
           <div class="swiper-wrapper">
@@ -75,7 +106,6 @@
         </div>
       </div>
 
-      <!-- right promos -->
       <aside class="md:col-span-3 promo-col">
         <a href="/SpecialOffers" class="promo-pro group focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]">
           <div class="promo-icon bg-gradient-to-br from-amber-100 to-yellow-200 relative z-10">
@@ -244,14 +274,12 @@
     });
   </script>
 
-  <!-- ===== I18N DICTIONARY (คงเดิม แต่จะตั้ง document.title ให้ตรงหัวข้อ) ===== -->
+  <!-- ===== I18N DICTIONARY & applyI18n ===== -->
   <script>
     const I18N = {
       'ไทย': {
-        brand_name:'FLUKE',
-        top_buyer_central:'Buyer Central', top_help:'Help', top_get_app:'Get the App', top_choose_lang:'เลือกภาษา',
-        top_login:'เข้าสู่ระบบ', top_join_free:'สมัครสมาชิกฟรี',
-        nav_all_categories:'หมวดหมู่ทั้งหมด',
+        brand_name:'FLUKE', top_buyer_central:'Buyer Central', top_help:'Help', top_get_app:'Get the App', top_choose_lang:'เลือกภาษา',
+        top_login:'เข้าสู่ระบบ', top_join_free:'สมัครสมาชิกฟรี', nav_all_categories:'หมวดหมู่ทั้งหมด',
         mega_measure:'เครื่องมือวัด', mega_process:'กระบวนการ/สอบเทียบ', mega_accessories:'อุปกรณ์เสริม',
         cat_left_1:'แคลมป์มิเตอร์', cat_left_2:'มัลติมิเตอร์', cat_left_3:'เครื่องทดสอบไฟฟ้า', cat_left_4:'เครื่องวัดฉนวน', cat_left_5:'กล้องถ่ายภาพความร้อน',
         cat_left_p1:'เครื่องสอบเทียบลูป', cat_left_p2:'เครื่องสอบเทียบความดัน', cat_left_p3:'เครื่องสอบเทียบอุณหภูมิ', cat_left_p4:'เครื่องสอบเทียบกระบวนการ',
@@ -273,13 +301,11 @@
         footer_order:'วิธีการสั่งซื้อ', footer_faq:'คำถามที่พบบ่อย',
         footer_payment:'วิธีชำระเงิน', footer_cards:'Visa / Mastercard / โอนเงิน',
         footer_transfer:'รองรับการโอนผ่านบัญชีบริษัท', footer_cod:'เงินสดปลายทาง',
-        copyright:'© 2024 FLUKE. สงวนลิขสิทธิ์ทั้งหมด',top_user:'ผู้ใช้',top_logout:'ออกจากระบบ',label_profile:'โปรไฟล์'
+        copyright:'© 2024 FLUKE. สงวนลิขสิทธิ์ทั้งหมด', top_user:'ผู้ใช้', top_logout:'ออกจากระบบ', label_profile:'โปรไฟล์'
       },
       'English': {
-        brand_name:'FLUKE',
-        top_buyer_central:'Buyer Central', top_help:'Help', top_get_app:'Get the App', top_choose_lang:'Choose language',
-        top_login:'Login', top_join_free:'Join Free',
-        nav_all_categories:'All categories',
+        brand_name:'FLUKE', top_buyer_central:'Buyer Central', top_help:'Help', top_get_app:'Get the App', top_choose_lang:'Choose language',
+        top_login:'Login', top_join_free:'Join Free', nav_all_categories:'All categories',
         mega_measure:'Measuring Tools', mega_process:'Process / Calibration', mega_accessories:'Accessories',
         cat_left_1:'Clamp Meters', cat_left_2:'Multimeters', cat_left_3:'Electrical Testers', cat_left_4:'Insulation Testers', cat_left_5:'Thermal Cameras',
         cat_left_p1:'Loop Calibrators', cat_left_p2:'Pressure Calibrators', cat_left_p3:'Temperature Calibrators', cat_left_p4:'Process Calibrators',
@@ -301,17 +327,14 @@
         footer_order:'How to Order', footer_faq:'FAQ',
         footer_payment:'Payment Methods', footer_cards:'Visa / Mastercard / Bank Transfer',
         footer_transfer:'Support company account transfer', footer_cod:'Cash on Delivery',
-        copyright:'© 2024 FLUKE. All rights reserved',top_user:'user',top_logout:'Sign out',label_profile:'Profile'
+        copyright:'© 2024 FLUKE. All rights reserved', top_user:'user', top_logout:'Sign out', label_profile:'Profile'
       }
     };
 
     function applyI18n(lang){
       const dict = I18N[lang] || I18N['ไทย'];
       document.documentElement.lang = (lang === 'ไทย') ? 'th' : 'en';
-
-      // ตั้ง title ให้คง "เครื่องมืออุตสาหกรรม FLUKE" ตามที่ต้องการ
       document.title = (lang === 'ไทย') ? 'เครื่องมืออุตสาหกรรม FLUKE' : 'FLUKE Industrial Tools';
-
       document.querySelectorAll('[data-i18n]').forEach(el=>{
         const key = el.getAttribute('data-i18n');
         const val = dict[key];
@@ -319,13 +342,10 @@
         const attr = el.getAttribute('data-i18n-attr');
         if(attr){ el.setAttribute(attr, val); } else { el.textContent = val; }
       });
-
       const label = document.getElementById('currentLangLabel');
       if(label) label.textContent = (lang === 'ไทย') ? 'ไทย' : 'English';
-
       localStorage.setItem('preferredLanguage', lang);
       localStorage.setItem('site_lang', lang);
-
       window.dispatchEvent(new CustomEvent('site_lang_changed', { detail:{ lang } }));
     }
 
@@ -358,7 +378,7 @@
     });
   </script>
 
-  <!-- ===== Flash Deals / Marquee ===== -->
+  <!-- ===== Flash Deals / Marquee (ตามเดิม) ===== -->
   <script>
   (function () {
     const grid = document.getElementById('flashGrid');
@@ -630,7 +650,7 @@
   })();
   </script>
 
-  <!-- ===== Search dropdown, etc. (คงตามเดิม) ===== -->
+  <!-- ===== Search dropdown, etc. ===== -->
   <script>
     (function(){
       const EXCHANGE = 38;

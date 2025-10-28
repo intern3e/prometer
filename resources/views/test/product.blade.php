@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta name="csrf-token" content="{{ csrf_token() }}">
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Product | FLUKE</title>
-  <link rel="icon" type="image/png" href="https://img5.pic.in.th/file/secure-sv1/ChatGPT_Image_18_.._2568_12_03_57-removebg-preview.png">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FLUKE | Product</title>
+
+  {{-- ห้ามมี <meta name="robots"> อื่นในหน้า/เลย์เอาต์ --}}
   @include('test.seo-robots', ['allowIndex' => false])  {{-- noindex,nofollow --}}
+
+  <link rel="icon" type="image/png" href="https://img5.pic.in.th/file/secure-sv1/ChatGPT_Image_18_.._2568_12_03_57-removebg-preview.png">
+</head>
 
   <!-- ====== BASE THEME ====== -->
   <style>
