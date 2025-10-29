@@ -20,7 +20,7 @@
   <link rel="canonical" href="https://myfluketh.com/">
 
   {{-- Google Verification --}}
-  <meta name="google-site-verification" content="tpmhTAxPUzD7bh4163L-tqG21SpSCOJC_N0nNxfNt3k" />
+  {{-- <meta name="google-site-verification" content="tpmhTAxPUzD7bh4163L-tqG21SpSCOJC_N0nNxfNt3k" /> --}}
 
   {{-- Open Graph --}}
   <meta property="og:type" content="website">
