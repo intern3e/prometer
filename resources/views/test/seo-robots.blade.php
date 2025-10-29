@@ -1,7 +1,6 @@
 {{-- resources/views/test/seo-robots.blade.php --}}
 @php
-  // ถ้าไม่ส่งอะไรมาถือว่าอนุญาตให้ index
+  // ค่าเริ่มต้น: อนุญาตให้ index ถ้าไม่ส่งพารามิเตอร์มา
   $allow = filter_var($allowIndex ?? true, FILTER_VALIDATE_BOOLEAN);
-  $robots = $allow ? 'index,follow' : 'noindex,follow';
 @endphp
-<meta name="robots" content="{{ $robots }}">
+<meta name="robots" content="{{ $allow ? 'index,follow' : 'noindex,follow' }}">

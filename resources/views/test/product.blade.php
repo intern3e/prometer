@@ -1,33 +1,89 @@
-{{-- resources/views/Product/showproduct.blade.php --}}
-<!DOCTYPE html>
-<html lang="th">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  {{-- ====== TITLE & DESCRIPTION ====== --}}
-  <title>สินค้า FLUKE — ศูนย์ไทย | myFlukeTH</title>
-  <meta name="description" content="รวมสินค้า FLUKE ของแท้จากศูนย์ไทย — มัลติมิเตอร์ แคลมป์มิเตอร์ กล้องถ่ายภาพความร้อน เครื่องวัดฉนวน ฯลฯ พร้อมบริการคาลิเบรตมาตรฐาน สอบถาม 066-097-5697">
-
-  {{-- CSRF สำหรับ fetch --}}
+  {{-- ====== CSRF ====== --}}
   <meta name="csrf-token" content="{{ csrf_token() }}">
+
+  {{-- ====== เตรียมตัวแปร SEO ไดนามิก ====== --}}
+  @php
+    $isDetail = isset($product) && is_object($product);
+
+    // ฟิลด์ทั่วไปของสินค้า (หน้าเดี่ยว)
+    $pName  = trim((string)($product->name ?? ''));
+    $pModel = trim((string)($product->model ?? ($product->num_model ?? '')));
+    $pBrand = trim((string)($product->brand ?? 'FLUKE'));
+    $pSku   = trim((string)($product->sku   ?? ''));
+    $pSlug  = trim((string)($product->slug  ?? ''));
+    $pImg   = trim((string)($product->image ?? ''));
+    $pCat   = trim((string)($category->name ?? $currentCategory->name ?? $categoryName ?? ''));
+    $pDesc  = trim((string)($product->short_desc ?? $product->description ?? ''));
+
+    // ราคา/สต็อก (สำหรับ JSON-LD)
+    $rawPrice = (float)($product->price ?? $product->sale_price ?? 0);
+    $price = $rawPrice > 0 ? number_format($rawPrice, 2, '.', '') : null;
+    $stock = (int)($product->stock ?? 0);
+    $availability = $stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock';
+
+    // คำค้น/หมวด/เลขหน้า (หน้า list)
+    $q       = trim((string)request('q', ''));
+    $pageNum = (int) max(1, (int)request('page', 1));
+
+    // ===== Title & Description =====
+    if ($isDetail) {
+      // หน้าเดี่ยว: ใส่ชื่อ + รุ่น + แบรนด์
+      $titleParts = [];
+      if ($pModel !== '') $titleParts[] = $pModel;
+      if ($pName  !== '') $titleParts[] = $pName;
+      if ($pBrand !== '') $titleParts[] = $pBrand;
+      $pageTitle = implode(' — ', array_filter($titleParts)) . ' | myFlukeTH';
+
+      $descParts = [];
+      if ($pName  !== '') $descParts[] = $pName;
+      if ($pModel !== '') $descParts[] = 'รุ่น ' . $pModel;
+      if ($pBrand !== '') $descParts[] = 'แบรนด์ ' . $pBrand;
+      if ($pDesc  !== '') $descParts[] = mb_strimwidth(strip_tags($pDesc), 0, 140, '…', 'UTF-8');
+      $descParts[] = 'สอบถาม 066-097-5697 (คุณผักบุ้ง) | info@hikaripower.com';
+      $metaDesc = implode(' — ', array_filter($descParts));
+    } else {
+      // หน้า list: ใส่หมวด/คำค้น/หน้า
+      $titleParts = ['สินค้า FLUKE'];
+      if ($pCat  !== '') { $titleParts[] = $pCat; }
+      if ($q     !== '') { $titleParts[] = 'ค้นหา: ' . $q; }
+      if ($pageNum > 1)  { $titleParts[] = 'หน้า ' . $pageNum; }
+      $pageTitle = implode(' — ', $titleParts) . ' | myFlukeTH';
+
+      $metaDesc = $pCat !== ''
+        ? 'รวมสินค้า FLUKE — ' . $pCat . ' พร้อมบริการคาลิเบรตมาตรฐานสากล — สอบถาม 066-097-5697 (คุณผักบุ้ง) | info@hikaripower.com'
+        : 'รวมสินค้า FLUKE — มัลติมิเตอร์ แคลมป์มิเตอร์ กล้องถ่ายภาพความร้อน เครื่องวัดฉนวน — 066-097-5697 (คุณผักบุ้ง)';
+      if ($q !== '') $metaDesc = 'ผลการค้นหา FLUKE สำหรับ "' . $q . '" — 066-097-5697 (คุณผักบุ้ง)';
+      if ($pageNum > 1) $metaDesc .= ' — หน้า ' . $pageNum;
+    }
+
+    // ===== Canonical =====
+    // หน้าเดี่ยว: ใช้ URL ปัจจุบันแต่ตัด query ออก
+    // หน้า list: เก็บ ?page= ไว้เพื่อหลีกเลี่ยงเนื้อหาซ้ำ
+    $canonical = url()->current();
+    if (!$isDetail && request()->has('page')) {
+      $canonical .= '?page=' . $pageNum;
+    }
+
+    // รูป OG fallback
+    $ogImg = $pImg !== '' ? $pImg : 'https://img5.pic.in.th/file/secure-sv1/ChatGPT_Image_18_.._2568_12_03_57-removebg-preview.png';
+
+    // ตรวจ paginator สำหรับ rel prev/next และ ItemList
+    $paginator = (isset($products) && $products instanceof \Illuminate\Contracts\Pagination\Paginator) ? $products : null;
+  @endphp
+
+  {{-- ====== TITLE & DESCRIPTION ====== --}}
+  <title>{{ $pageTitle }}</title>
+  <meta name="description" content="{{ $metaDesc }}">
+  <meta name="keywords" content="{{ trim(implode(', ', array_filter([$pName, $pModel, $pBrand, $pCat, 'FLUKE', 'ฟลุค']))) }}">
 
   {{-- ====== ROBOTS ====== --}}
   @include('test.seo-robots', ['allowIndex' => true])
 
-  {{-- ====== CANONICAL & PAGINATION (safe) ====== --}}
-  @php
-    $canonical = url()->current();
-    if (request()->has('page')) {
-        $canonical .= '?page=' . request('page');
-    }
-    // ใช้ paginator เฉพาะตอนเป็นหน้า list
-    $paginator = null;
-    if (isset($products) && is_object($products) && $products instanceof \Illuminate\Contracts\Pagination\Paginator) {
-        $paginator = $products;
-    }
-  @endphp
-
+  {{-- ====== CANONICAL & PAGINATION ====== --}}
   <link rel="canonical" href="{{ $canonical }}">
   @if ($paginator)
     @if ($paginator->currentPage() > 1)
@@ -39,59 +95,115 @@
   @endif
 
   {{-- ====== OPEN GRAPH / TWITTER ====== --}}
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="สินค้า FLUKE — ศูนย์ไทย | myFlukeTH">
-  <meta property="og:description" content="รวมสินค้า FLUKE ของแท้จากศูนย์ไทย พร้อมบริการคาลิเบรตมาตรฐาน">
+  <meta property="og:type" content="product">
+  <meta property="og:site_name" content="myFlukeTH">
+  <meta property="og:title" content="{{ $pageTitle }}">
+  <meta property="og:description" content="{{ $metaDesc }}">
   <meta property="og:url" content="{{ $canonical }}">
-  <meta property="og:image" content="https://img5.pic.in.th/file/secure-sv1/ChatGPT_Image_18_.._2568_12_03_57-removebg-preview.png">
+  <meta property="og:image" content="{{ $ogImg }}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
   <meta property="og:locale" content="th_TH">
-  <meta name="twitter:card" content="summary_large_image">
 
-  {{-- ====== JSON-LD: Breadcrumb + ItemList (รองรับหน้าเดี่ยวด้วย) ====== --}}
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ $pageTitle }}">
+  <meta name="twitter:description" content="{{ $metaDesc }}">
+  <meta name="twitter:image" content="{{ $ogImg }}">
+  <meta name="twitter:image:alt" content="{{ $isDetail ? ($pName . ($pModel ? ' รุ่น '.$pModel : '')) : 'สินค้า FLUKE — myFlukeTH' }}">
+
+  {{-- ====== JSON-LD ====== --}}
   @php
-    // Breadcrumb
-    $breadcrumb = [
+    // ========= Breadcrumb =========
+    $breadcrumbList = [
       '@context' => 'https://schema.org',
-      '@type' => 'BreadcrumbList',
+      '@type'    => 'BreadcrumbList',
       'itemListElement' => [
         ['@type' => 'ListItem', 'position' => 1, 'name' => 'หน้าแรก', 'item' => url('/')],
-        ['@type' => 'ListItem', 'position' => 2, 'name' => 'สินค้า FLUKE', 'item' => $canonical],
       ],
     ];
-
-    // ItemList (ถ้าเป็นหน้า list -> loop; ถ้าเป็นหน้าเดี่ยว -> ใส่ item เดียว)
-    $items = [];
-    if (isset($products) && (is_iterable($products) || $products instanceof \Illuminate\Contracts\Pagination\Paginator)) {
-      $pos = 1;
-      foreach ($products as $p) {
-        $items[] = [
-          '@type'    => 'ListItem',
-          'position' => $pos++,
-          'url'      => route('product.show', ['id' => $p->iditem ?? $p->id ?? null]),
-          'name'     => trim($p->name ?? ''),
-        ];
-        if ($pos > 25) break;
-      }
-    } elseif (isset($product)) {
-      $items[] = [
-        '@type'    => 'ListItem',
-        'position' => 1,
-        'url'      => url()->current(),
-        'name'     => trim($product->name ?? ''),
-      ];
+    if ($isDetail) {
+      $breadcrumbList['itemListElement'][] = ['@type' => 'ListItem', 'position' => 2, 'name' => 'สินค้า FLUKE', 'item' => url('/products')];
+      $breadcrumbList['itemListElement'][] = ['@type' => 'ListItem', 'position' => 3, 'name' => ($pName ?: 'สินค้า'), 'item' => $canonical];
+    } else {
+      $breadcrumbList['itemListElement'][] = ['@type' => 'ListItem', 'position' => 2, 'name' => 'สินค้า FLUKE', 'item' => $canonical];
     }
-
-    $itemList = [
-      '@context' => 'https://schema.org',
-      '@type'    => 'ItemList',
-      'name'     => 'สินค้า FLUKE — ศูนย์ไทย',
-      'itemListElement' => $items,
-    ];
   @endphp
-  <script type="application/ld+json">{!! json_encode($breadcrumb, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES) !!}</script>
-  <script type="application/ld+json">{!! json_encode($itemList, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES) !!}</script>
+  <script type="application/ld+json">{!! json_encode($breadcrumbList, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES) !!}</script>
 
+  @if ($isDetail)
+    @php
+      // ========= Product =========
+      $productJson = [
+        '@context'    => 'https://schema.org',
+        '@type'       => 'Product',
+        'name'        => trim($pName.' '.($pModel ? 'รุ่น '.$pModel : '')),
+        'brand'       => ['@type' => 'Brand', 'name' => $pBrand ?: 'FLUKE'],
+        'sku'         => $pSku ?: null,
+        'mpn'         => $pModel ?: null,
+        'category'    => $pCat ?: 'Electrical Measurement',
+        'image'       => $ogImg,
+        'description' => $metaDesc,
+        'url'         => $canonical,
+        // GTIN (ถ้ามี)
+        // 'gtin13'   => $product->gtin13 ?? null,
+        // Review/AggregateRating (ถ้ามีตัวแปร)
+      ];
+      if (!empty($ratingAvg ?? null) && !empty($ratingCount ?? null)) {
+        $productJson['aggregateRating'] = [
+          '@type'       => 'AggregateRating',
+          'ratingValue' => (string) $ratingAvg,
+          'reviewCount' => (int) $ratingCount,
+        ];
+      }
+      // Offers (ถ้ามีราคา)
+      if ($price) {
+        $productJson['offers'] = [
+          '@type'           => 'Offer',
+          'price'           => $price,
+          'priceCurrency'   => 'THB',
+          'availability'    => $availability,
+          'url'             => $canonical,
+          'priceValidUntil' => now()->addMonths(6)->toDateString(),
+          'seller'          => ['@type' => 'Organization', 'name' => 'myFlukeTH'],
+          'itemCondition'   => 'https://schema.org/NewCondition',
+        ];
+      }
+    @endphp
+    <script type="application/ld+json">{!! json_encode(array_filter($productJson), JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES) !!}</script>
+  @else
+    @php
+      // ========= ItemList (หน้า list) =========
+      $items = [];
+      if (isset($products) && (is_iterable($products) || $products instanceof \Illuminate\Contracts\Pagination\Paginator)) {
+        $pos = 1;
+        foreach ($products as $p) {
+          $slug = trim((string)($p->slug ?? ''));
+          $pid  = $p->iditem ?? $p->id ?? null;
+          $prodUrl = $slug !== '' ? url('/product/' . ltrim($slug, '/')) : url('/product/' . $pid);
+          $items[] = [
+            '@type'    => 'ListItem',
+            'position' => $pos++,
+            'url'      => $prodUrl,
+            'name'     => trim((string)($p->name ?? '')),
+          ];
+          if ($pos > 25) break;
+        }
+      }
+      $itemList = [
+        '@context'        => 'https://schema.org',
+        '@type'           => 'ItemList',
+        'name'            => $pCat !== '' ? 'สินค้า FLUKE — '.$pCat : 'สินค้า FLUKE',
+        'itemListElement' => $items,
+        'numberOfItems'   => isset($paginator) ? $paginator->count() : count($items),
+      ];
+    @endphp
+    <script type="application/ld+json">{!! json_encode($itemList, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES) !!}</script>
+  @endif
+
+  {{-- ====== Favicon ====== --}}
   <link rel="icon" type="image/png" href="https://img5.pic.in.th/file/secure-sv1/ChatGPT_Image_18_.._2568_12_03_57-removebg-preview.png">
+</head>
+
 
   <!-- ====== BASE THEME ====== -->
   <style>
@@ -174,8 +286,8 @@
     /* Utilities */
     .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
   </style>
-</head>
 <body>
+
   {{-- Header --}}
   @include('test.header-nav')
 
@@ -228,19 +340,47 @@
       <aside class="md:col-span-7">
         <div class="card p-5 soft">
           <input type="hidden" id="iditem" value="{{ $product->iditem }}">
+{{-- Title + Model (เดิมเป๊ะ + เสริม SEO) --}}
+@php
+  $nameTxt   = trim((string)($product->name ?? ''));
+  $brandTxt  = strtoupper(trim((string)($product->brand ?? 'FLUKE')));
+  $modelTxt  = trim((string)($product->model ?? ($product->num_model ?? '')));
+  $skuTxt    = trim((string)($product->sku ?? ''));
+@endphp
 
-          {{-- Title + Model --}}
-          @php $model = trim((string)($product->model ?? '')); @endphp
-          @if ($model !== '')
-            <p id="pModel" class="mb-3 text-[clamp(16px,4.2vw,24px)] leading-tight text-gray-900/90 font-bold">
-              <span>Model:</span>
-              <span>{{ $model }}</span>
-            </p>
-          @endif
+@once
+<style>
+  .sr-only{
+    position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+    clip:rect(0,0,0,0);white-space:nowrap;border:0
+  }
+</style>
+@endonce
 
-          <h3 id="pName" class="text-[clamp(12px,4vw,18px)] font-bold mb-1 text-gray-800/70 tracking-tight">
-            {{ $product->name }}
-          </h3>
+<div itemscope itemtype="https://schema.org/Product">
+  {{-- H1 สำหรับ SEO (ซ่อนไว้ ไม่กระทบหน้าตา) --}}
+  <h1 class="sr-only" itemprop="name">
+    {{ $brandTxt }} @if($modelTxt) รุ่น {{ $modelTxt }} @endif — {{ $nameTxt }}
+  </h1>
+  <meta itemprop="brand" content="{{ $brandTxt }}">
+  @if($modelTxt)<meta itemprop="mpn" content="{{ $modelTxt }}">@endif
+  @if($skuTxt)<meta itemprop="sku" content="{{ $skuTxt }}">@endif
+  <meta itemprop="url" content="{{ url()->current() }}">
+  @if(!empty($product->image))<meta itemprop="image" content="{{ $product->image }}">@endif
+
+  {{-- ====== UI เดิม: คงหน้าตา/คลาสเดิมทุกอย่าง ====== --}}
+  @if ($modelTxt !== '')
+    <p id="pModel" class="mb-3 text-[clamp(16px,4.2vw,24px)] leading-tight text-gray-900/90 font-bold">
+      <span>Model:</span>
+      <span itemprop="model">{{ $modelTxt }}</span>
+    </p>
+  @endif
+
+  <h3 id="pName" class="text-[clamp(12px,4vw,18px)] font-bold mb-1 text-gray-800/70 tracking-tight" itemprop="name">
+    {{ $nameTxt }}
+  </h3>
+</div>
+
 
           <!-- Price + Stock + VAT -->
           <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">

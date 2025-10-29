@@ -4,15 +4,15 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
+ <link rel="icon" type="image/png" href="https://img5.pic.in.th/file/secure-sv1/ChatGPT_Image_18_.._2568_12_03_57-removebg-preview.png" />
   {{-- ===================== SEO ===================== --}}
-  <title>myFlukeTH — เครื่องมืออุตสาหกรรม FLUKE ของแท้ | ศูนย์ไทย</title>
+  <title>myFlukeTH — เครื่องมืออุตสาหกรรม FLUKE |(Fluke Thailand)</title>
   <meta name="description"
-        content="ศูนย์รวมเครื่องมือวัดไฟฟ้า FLUKE ของแท้จากศูนย์ไทย — คาลิเบรตมาตรฐานสากล | สอบถาม 066-097-5697 (คุณผาบุ้ง) | info@hikaripower.com | LINE @hikaridenki">
+        content="ศูนย์รวมเครื่องมือวัดไฟฟ้า FLUKE — คาลิเบรตมาตรฐานสากล | สอบถาม 066-097-5697 (คุณผักบุ้ง) | info@hikaripower.com | LINE @hikaridenki">
   <meta name="keywords"
-        content="myfluketh, myfluke, fluke, fluketh, เครื่องมือวัดไฟฟ้า, ฟลุค, ฟลุคไทย, มัลติมิเตอร์, คาลิเบรต, FLUKE Thailand, ศูนย์ไทย, Hikari Power">
+        content="myfluketh, myfluke, fluketh, fluke, fluke thailand, เครื่องมือวัดไฟฟ้า, ฟลุค, ฟลุคไทย, มัลติมิเตอร์, แคลมป์มิเตอร์, คาลิเบรต, Hikari Power">
   <meta name="author" content="myFlukeTH">
-  @include('test.seo-robots', ['allowIndex' => true]) {{-- index, follow --}}
+  @include('test.seo-robots', ['allowIndex' => true])
   <link rel="canonical" href="https://myfluketh.com/">
 
   {{-- Google Verification --}}
@@ -20,59 +20,135 @@
 
   {{-- Open Graph --}}
   <meta property="og:type" content="website">
-  <meta property="og:title" content="myFlukeTH — เครื่องมืออุตสาหกรรม FLUKE ของแท้ | ศูนย์ไทย">
+  <meta property="og:site_name" content="myFlukeTH">
+  <meta property="og:title" content="myFlukeTH — เครื่องมืออุตสาหกรรม FLUKE |(Fluke Thailand)">
   <meta property="og:description"
-        content="FLUKE ของแท้จากศูนย์ไทย — คาลิเบรตมาตรฐาน | โทร 066-097-5697 | info@hikaripower.com | LINE @hikaridenki">
+        content="ศูนย์รวมเครื่องมือวัดไฟฟ้า FLUKE — คาลิเบรตมาตรฐานสากล | สอบถาม 066-097-5697 (คุณผักบุ้ง) | info@hikaripower.com | LINE @hikaridenki">
   <meta property="og:url" content="https://myfluketh.com/">
-  <meta property="og:image"
-        content="https://img5.pic.in.th/file/secure-sv1/ChatGPT_Image_18_.._2568_12_03_57-removebg-preview.png">
+  <meta property="og:image" content="https://img5.pic.in.th/file/secure-sv1/ChatGPT_Image_18_.._2568_12_03_57-removebg-preview.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
   <meta property="og:locale" content="th_TH">
 
   {{-- Twitter --}}
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="myFlukeTH — เครื่องมืออุตสาหกรรม FLUKE ของแท้ | ศูนย์ไทย">
+  <meta name="twitter:title" content="myFlukeTH — เครื่องมืออุตสาหกรรม FLUKE |(Fluke Thailand)">
   <meta name="twitter:description"
-        content="FLUKE ของแท้จากศูนย์ไทย — คาลิเบรตมาตรฐาน | โทร 066-097-5697 | info@hikaripower.com | LINE @hikaridenki">
-  <meta name="twitter:image"
-        content="https://img5.pic.in.th/file/secure-sv1/ChatGPT_Image_18_.._2568_12_03_57-removebg-preview.png">
+        content="ศูนย์รวมเครื่องมือวัดไฟฟ้า FLUKE — คาลิเบรตมาตรฐานสากล | สอบถาม 066-097-5697 (คุณผักบุ้ง) | info@hikaripower.com | LINE @hikaridenki">
+  <meta name="twitter:image" content="https://img5.pic.in.th/file/secure-sv1/ChatGPT_Image_18_.._2568_12_03_57-removebg-preview.png">
+  <meta name="twitter:image:alt" content="myFlukeTH — ศูนย์รวมเครื่องมือวัดไฟฟ้า FLUKE >
 
   {{-- Icon + Swiper --}}
-  <link rel="icon" type="image/png"
-        href="https://img5.pic.in.th/file/secure-sv1/ChatGPT_Image_18_.._2568_12_03_57-removebg-preview.png">
+  <link rel="icon" type="image/png" href="https://img5.pic.in.th/file/secure-sv1/ChatGPT_Image_18_.._2568_12_03_57-removebg-preview.png">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
 
-  {{-- Schema.org JSON-LD (สำคัญ: พ่น JSON ด้วย PHP เพื่อไม่ให้ Blade จับ @context/@type) --}}
+  {{-- Utility: sr-only (ซ่อนเนื้อหาแบบเข้าถึงได้) --}}
+  @once
+  <style>
+    .sr-only{
+      position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+      clip:rect(0,0,0,0);white-space:nowrap;border:0
+    }
+  </style>
+  @endonce
+
+  {{-- Schema.org JSON-LD --}}
   @php
-    $jsonLd = [
-      '@context'   => 'https://schema.org',
-      '@type'      => 'WebSite',
-      'url'        => 'https://myfluketh.com/',
-      'name'       => 'myFlukeTH',
-      'description'=> 'ศูนย์รวมเครื่องมือวัดไฟฟ้า FLUKE ของแท้จากศูนย์ไทย — คาลิเบรตมาตรฐานสากล | โทร 066-097-5697',
+    $siteJson = [
+      '@context' => 'https://schema.org',
+      '@type'    => 'WebSite',
+      'url'      => 'https://myfluketh.com/',
+      'name'     => 'myFlukeTH',
+      'alternateName' => ['myfluketh','myfluke','fluketh','Fluke Thailand'],
+      'description'=> 'ศูนย์รวมเครื่องมือวัดไฟฟ้า FLUKE — คาลิเบรตมาตรฐานสากล | สอบถาม 066-097-5697 (คุณผักบุ้ง)',
+      'potentialAction' => [
+        '@type' => 'SearchAction',
+        // ปลอดภัยสุดถ้ายังไม่มี /search
+        'target' => 'https://myfluketh.com/?q={search_term_string}',
+        'query-input' => 'required name=search_term_string'
+      ],
       'publisher'  => [
         '@type' => 'Organization',
         'name'  => 'Hikari Power',
         'logo'  => 'https://img5.pic.in.th/file/secure-sv1/ChatGPT_Image_18_.._2568_12_03_57-removebg-preview.png',
+        'url'   => 'https://myfluketh.com/'
       ],
       'sameAs'     => [
         'https://www.facebook.com/hikaridenki',
         'https://line.me/R/ti/p/@hikaridenki',
       ],
     ];
-  @endphp
-  <script type="application/ld+json">{!! json_encode($jsonLd, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES) !!}</script>
-</head>
 
+    $orgJson = [
+      '@context' => 'https://schema.org',
+      '@type'    => 'Organization',
+      'name'     => 'myFlukeTH',
+      'alternateName' => ['myfluketh','myfluke','fluketh'],
+      'url'      => 'https://myfluketh.com/',
+      'logo'     => 'https://img5.pic.in.th/file/secure-sv1/ChatGPT_Image_18_.._2568_12_03_57-removebg-preview.png',
+      'sameAs'   => [
+        'https://www.facebook.com/hikaridenki',
+        'https://line.me/R/ti/p/@hikaridenki'
+      ],
+      'contactPoint' => [[
+        '@type' => 'ContactPoint',
+        'telephone' => '+66660975697',
+        'contactType' => 'customer service',
+        'areaServed' => 'TH',
+        'availableLanguage' => ['Thai','English']
+      ]]
+    ];
+  @endphp
+  <script type="application/ld+json">{!! json_encode($siteJson, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES) !!}</script>
+  <script type="application/ld+json">{!! json_encode($orgJson,  JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES) !!}</script>
+</head>
 <body>
   @include('test.header-nav')
-
-  <br>
+<br>
   <main>
-    <!-- SEO-only -->
-    <div class="sr-only">
-      <h1>เครื่องมืออุตสาหกรรม FLUKE</h1>
-      <p> — คาลิเบรตมาตรฐานสากล | สอบถาม 066-097-5697 (คุณผาบุ้ง) | info@hikaripower.com | LINE @hikaridenki</p>
-    </div>
+    {{-- ===== Hidden brand keywords (sr-only) ===== --}}
+    <section class="sr-only" role="region" aria-label="myFlukeTH / Fluke Thailand">
+      <h1>myFlukeTH — เครื่องมืออุตสาหกรรม FLUKE (Fluke Thailand)</h1>
+
+      <p>
+        กำลังค้นหา <strong>myfluketh</strong>, <strong>myfluke</strong>, <strong>fluketh</strong>, <strong>fluke</strong> หรือ <strong>ฟลุค</strong> อยู่ใช่ไหม?
+        ที่นี่คือศูนย์รวมเครื่องมือวัดไฟฟ้า <strong>FLUKE</strong> ครบวงจร — มัลติมิเตอร์, แคลมป์มิเตอร์, เครื่องทดสอบไฟฟ้า,
+        เครื่องวัดฉนวน และกล้องถ่ายภาพความร้อน พร้อมบริการคาลิเบรตมาตรฐานสากล
+        สอบถาม 066-097-5697 (<strong>คุณผักบุ้ง</strong>) | อีเมล <strong>info@hikaripower.com</strong> | LINE <strong>@hikaridenki</strong>
+      </p>
+
+      <nav aria-label="popular brand searches">
+        <a href="{{ url('/') }}">myfluketh</a>
+        <a href="{{ url('/') }}">myfluke</a>
+        <a href="{{ url('/') }}">fluketh</a>
+        <a href="{{ url('/') }}">Fluke Thailand</a>
+        <a href="{{ url('/') }}">ฟลุค</a>
+      </nav>
+    </section>
+
+    {{-- ===== (Optional) Breadcrumb JSON-LD เฉพาะสคีมา ไม่แสดงผล ===== --}}
+    @php
+      $crumbs = [
+        ['@id' => url('/'), 'name' => 'Home'],
+        ['@id' => url('/fluke-marketplace'), 'name' => 'FLUKE Marketplace'],
+      ];
+      $breadcrumbJson = [
+        '@context' => 'https://schema.org',
+        '@type'    => 'BreadcrumbList',
+        'itemListElement' => collect($crumbs)->map(fn($c,$i) => [
+          '@type' => 'ListItem',
+          'position' => $i+1,
+          'item' => ['@id' => $c['@id'], 'name' => $c['name']]
+        ])->values(),
+      ];
+    @endphp
+    <script type="application/ld+json">{!! json_encode($breadcrumbJson, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES) !!}</script>
+
+    {{-- ===== เนื้อหาหน้าจริงของคุณ (สินค้า/สไลด์ ฯลฯ) วางต่อจากนี้ ===== --}}
+  </main>
+
+  {{-- (ถ้าต้องใช้ Swiper JS) --}}
+  <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js" defer></script>
 
     <!-- ===== Hero area ===== -->
     <section class="container-outer mx-auto section-pad mt-3 md:mt-5 grid grid-cols-1 md:grid-cols-12 gap-4">
