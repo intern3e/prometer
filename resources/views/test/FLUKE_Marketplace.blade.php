@@ -4,15 +4,19 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
- <link rel="icon" type="image/png" href="https://img5.pic.in.th/file/secure-sv1/ChatGPT_Image_18_.._2568_12_03_57-removebg-preview.png" />
+
+  <!-- ICON -->
+  <link rel="icon" type="image/png" href="https://img5.pic.in.th/file/secure-sv1/ChatGPT_Image_18_.._2568_12_03_57-removebg-preview.png" />
+
   {{-- ===================== SEO ===================== --}}
-  <title>myFlukeTH — เครื่องมืออุตสาหกรรม FLUKE |(Fluke Thailand)</title>
+  <title>myFlukeTH — เครื่องมืออุตสาหกรรม FLUKE |</title>
   <meta name="description"
         content="ศูนย์รวมเครื่องมือวัดไฟฟ้า FLUKE — คาลิเบรตมาตรฐานสากล | สอบถาม 066-097-5697 (คุณผักบุ้ง) | info@hikaripower.com | LINE @hikaridenki">
   <meta name="keywords"
         content="myfluketh, myfluke, fluketh, fluke, fluke thailand, เครื่องมือวัดไฟฟ้า, ฟลุค, ฟลุคไทย, มัลติมิเตอร์, แคลมป์มิเตอร์, คาลิเบรต, Hikari Power">
   <meta name="author" content="myFlukeTH">
-  @include('test.seo-robots', ['allowIndex' => true])
+  <!-- แทนที่ include ด้วย meta ตรง ๆ เพื่อหน้าเดียวจบ -->
+  <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://myfluketh.com/">
 
   {{-- Google Verification --}}
@@ -21,7 +25,7 @@
   {{-- Open Graph --}}
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="myFlukeTH">
-  <meta property="og:title" content="myFlukeTH — เครื่องมืออุตสาหกรรม FLUKE |(Fluke Thailand)">
+  <meta property="og:title" content="myFlukeTH — เครื่องมืออุตสาหกรรม FLUKE |">
   <meta property="og:description"
         content="ศูนย์รวมเครื่องมือวัดไฟฟ้า FLUKE — คาลิเบรตมาตรฐานสากล | สอบถาม 066-097-5697 (คุณผักบุ้ง) | info@hikaripower.com | LINE @hikaridenki">
   <meta property="og:url" content="https://myfluketh.com/">
@@ -32,11 +36,11 @@
 
   {{-- Twitter --}}
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="myFlukeTH — เครื่องมืออุตสาหกรรม FLUKE |(Fluke Thailand)">
+  <meta name="twitter:title" content="myFlukeTH — เครื่องมืออุตสาหกรรม FLUKE |">
   <meta name="twitter:description"
         content="ศูนย์รวมเครื่องมือวัดไฟฟ้า FLUKE — คาลิเบรตมาตรฐานสากล | สอบถาม 066-097-5697 (คุณผักบุ้ง) | info@hikaripower.com | LINE @hikaridenki">
   <meta name="twitter:image" content="https://img5.pic.in.th/file/secure-sv1/ChatGPT_Image_18_.._2568_12_03_57-removebg-preview.png">
-  <meta name="twitter:image:alt" content="myFlukeTH — ศูนย์รวมเครื่องมือวัดไฟฟ้า FLUKE >
+  <meta name="twitter:image:alt" content="myFlukeTH — ศูนย์รวมเครื่องมือวัดไฟฟ้า FLUKE">
 
   {{-- Icon + Swiper --}}
   <link rel="icon" type="image/png" href="https://img5.pic.in.th/file/secure-sv1/ChatGPT_Image_18_.._2568_12_03_57-removebg-preview.png">
@@ -59,7 +63,7 @@
       '@type'    => 'WebSite',
       'url'      => 'https://myfluketh.com/',
       'name'     => 'myFlukeTH',
-      'alternateName' => ['myfluketh','myfluke','fluketh','Fluke Thailand'],
+      'alternateName' => ['myfluketh','myfluke','fluketh','Fluke Thailand','ฟลุค'],
       'description'=> 'ศูนย์รวมเครื่องมือวัดไฟฟ้า FLUKE — คาลิเบรตมาตรฐานสากล | สอบถาม 066-097-5697 (คุณผักบุ้ง)',
       'potentialAction' => [
         '@type' => 'SearchAction',
@@ -108,7 +112,7 @@
   <main>
     {{-- ===== Hidden brand keywords (sr-only) ===== --}}
     <section class="sr-only" role="region" aria-label="myFlukeTH / Fluke Thailand">
-      <h1>myFlukeTH — เครื่องมืออุตสาหกรรม FLUKE (Fluke Thailand)</h1>
+      <h1>myFlukeTH — เครื่องมืออุตสาหกรรม FLUKE </h1>
 
       <p>
         กำลังค้นหา <strong>myfluketh</strong>, <strong>myfluke</strong>, <strong>fluketh</strong>, <strong>fluke</strong> หรือ <strong>ฟลุค</strong> อยู่ใช่ไหม?
