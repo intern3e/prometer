@@ -232,17 +232,17 @@ Route::get('/', function () {
 Route::get('/robots.txt', function () {
     $txt = <<<TXT
 User-agent: *
-Allow: /
-Disallow: /login
-Disallow: /Sign_up
-Disallow: /cart
-Disallow: /products
-Disallow: /product
+Disallow: /
+Allow: /$
+Allow: /robots.txt
+Allow: /sitemap.xml
 Sitemap: {SITEMAP}
 TXT;
-    return Response::make(str_replace('{SITEMAP}', url('/sitemap.xml'), $txt), 200, [
-        'Content-Type' => 'text/plain; charset=UTF-8'
-    ]);
+    return Response::make(
+        str_replace('{SITEMAP}', url('/sitemap.xml'), $txt),
+        200,
+        ['Content-Type' => 'text/plain; charset=UTF-8']
+    );
 });
 
 Route::get('/sitemap.xml', function () {
