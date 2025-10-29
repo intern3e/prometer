@@ -219,3 +219,46 @@ Route::get('Admin', [AdminUserController::class, 'index'])->name('Admin');
 
 Route::view('/fluke-marketplace', 'test.FLUKE_Marketplace')->name('fluke.marketplace');
 
+
+use Illuminate\Support\Facades\Response;
+
+Route::get('/', function () {
+    $flashDeals = [];
+    $products   = [];
+    return Response::view('test.FLUKE_Marketplace', compact('flashDeals','products'))
+        ->header('X-Robots-Tag', 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1');
+})->name('home');
+
+Route::get('/robots.txt', function () {
+    $txt = <<<TXT
+User-agent: *
+Allow: /
+Disallow: /login
+Disallow: /Sign_up
+Disallow: /cart
+Disallow: /products
+Disallow: /product
+Sitemap: {SITEMAP}
+TXT;
+    return Response::make(str_replace('{SITEMAP}', url('/sitemap.xml'), $txt), 200, [
+        'Content-Type' => 'text/plain; charset=UTF-8'
+    ]);
+});
+
+Route::get('/sitemap.xml', function () {
+    $loc     = rtrim(url('/'), '/') . '/';
+    $lastmod = gmdate('Y-m-d\TH:i:s\Z');
+    $xml = <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>{$loc}</loc>
+    <lastmod>{$lastmod}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>
+XML;
+    return Response::make($xml, 200, ['Content-Type' => 'application/xml; charset=UTF-8']);
+});
+
