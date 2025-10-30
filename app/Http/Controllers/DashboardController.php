@@ -29,11 +29,10 @@ class DashboardController extends Controller
 
     // --- flashDeals ---
     $flashDeals = Fluke::query()
-        ->select(['iditem','name','pic','webpriceTHB','source','model'])
+        ->select(['iditem','name','pic','webpriceTHB','source'])
         ->whereNotNull('name')
         ->whereNotNull('pic')
         ->whereNotNull('webpriceTHB')
-        ->whereNotNull('model')
         ->orderBy('name')
         ->limit(500)
         ->get()
@@ -41,7 +40,7 @@ class DashboardController extends Controller
             'iditem'   => $x->iditem,
             'name'     => $x->name,
             'pic'      => $x->pic,
-            'model'      => $x->model,
+            
             'webpriceTHB' => $toFloat($x->webpriceTHB), 
         ]);
 

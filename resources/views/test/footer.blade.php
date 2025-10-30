@@ -146,47 +146,19 @@
               </div>
             </a>
 
-<!-- Email: เปิด Gmail ด้วย To + Subject เท่านั้น (ไม่มี body) -->
-<a id="emailBtn"
-   href="mailto:Info@hikaripower.com"
-   class="group round bg-gradient-to-br from-white/15 to-white/5 p-[1px] transition"
-   data-to="Info@hikaripower.com"
-   data-subject="สอบถามสินค้าMyFlukeTH:"
-   onclick="return openEmailSimple(event);"
-   rel="nofollow noopener">
-  <div class="contact-card round bg-white/5 backdrop-blur-sm thin flex items-center gap-2.5 px-3 py-2.5">
-    <span class="contact-ico round thin flex items-center justify-center w-8 h-8 bg-white/10">
-      <i class="bi bi-envelope text-white/80"></i>
-    </span>
-    <div class="leading-5 break-any">
-      <div class="font-semibold tracking-tight text-[.95rem]">Info@hikaripower.com</div>
-      <div class="text-[11px] text-gray-400">สอบถามสินค้าMyFlukeTH:</div>
-    </div>
-  </div>
-</a>
-
-<script>
-function openEmailSimple(evt){
-  if (evt && evt.preventDefault) evt.preventDefault();
-
-  const el = evt.currentTarget;
-  const to = (el.dataset.to || 'Info@hikaripower.com').trim();
-  const subject = (el.dataset.subject || 'สอบถามสินค้าMyFlukeTH:').trim();
-
-  // เปิด Gmail (ไม่มี body) และ fallback เป็น mailto
-  const gmail = 'https://mail.google.com/mail/?view=cm&fs=1'
-              + '&to=' + encodeURIComponent(to)
-              + '&su=' + encodeURIComponent(subject);
-
-  const mailto = 'mailto:' + encodeURIComponent(to)
-              + '?subject=' + encodeURIComponent(subject); // ไม่ใส่ body
-
-  const win = window.open(gmail, '_blank', 'noopener,noreferrer');
-  if (!win) window.location.href = mailto;
-  return false;
-}
-</script>
-
+            <!-- Email -->
+            <a href="mailto:info@hikaridenki.co.th"
+               class="group round bg-gradient-to-br from-white/15 to-white/5 p-[1px] transition">
+              <div class="contact-card round bg-white/5 backdrop-blur-sm thin flex items-center gap-2.5">
+                <span class="contact-ico round thin flex items-center justify-center">
+                  <i class="bi bi-envelope text-white/80"></i>
+                </span>
+                <div class="leading-5 break-any">
+                  <div class="font-semibold tracking-tight text-[.95rem]">Info@hikaridenki.co.th</div>
+                  <div class="text-[11px] text-gray-400">(3e trading)</div>
+                </div>
+              </div>
+            </a>
 
             <!-- LINE (เปิดแอป → ถ้าไม่มีแอปค่อยไปหน้าเว็บ Add Friend) -->
             <a id="lineBtn"
@@ -198,7 +170,7 @@ function openEmailSimple(evt){
                   <img src="https://cdn.simpleicons.org/line/06C755" alt="LINE" class="w-4 h-4" />
                 </span>
                 <div class="leading-5">
-                  <div class="font-semibold tracking-tight text-[.95rem]">LINE : @hikaridenki</div>
+                  <div class="font-semibold tracking-tight text-[.95rem]">LINE: @543ubjtx</div>
                 </div>
               </div>
             </a>
@@ -221,7 +193,7 @@ function openEmailSimple(evt){
 
               <!-- กล่องแผนที่ + overlay -->
               <div class="map-wrap mobile-guard md:mobile-guard:!hidden" id="mapWrap">
-                <div id="hk-map" class="map-h" role="img" aria-label="แผนที่ตำแหน่ง บริษัท ฮิคาริ เดงกิ จำกัด"></div>
+                <div id="hk-map" class="map-h" role="img" aria-label="แผนที่ตำแหน่ง TRIPLE E TRADING"></div>
 
                 <!-- overlay เฉพาะมือถือ -->
                 <div class="map-overlay md:hidden" id="mapOverlay">
@@ -235,7 +207,7 @@ function openEmailSimple(evt){
 
       <!-- Footer bottom -->
       <div class="mt-4 border-t border-white/10 pt-3 text-center text-[10px] text-gray-400">
-        © 2025 myFlukeTH.com — บริษัท ฮิคาริ เดงกิ จำกัด. All rights reserved.
+        © 2025 myFlukeTH.com — TRIPLE E TRADING. All rights reserved.
       </div>
     </div>
   </footer>
@@ -280,7 +252,7 @@ function openEmailSimple(evt){
 
       const marker = L.marker([lat, lng], { icon: redIcon }).addTo(map);
       marker.bindPopup(`
-        <strong>บริษัท ฮิคาริ เดงกิ จำกัด</strong><br>
+        <strong>TRIPLE E TRADING</strong><br>
         <a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" rel="noopener">เปิดใน Google Maps</a>
       `);
 
