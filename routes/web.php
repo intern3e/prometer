@@ -7,17 +7,53 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CartController;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
-use App\Models\Fluke;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cookie;
 use App\Http\Controllers\AccountController;
 use GuzzleHttp\Client;
 use App\Models\Custdetail;
+// routes/web.php
+use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Config;
+use App\Models\Fluke;
+
+Route::get('/sitemap.xml', function () {
+    // ใช้โดเมนจริงจาก .env (APP_URL) เสมอ; ถ้าไม่ได้ตั้ง fallback เป็น https://myfluketh.com
+    $base = rtrim(config('app.url') ?: 'https://myfluketh.com', '/');
+
+    // รวม path ที่ต้องการใส่ sitemap (เริ่มจากโฮม)
+    $paths = ['/'];
+
+    // เติมสินค้าถ้ามี
+    if (class_exists(Fluke::class)) {
+        foreach (Fluke::pluck('iditem') as $id) {
+            $paths[] = '/product/' . $id;
+        }
+    }
+
+    // ประกอบ XML
+    $xml = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><urlset/>');
+    $xml->addAttribute('xmlns', 'http://www.sitemaps.org/schemas/sitemap/0.9');
+
+    foreach ($paths as $p) {
+        $loc = $base . $p; // บังคับใช้โดเมนจาก APP_URL
+        $u = $xml->addChild('url');
+        $u->addChild('loc', htmlspecialchars($loc));
+        $u->addChild('changefreq', 'weekly');
+        $u->addChild('priority', $p === '/' ? '1.0' : '0.6');
+        $u->addChild('lastmod', now()->toAtomString());
+    }
+
+    // pretty-print ให้บรรทัดไม่ยาวเกิน (แก้ปัญหา FINDSTR: Line too long)
+    $dom = new DOMDocument('1.0', 'UTF-8');
+    $dom->preserveWhiteSpace = false;
+    $dom->formatOutput = true;
+    $dom->loadXML($xml->asXML());
+
+    return Response::make($dom->saveXML(), 200)->header('Content-Type', 'application/xml');
+});
 
 
-
-/* -------------------- Public pages (ไม่ต้องล็อกอิน) -------------------- */
-Route::get('/', fn () => view('test.FLUKE_Marketplace'))->name('home');
 Route::get('/login', fn () => view('login.Login'))->name('login');
 Route::get('/Sign_up', fn () => view('login.Sign_up'))->name('Sign_up');
 Route::post('/register', [LoginController::class, 'register'])->name('register.post');
@@ -104,60 +140,3 @@ Route::post('/cart/checkout', [CartController::class, 'checkout'])
 
 use App\Http\Controllers\PdfProxyController;
 Route::match(['GET','OPTIONS'], '/pdf-proxy', [PdfProxyController::class, 'fetch'])->name('pdf.proxy');
-
-
-
-
-
-
-use App\Http\Controllers\AdminUserController;
-
-Route::get('Admin', [AdminUserController::class, 'index'])->name('Admin');
-
-
-use Illuminate\Support\Facades\Response;
-use App\Models\Fluke; // ✅ เพิ่มไว้เพื่อใช้ query สินค้าจากฐานข้อมูล (ลบได้ถ้าไม่มี Model นี้)
-
-// -------------------- SEO Routes -------------------- //
-Route::get('/sitemap.xml', function () {
-    // ✅ หน้าหลักที่ต้องการให้ Google index
-    $urls = [
-        url('/'),
-        url('/products'),
-        url('/contact'),
-    ];
-
-    // ✅ ถ้ามีสินค้าจากฐานข้อมูล ให้เพิ่มลง sitemap อัตโนมัติ
-    if (class_exists(Fluke::class)) {
-        foreach (Fluke::all() as $item) {
-            // สมมติว่ามี route /product/{iditem}
-            $urls[] = url('/product/' . $item->iditem);
-        }
-    }
-
-    // ✅ สร้าง XML Sitemap
-    $xml = new SimpleXMLElement('<urlset/>');
-    $xml->addAttribute('xmlns', 'http://www.sitemaps.org/schemas/sitemap/0.9');
-
-    foreach ($urls as $u) {
-        $url = $xml->addChild('url');
-        $url->addChild('loc', htmlspecialchars($u));
-        $url->addChild('changefreq', 'weekly');
-        $url->addChild('priority', '0.8');
-    }
-
-    return Response::make($xml->asXML(), 200)
-        ->header('Content-Type', 'application/xml');
-});
-
-Route::get('/robots.txt', function () {
-    $robots = <<<TXT
-User-agent: *
-Disallow:
-
-Sitemap: https://myfluketh.com/sitemap.xml
-TXT;
-
-    return response($robots, 200)
-        ->header('Content-Type', 'text/plain');
-});

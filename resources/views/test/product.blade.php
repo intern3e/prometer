@@ -101,11 +101,16 @@
   <!-- ===== Top container ===== -->
   <main class="container-outer section-pad py-6">
     <!-- Breadcrumbs -->
-    <nav class="breadcrumbs" aria-label="breadcrumb">
-      <a href="{{ url('/') }}" data-i18n="bc_home">Home</a>
+    <nav class="breadcrumbs text-[clamp(12px,2.2vw,14px)] text-gray-600/80 flex items-center gap-1.5"
+        aria-label="breadcrumb">
+      <a href="{{ url('/') }}" class="hover:underline" data-i18n="bc_home">Home</a>
       <span aria-hidden="true">/</span>
-      <span id="bcName" aria-current="page">{{ $product->name }}</span>
+      <span id="bcName" aria-current="page"
+            class="truncate max-w-[70vw] md:max-w-[50vw] text-gray-600/80">
+        {{ $product->name }}
+      </span>
     </nav>
+
 
     <!-- ===== Product area ===== -->
     <div id="productWrap" class="grid grid-cols-1 md:grid-cols-12 gap-6 mt-4">
@@ -115,11 +120,35 @@
           <div id="imgBox" class="aspect-square bg-white rounded-xl image-zoom flex items-center justify-center overflow-hidden" aria-label="product image">
             <img src="{{ $imageUrl }}" alt="{{ $product->name }}" class="w-full h-full object-contain" loading="eager" decoding="async">
           </div>
-          <div class="mt-4 grid grid-cols-3 gap-3 text-xs" role="list" aria-label="trust badges">
-            <div class="flex items-center gap-2" role="listitem"><i class="bi bi-shield-check" aria-hidden="true" style="color:var(--brand);"></i><span data-i18n="trust_warranty">รับประกัน 1 ปี</span></div>
-            <div class="flex items-center gap-2" role="listitem"><i class="bi bi-truck" aria-hidden="true" style="color:var(--brand);"></i><span data-i18n="trust_fast_shipping">ส่งเร็ว</span></div>
-            <div class="flex items-center gap-2" role="listitem"><i class="bi bi-box-seam" aria-hidden="true" style="color:var(--brand);"></i><span data-i18n="trust_instock">มีสต็อกพร้อมส่ง</span></div>
-          </div>
+    <!-- Trust badges -->
+      <div
+        class="mt-4 border-t border-gray-100 pt-3 px-[6px] grid grid-cols-3 gap-3 text-[13px] text-gray-800"
+        role="list"
+        aria-label="trust badges"
+      >
+        <div class="flex items-center gap-1.5" role="listitem">
+          <i class="bi bi-truck text-[var(--brand)] text-[15px]"></i>
+          <span class="leading-none whitespace-nowrap" data-i18n="fast">
+            <script>document.write(T.fast)</script>
+          </span>
+        </div>
+
+        <div class="flex items-center gap-1.5 justify-center" role="listitem">
+          <i class="bi bi-geo-alt text-[var(--brand)] text-[15px]"></i>
+          <span class="leading-none whitespace-nowrap" data-i18n="nationwide">
+            <script>document.write(T.nationwide)</script>
+          </span>
+        </div>
+
+        <div class="flex items-center gap-1.5 justify-end" role="listitem">
+          <i class="bi bi-calendar-check text-[var(--brand)] text-[15px]"></i>
+          <span class="leading-none whitespace-nowrap" data-i18n="everyday">
+            <script>document.write(T.everyday)</script>
+          </span>
+        </div>
+      </div>
+
+
         </div>
       </section>
 
@@ -128,15 +157,23 @@
         <div class="card p-5 soft">
           <input type="hidden" id="iditem" value="{{ $product->iditem }}">
 
-          <!-- Title + Model -->
-          @php $model = trim((string)($product->model ?? '')); @endphp
-          <h1 id="pName" class="text-xl md:text-2xl font-extrabold mb-1">{{ $product->name }}</h1>
-          @if($model !== '')
-            <p id="pModel" class="text-sm text-gray-400 mb-3">
-              <span class="font-medium" data-i18n="label_model">Model:</span>
-              <span>{{ $model }}</span>
-            </p>
-          @endif
+        {{-- Title + Model (responsive with clamp) --}}
+        @php $model = trim((string)($product->model ?? '')); @endphp
+        @if ($model !== '')
+          <p id="pModel"
+            class="mb-3 text-[clamp(16px,4.2vw,24px)] leading-tight text-gray-900/90 font-bold">
+            <span>Model:</span>
+            <span>{{ $model }}</span>
+          </p>
+        @endif
+
+        <h3 id="pName"
+            class="text-[clamp(12px,4vw,18px)] font-bold mb-1 text-gray-800/70 tracking-tight">
+          {{ $product->name }}
+        </h3>
+
+
+
 
           <!-- Price + Stock + VAT -->
           <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
@@ -183,49 +220,135 @@
             </div>
 
             <div class="text-xs text-gray-500 mt-2 md:mt-0 md:text-right">
-              <div data-i18n="tax_included">ยังไม่รวมภาษีมูลค่าเพิ่ม (VAT)</div>
+              <div data-i18n="tax_included">ราคายังไม่รวมภาษีมูลค่าเพิ่ม (VAT)</div>
             </div>
           </div>
 
           <!-- ===== Meta: เฉพาะ 'วันที่จัดส่ง:' ===== -->
-          <div class="mb-4" aria-label="product meta">
-            <div class="meta-card">
-              <i class="bi bi-calendar-check meta-ic" aria-hidden="true"></i>
-              <div class="meta-body">
-                <div class="meta-title">
-                  <span data-i18n="badge_shipping_title">วันที่จัดส่ง:</span>
-                  <!-- เพิ่ม data-source ตรงนี้ -->
-                  <span id="leadtimeText"
-                        data-leadtime-raw="{{ trim($product->leadtime ?? '') }}"
-                        data-source="{{ trim($product->source ?? '') }}"></span>
-                </div>
-                <div class="meta-desc" data-i18n="badge_shipping_desc">จัดส่งตามระยะเวลาส่งของบริษัท</div>
-              </div>
+            <div class="mb-4" aria-label="product meta">
+        <div class="meta-card flex items-center gap-2 md:gap-3">
+          <i class="bi bi-calendar-check meta-ic text-[18px] md:text-[20px] leading-none"
+            aria-hidden="true"></i>
+
+          <div class="meta-body leading-tight">
+            <div class="meta-title text-[clamp(13px,2vw,15px)] text-gray-800/80">
+              <span class="font-medium" data-i18n="badge_shipping_title">ระยะเวลาจัดส่ง:</span>
+              <span id="leadtimeText"
+                    class="font-semibold text-gray-900/90"
+                    data-leadtime-raw="{{ trim($product->leadtime ?? '') }}"
+                    data-source="{{ trim($product->source ?? '') }}"></span>
             </div>
           </div>
+        </div>
+      </div>
 
-          <!-- Qty + CTA -->
-          <div class="mb-5 flex flex-col md:flex-row items-stretch md:items-center gap-2 md:gap-3" aria-label="purchase controls">
-            <div class="flex items-center border rounded-xl overflow-hidden w-[140px] md:w-[160px]" aria-label="quantity">
-              <button id="qtyMinus" class="w-9 h-10 text-lg hover:bg-gray-50" aria-label="decrease">−</button>
-              <input name="quantity" id="qtyInput" type="number" min="1" value="1" class="w-full h-10 text-center outline-none" aria-label="quantity input">
-              <button id="qtyPlus" class="w-9 h-10 text-lg hover:bg-gray-50" aria-label="increase">+</button>
-            </div>
 
-            <!-- ปุ่ม Add / Contact -->
-            <button id="addToCartBtn" type="button" class="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-white bg-[#ff6a00] hover:bg-[#e65f00] active:brightness-95 disabled:bg-[#ff6a00]/60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ff6a00]/40 transition-colors">
-              <i class="bi bi-cart-plus" aria-hidden="true"></i>
-              <span data-i18n="add_to_cart">เพิ่มลงตะกร้า</span>
-            </button>
-        
-            <!-- ปุ่ม "ติดต่อสอบถาม" เข้าหน้า Add LINE @543ubjtx โดยตรง -->
-            <a id="contactBtn"
-              href="line://ti/p/%40543ubjtx"
-              class="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-white bg-[#0ea5e9] hover:bg-[#0284c7] active:brightness-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0ea5e9]/40 transition-colors"
-              onclick="location.href='line://ti/p/%40543ubjtx'; return false;">
-              <i class="bi bi-chat-dots" aria-hidden="true"></i>
-              <span data-i18n="contact_us">ติดต่อสอบถาม</span>
-            </a> 
+         <!-- Qty + CTA -->
+<div class="mb-5 flex flex-col md:flex-row items-stretch gap-3" aria-label="purchase controls">
+  <!-- Qty Selector -->
+<div class="flex items-center border rounded-lg overflow-hidden w-[100px] md:w-[100px]" aria-label="quantity">
+  <button id="qtyMinus"
+          class="w-8 h-9 text-base hover:bg-gray-50 select-none"
+          aria-label="decrease">−</button>
+
+  <input name="quantity" id="qtyInput" type="number" min="1" value="1"
+         class="w-full h-9 text-center text-sm outline-none"
+         aria-label="quantity input">
+
+  <button id="qtyPlus"
+          class="w-8 h-9 text-base hover:bg-gray-50 select-none"
+          aria-label="increase">+</button>
+</div>
+
+
+ <!-- ปุ่มทั้งหมดจัดในแนวนอน -->
+<div class="flex flex-1 flex-col sm:flex-row items-stretch gap-2 w-full">
+
+  <!-- เพิ่มลงตะกร้า -->
+  <button id="addToCartBtn" type="button"
+    class="min-w-0 flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-white bg-[#ff6a00] hover:bg-[#e65f00] active:brightness-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ff6a00]/40 transition-colors">
+    <i class="bi bi-cart-plus shrink-0" aria-hidden="true"></i>
+    <span class="truncate whitespace-nowrap text-[15px] md:text-[16px]" data-i18n="add_to_cart">เพิ่มลงตะกร้า</span>
+  </button>
+
+  <!-- LINE -->
+  <a id="contactBtn"
+    href="line://ti/p/%40543ubjtx"
+    class="min-w-0 flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-white bg-[#06C755] hover:brightness-95 active:brightness-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#06C755]/40 transition-colors"
+    onclick="location.href='line://ti/p/%40543ubjtx'; return false;">
+    <i class="bi bi-chat-dots shrink-0" aria-hidden="true"></i>
+    <span class="truncate whitespace-nowrap text-[15px] md:text-[16px]">LINE</span>
+  </a>
+
+<!-- EMAIL -->
+<a id="emailBtn"
+   href="mailto:Info@hikaripower.com"
+   class="min-w-0 flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-white bg-gray-800 hover:bg-gray-700 active:brightness-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-800/40 transition-colors"
+   data-to="Info@hikaripower.com"
+   data-product-name="{{ trim($product->name ?? '') }}"
+   data-product-model="{{ trim($product->model ?? '') }}"
+   data-price-thb="{{ trim($product->webpriceTHB ?? $product->priceTHB ?? '') }}"
+   data-subject="สอบถามสินค้าMyFlukeTH: {{ trim($product->name ?? 'ไม่ระบุชื่อสินค้า') }}"
+   onclick="return openEmail(event);"
+   rel="noopener noreferrer nofollow">
+  <i class="bi bi-envelope shrink-0" aria-hidden="true"></i>
+  <span class="truncate whitespace-nowrap text-[15px] md:text-[16px]" data-i18n="contact_us">ติดต่อสอบถาม</span>
+</a>
+
+<script>
+function openEmail(evt){
+  if (evt && evt.preventDefault) evt.preventDefault();
+
+  const el     = evt.currentTarget || evt.target;
+  const to     = (el.dataset.to || 'Info@hikaripower.com').trim();
+  const name   = (el.dataset.productName || '').trim();
+  const model  = (el.dataset.productModel || '').trim();
+  const subject = (el.dataset.subject && el.dataset.subject.trim())
+                || ('สอบถามสินค้าMyFlukeTH: ' + (name || model || 'ไม่ระบุชื่อสินค้า'));
+
+  // รวมชื่อ + รุ่น
+  const nameCombo = (model && name)
+    ? (name.startsWith(model) ? name : `${model}  [${name}]`)
+    : (name || model || '—');
+
+  // ราคา (ฟอร์แมต THB; ปล่อยจำนวนให้กรอกเอง)
+  const rawPrice = (el.dataset.priceThb || el.dataset.price || '').toString();
+  const numPrice = parseFloat(rawPrice.replace(/[^\d.]/g, ''));
+  const priceTxt = isFinite(numPrice)
+    ? new Intl.NumberFormat('th-TH', { style:'currency', currency:'THB', minimumFractionDigits:0, maximumFractionDigits:2 }).format(numPrice)
+    : (rawPrice || '—');
+
+  const body = [
+    'สวัสดีครับ/ค่ะ ทีม Hikari,',
+    '',
+    'ผม/ดิฉันต้องการสอบถามรายละเอียดสินค้าดังนี้:',
+    `- รุ่น/ชื่อสินค้า:  ${nameCombo}`,
+    `- รุ่น (Model): ${model || '—'}`,
+    `- ราคา: ${priceTxt}   จำนวน: `,
+    'ขอบคุณครับ/ค่ะ'
+  ].join('\n');
+
+  const gmail  = 'https://mail.google.com/mail/?view=cm&fs=1'
+    + '&to='   + encodeURIComponent(to)
+    + '&su='   + encodeURIComponent(subject)
+    + '&body=' + encodeURIComponent(body);
+
+  const mailto = 'mailto:' + encodeURIComponent(to)
+    + '?subject=' + encodeURIComponent(subject)
+    + '&body='    + encodeURIComponent(body);
+
+  const win = window.open(gmail, '_blank', 'noopener,noreferrer');
+  if (!win) window.location.href = mailto;
+  return false;
+}
+</script>
+
+
+</div>
+
+
+
+
             
             <script id="productData" type="application/json">
 {!! json_encode([
@@ -850,15 +973,18 @@ const I18N = {
     label_quote:'ขอใบเสนอราคา',
     stock_in:'มีสินค้า',
     unit_piece:'ชิ้น',
-    tax_included:'ยังไม่รวมภาษีมูลค่าเพิ่ม (VAT)',
-    badge_shipping_title:'วันที่จัดส่ง:',
+    tax_included:'ราคายังไม่รวมภาษีมูลค่าเพิ่ม (VAT)',
+    badge_shipping_title:'ระยะเวลาจัดส่ง:',
     badge_shipping_desc:'จัดส่งตามระยะเวลาส่งของบริษัท',
     add_to_cart:'เพิ่มลงตะกร้า',
     contact_us:'ติดต่อสอบถาม',
     p_desc_title:'รายละเอียดสินค้า',
     notfound_text:'ไม่พบสินค้า',
     notfound_back:'กลับหน้าแรก',
-    sticky_add:'เพิ่ม'
+    sticky_add:'เพิ่ม',
+    fast: "ส่งเร็ว",
+      nationwide: "จัดส่งทั่วประเทศ",
+      everyday: "ส่งทุกวัน",
   },
   'English': {
     brand_name:'FLUKE',
@@ -896,15 +1022,18 @@ const I18N = {
     label_quote:'Request a quote',
     stock_in:'In stock',
     unit_piece:'pcs',
-    tax_included:'VAT not included',
-    badge_shipping_title:'Delivery date:',
+    tax_included:'Prices do not include Value Added Tax (VAT).',
+    badge_shipping_title:'Delivery period:',
     badge_shipping_desc:'Shipped according to company lead time',
     add_to_cart:'Add to cart',
     contact_us:'Contact us',
     p_desc_title:'Product details',
     notfound_text:'Product not found',
     notfound_back:'Back to home',
-    sticky_add:'Add'
+    sticky_add:'Add',
+          fast: "Fast Delivery",
+      nationwide: "Nationwide Shipping",
+      everyday: "Ships Daily",
   }
 };
     // ===== I18N ENGINE =====

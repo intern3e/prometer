@@ -153,7 +153,24 @@
               </div>
             </div>
             <div class="p-2">
-              <p class="text-xs text-gray-700 line-clamp-2">{{ $p->name }}</p>
+            <!-- Model -->
+            <div class="flex items-center gap-1 text-xs text-gray-700">
+              <span class="flex-shrink-0">Model:</span>
+              <span class="deal-model flex-1 min-w-0 text-gray-800 font-semibold truncate block text-[11px] md:text-[12px]"
+                    title="{{ trim($p->model ?? '') }}">
+                {{ trim($p->model ?? '—') }}
+              </span>
+            </div>
+
+            <!-- Detail -->
+            <div class="flex items-center gap-1 text-sm text-gray-700 mt-1 overflow-hidden">
+              <span class="text-[10px] text-gray-600 flex-shrink-0">Detail:</span>
+              <span class="deal-name flex-1 min-w-0 text-gray-600 font-normal truncate block text-[8px] md:text-[10px]"
+                    title="{{ trim($p->name ?? '') }}">
+                {{ trim($p->name ?? '—') }}
+              </span>
+            </div>
+
               <p class="text-[var(--brand)] font-semibold mt-1 price-i18n"
                  data-price-thb="{{ $p->webpriceTHB }}">{{ $fallback }}</p>
             </div>
