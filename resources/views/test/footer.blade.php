@@ -14,6 +14,8 @@
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
+  {{-- ป้องกัน Blade จับ @media เป็น directive --}}
+  @verbatim
   <style>
     :root{
       --brand:#ff6a00;
@@ -29,8 +31,6 @@
       font-family:'Prompt', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       background:#f3f4f6; color:var(--ink);
     }
-
-
 
     footer.compact{ font-size:0.9rem; }
     footer.compact .title{ font-size:clamp(1rem, 3.2vw, 1.35rem); line-height:1.15; }
@@ -100,6 +100,7 @@
     /* ป้องกันข้อความยาวล้น (เช่นอีเมล) */
     .break-any{ overflow-wrap:anywhere; word-break:break-word; }
   </style>
+  @endverbatim
 </head>
 
 <body>
@@ -131,7 +132,7 @@
           
           <!-- Contacts -->
           <div class="contact-grid mt-3 grid grid-cols-1">
-            <!-- Tel -->
+            <!-- Tel 1 -->
             <a href="tel:+66660975697"
                class="group round bg-gradient-to-br from-white/15 to-white/5 p-[1px] transition">
               <div class="contact-card round bg-white/5 backdrop-blur-sm thin flex items-center gap-2.5">
@@ -145,47 +146,38 @@
               </div>
             </a>
 
-<!-- Email: เปิด Gmail ด้วย To + Subject เท่านั้น (ไม่มี body) -->
-<a id="emailBtn"
-   href="mailto:Info@hikaripower.com"
-   class="group round bg-gradient-to-br from-white/15 to-white/5 p-[1px] transition"
-   data-to="Info@hikaripower.com"
-   data-subject="สอบถามสินค้าMyFlukeTH:"
-   onclick="return openEmailSimple(event);"
-   rel="nofollow noopener">
-  <div class="contact-card round bg-white/5 backdrop-blur-sm thin flex items-center gap-2.5 px-3 py-2.5">
-    <span class="contact-ico round thin flex items-center justify-center w-8 h-8 bg-white/10">
-      <i class="bi bi-envelope text-white/80"></i>
-    </span>
-    <div class="leading-5 break-any">
-      <div class="font-semibold tracking-tight text-[.95rem]">Info@hikaripower.com</div>
-      <div class="text-[11px] text-gray-400">สอบถามสินค้าMyFlukeTH:</div>
-    </div>
-  </div>
-</a>
+            <!-- Tel 2 -->
+            <a href="tel:+66990802197"
+               class="group round bg-gradient-to-br from-white/15 to-white/5 p-[1px] transition">
+              <div class="contact-card round bg-white/5 backdrop-blur-sm thin flex items-center gap-2.5">
+                <span class="contact-ico round thin flex items-center justify-center">
+                  <i class="bi bi-telephone text-white/80"></i>
+                </span>
+                <div class="leading-5">
+                  <div class="font-semibold tracking-tight text-[.95rem]">099-080-2197</div>
+                  <div class="text-[11px] text-gray-400">(คุณ ผักบุ้ง)</div>
+                </div>
+              </div>
+            </a>
 
-<script>
-function openEmailSimple(evt){
-  if (evt && evt.preventDefault) evt.preventDefault();
-
-  const el = evt.currentTarget;
-  const to = (el.dataset.to || 'Info@hikaripower.com').trim();
-  const subject = (el.dataset.subject || 'สอบถามสินค้าMyFlukeTH:').trim();
-
-  // เปิด Gmail (ไม่มี body) และ fallback เป็น mailto
-  const gmail = 'https://mail.google.com/mail/?view=cm&fs=1'
-              + '&to=' + encodeURIComponent(to)
-              + '&su=' + encodeURIComponent(subject);
-
-  const mailto = 'mailto:' + encodeURIComponent(to)
-              + '?subject=' + encodeURIComponent(subject); // ไม่ใส่ body
-
-  const win = window.open(gmail, '_blank', 'noopener,noreferrer');
-  if (!win) window.location.href = mailto;
-  return false;
-}
-</script>
-
+            <!-- Email (เปิด Gmail ด้วย To + Subject เท่านั้น) -->
+            <a id="emailBtn"
+               href="mailto:Info@hikaripower.com"
+               class="group round bg-gradient-to-br from-white/15 to-white/5 p-[1px] transition"
+               data-to="Info@hikaripower.com"
+               data-subject="สอบถามสินค้าMyFlukeTH:"
+               onclick="return openEmailSimple(event);"
+               rel="nofollow noopener">
+              <div class="contact-card round bg-white/5 backdrop-blur-sm thin flex items-center gap-2.5 px-3 py-2.5">
+                <span class="contact-ico round thin flex items-center justify-center w-8 h-8 bg-white/10">
+                  <i class="bi bi-envelope text-white/80"></i>
+                </span>
+                <div class="leading-5 break-any">
+                  <div class="font-semibold tracking-tight text-[.95rem]">Info@hikaripower.com</div>
+                  <div class="text-[11px] text-gray-400">สอบถามสินค้าMyFlukeTH:</div>
+                </div>
+              </div>
+            </a>
 
             <!-- LINE (เปิดแอป → ถ้าไม่มีแอปค่อยไปหน้าเว็บ Add Friend) -->
             <a id="lineBtn"
@@ -324,6 +316,29 @@ function openEmailSimple(evt){
         setTimeout(function () { if (Date.now() - start < 1200) window.open(web, '_blank', 'noopener'); }, 800);
       });
     })();
+  </script>
+
+  <!-- Email: เปิด Gmail ด้วย To + Subject เท่านั้น (ไม่มี body) -->
+  <script>
+    function openEmailSimple(evt){
+      if (evt && evt.preventDefault) evt.preventDefault();
+
+      const el = evt.currentTarget;
+      const to = (el.dataset.to || 'Info@hikaripower.com').trim();
+      const subject = (el.dataset.subject || 'สอบถามสินค้าMyFlukeTH:').trim();
+
+      // เปิด Gmail (ไม่มี body) และ fallback เป็น mailto
+      const gmail = 'https://mail.google.com/mail/?view=cm&fs=1'
+                  + '&to=' + encodeURIComponent(to)
+                  + '&su=' + encodeURIComponent(subject);
+
+      const mailto = 'mailto:' + encodeURIComponent(to)
+                  + '?subject=' + encodeURIComponent(subject); // ไม่ใส่ body
+
+      const win = window.open(gmail, '_blank', 'noopener,noreferrer');
+      if (!win) window.location.href = mailto;
+      return false;
+    }
   </script>
 
   <!-- LINE deep link: เปิดแอปก่อน → ถ้าไม่สำเร็จค่อยเปิดหน้า Add Friend บนเว็บ -->
