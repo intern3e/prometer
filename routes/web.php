@@ -52,7 +52,7 @@ Route::get('/sitemap.xml', function () {
 
     return Response::make($dom->saveXML(), 200)->header('Content-Type', 'application/xml');
 });
-
+Route::get('/', fn () => view('test.FLUKE_Marketplace'))->name('home');
 
 Route::get('/login', fn () => view('login.Login'))->name('login');
 Route::get('/Sign_up', fn () => view('login.Sign_up'))->name('Sign_up');

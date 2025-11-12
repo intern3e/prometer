@@ -144,6 +144,19 @@
                 </div>
               </div>
             </a>
+              <a href="tel:+66990802197"
+                class="group round bg-gradient-to-br from-white/15 to-white/5 p-[1px] transition">
+                <div class="contact-card round bg-white/5 backdrop-blur-sm thin flex items-center gap-2.5">
+                  <span class="contact-ico round thin flex items-center justify-center">
+                    <i class="bi bi-telephone text-white/80"></i>
+                  </span>
+                  <div class="leading-5">
+                    <div class="font-semibold tracking-tight text-[.95rem]">099-080-2197</div>
+                    <div class="text-[11px] text-gray-400">(คุณ ผักบุ้ง)</div>
+                  </div>
+                </div>
+              </a>
+
 
 <!-- Email: เปิด Gmail ด้วย To + Subject เท่านั้น (ไม่มี body) -->
 <a id="emailBtn"
