@@ -14,8 +14,6 @@
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
-  {{-- ป้องกัน Blade จับ @media เป็น directive --}}
-  @verbatim
   <style>
     :root{
       --brand:#ff6a00;
@@ -45,8 +43,8 @@
 
     /* มือถือ: การ์ดเรียง 1 คอลัมน์, แผนที่สูงตามจอ */
     .map-h{ height:clamp(180px, 42vw, 260px); }
-    @media (min-width:480px){ .map-h{ height:clamp(200px, 38vw, 260px); } }
-    @media (min-width:768px){
+    @@media (min-width:480px){ .map-h{ height:clamp(200px, 38vw, 260px); } }
+    @@media (min-width:768px){
       .map-h{ height:240px; }
       footer.compact .contact-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); }
     }
@@ -92,7 +90,7 @@
     }
     .btn-openmaps:hover{ background:rgba(255,255,255,.22); }
     .btn-openmaps .dot{ width:8px; height:8px; border-radius:999px; background:var(--com); }
-    @media (max-width:360px){
+    @@media (max-width:360px){
       .btn-openmaps .label{ display:none; }
       .btn-openmaps{ padding:4px; }
     }
@@ -100,7 +98,6 @@
     /* ป้องกันข้อความยาวล้น (เช่นอีเมล) */
     .break-any{ overflow-wrap:anywhere; word-break:break-word; }
   </style>
-  @endverbatim
 </head>
 
 <body>
@@ -160,7 +157,7 @@
               </div>
             </a>
 
-            <!-- Email (เปิด Gmail ด้วย To + Subject เท่านั้น) -->
+            <!-- Email -->
             <a id="emailBtn"
                href="mailto:Info@hikaripower.com"
                class="group round bg-gradient-to-br from-white/15 to-white/5 p-[1px] transition"
@@ -179,7 +176,7 @@
               </div>
             </a>
 
-            <!-- LINE (เปิดแอป → ถ้าไม่มีแอปค่อยไปหน้าเว็บ Add Friend) -->
+            <!-- LINE -->
             <a id="lineBtn"
                href="https://line.me/R/ti/p/%40543ubjtx"
                target="_blank" rel="noopener"
@@ -202,7 +199,6 @@
             <div class="absolute inset-0 round-lg bg-gradient-to-br from-white/15 to-white/10 opacity-25 pointer-events-none"></div>
 
             <div class="relative round-lg thin bg-white/5 backdrop-blur-sm shadow-xl">
-              <!-- ปุ่มเปิด Google Maps -->
               <div class="map-actions">
                 <button class="btn-openmaps" id="openMapsBtn" type="button" aria-label="Open in Google Maps">
                   <span class="dot" aria-hidden="true"></span>
@@ -210,11 +206,9 @@
                 </button>
               </div>
 
-              <!-- กล่องแผนที่ + overlay -->
               <div class="map-wrap mobile-guard md:mobile-guard:!hidden" id="mapWrap">
                 <div id="hk-map" class="map-h" role="img" aria-label="แผนที่ตำแหน่ง บริษัท ฮิคาริ เดงกิ จำกัด"></div>
 
-                <!-- overlay เฉพาะมือถือ -->
                 <div class="map-overlay md:hidden" id="mapOverlay">
                   <span class="pill"><i class="bi bi-hand-index-thumb"></i> แตะเพื่อโต้ตอบแผนที่</span>
                 </div>
@@ -224,7 +218,6 @@
         </div> <!-- /Right -->
       </div>
 
-      <!-- Footer bottom -->
       <div class="mt-4 border-t border-white/10 pt-3 text-center text-[10px] text-gray-400">
         © 2025 myFlukeTH.com — บริษัท ฮิคาริ เดงกิ จำกัด. All rights reserved.
       </div>
@@ -237,7 +230,6 @@
     (function () {
       const lat = 13.717683, lng = 100.4732644;
 
-      // หมุดสีแดง (SVG)
       const redSvg = `
 <svg xmlns="http://www.w3.org/2000/svg" width="25" height="41" viewBox="0 0 25 41">
   <defs>
@@ -261,7 +253,6 @@
         shadowAnchor: [13, 41],
       });
 
-      // ไม่มีปุ่มซูม
       const map = L.map('hk-map', { zoomControl:false }).setView([lat, lng], 17);
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -277,17 +268,16 @@
 
       if (window.matchMedia('(min-width: 768px)').matches) { marker.openPopup(); }
 
-      // ===== มือถือ: overlay กันแผนที่แย่งสกอลล์ =====
       const mapWrap = document.getElementById('mapWrap');
       const overlay = document.getElementById('mapOverlay');
       const isMobile = () => window.matchMedia('(max-width: 767.98px)').matches;
 
       function enableMapInteraction() {
-        mapWrap.classList.add('active');     // เปิด pointer-events ให้แผนที่
+        mapWrap.classList.add('active');
         overlay.style.display = 'none';
       }
       function disableMapInteraction() {
-        mapWrap.classList.remove('active');  // ปิด pointer-events (กลับมาสกอลล์หน้าเว็บ)
+        mapWrap.classList.remove('active');
         if (isMobile()) overlay.style.display = '';
       }
 
@@ -307,7 +297,6 @@
         });
       }
 
-      // ปุ่มเปิดใน Google Maps (พยายามเปิดแอปก่อน)
       document.getElementById('openMapsBtn').addEventListener('click', function(){
         const deep = `comgooglemaps://?q=${lat},${lng}&zoom=17`;
         const web  = `https://www.google.com/maps?q=${lat},${lng}`;
@@ -318,22 +307,20 @@
     })();
   </script>
 
-  <!-- Email: เปิด Gmail ด้วย To + Subject เท่านั้น (ไม่มี body) -->
+  <!-- Email -->
   <script>
     function openEmailSimple(evt){
       if (evt && evt.preventDefault) evt.preventDefault();
-
       const el = evt.currentTarget;
       const to = (el.dataset.to || 'Info@hikaripower.com').trim();
       const subject = (el.dataset.subject || 'สอบถามสินค้าMyFlukeTH:').trim();
 
-      // เปิด Gmail (ไม่มี body) และ fallback เป็น mailto
       const gmail = 'https://mail.google.com/mail/?view=cm&fs=1'
                   + '&to=' + encodeURIComponent(to)
                   + '&su=' + encodeURIComponent(subject);
 
       const mailto = 'mailto:' + encodeURIComponent(to)
-                  + '?subject=' + encodeURIComponent(subject); // ไม่ใส่ body
+                  + '?subject=' + encodeURIComponent(subject);
 
       const win = window.open(gmail, '_blank', 'noopener,noreferrer');
       if (!win) window.location.href = mailto;
@@ -341,7 +328,7 @@
     }
   </script>
 
-  <!-- LINE deep link: เปิดแอปก่อน → ถ้าไม่สำเร็จค่อยเปิดหน้า Add Friend บนเว็บ -->
+  <!-- LINE deep link -->
   <script>
     (function () {
       const lineBtn = document.getElementById('lineBtn');
@@ -349,18 +336,12 @@
 
       lineBtn.addEventListener('click', function (e) {
         e.preventDefault();
-        const deep = 'line://ti/p/@543ubjtx';                 // เปิดแอป LINE ไปหน้ากด Add Friend
-        const web  = 'https://line.me/R/ti/p/%40543ubjtx';    // fallback หน้า Add Friend บนเว็บ (%40 = @)
-
+        const deep = 'line://ti/p/@543ubjtx';
+        const web  = 'https://line.me/R/ti/p/%40543ubjtx';
         const start = Date.now();
-        // พยายามเปิดแอปก่อน
         window.location.href = deep;
-
-        // ถ้าไม่สำเร็จภายใน ~0.7–1.2s ให้เปิดหน้าเว็บแทน
         setTimeout(function () {
-          if (Date.now() - start < 1200) {
-            window.open(web, '_blank', 'noopener');
-          }
+          if (Date.now() - start < 1200) window.open(web, '_blank', 'noopener');
         }, 700);
       }, { passive: false });
     })();
