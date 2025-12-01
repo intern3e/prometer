@@ -120,76 +120,98 @@
           </h3>
 
           <p class="lead mt-2 text-gray-300">
-            Measurement and test instrument solutions from
-            <span class="text-orange-300 font-semibold">Fluke</span>
-            for industrial and engineering applications — multimeters, electrical safety testers,
-            thermal imaging cameras, and calibration instruments — all backed by support services
-            that meet international standards.
+            ยินดีต้อนรับสู่ myFlukeTH.com แหล่งรวมเครื่องมือวัดและเครื่องมือทดสอบคุณภาพสูงจาก
+            <span class="text-orange-400 font-semibold">Fluke</span>
+            เหมาะสำหรับช่างไฟ วิศวกร และงานอุตสาหกรรมที่ต้องการความแม่นยำและความทนทาน
+            เรามีทั้งมัลติมิเตอร์, เครื่องทดสอบระบบไฟฟ้า, กล้องถ่ายภาพความร้อน และอุปกรณ์สอบเทียบ พร้อมบริการหลังการขายที่เชื่อถือได้
           </p>
           
           <!-- Contacts -->
           <div class="contact-grid mt-3 grid grid-cols-1">
-            <!-- Tel 1 -->
-            <a href="tel:+66660975697"
-               class="group round bg-gradient-to-br from-white/15 to-white/5 p-[1px] transition">
-              <div class="contact-card round bg-white/5 backdrop-blur-sm thin flex items-center gap-2.5">
-                <span class="contact-ico round thin flex items-center justify-center">
-                  <i class="bi bi-telephone text-white/80"></i>
-                </span>
-                <div class="leading-5">
-                  <div class="font-semibold tracking-tight text-[.95rem]">066-097-5697</div>
-                  <div class="text-[11px] text-gray-400">(คุณ ผักบุ้ง)</div>
-                </div>
-              </div>
-            </a>
+<!-- Tel 1 -->
+<a href="tel:+66660975697"
+  class="group round bg-gradient-to-br from-white/15 to-white/5 p-[1px] transition">
+  <div class="contact-card round bg-[#A6A6A6] backdrop-blur-sm thin flex items-center gap-2.5">
+    <span class="contact-ico round thin flex items-center justify-center
+                 border border-black/60 text-black">
+      <i class="bi bi-telephone text-black"></i>
+    </span>
+    <div class="leading-5">
+      <div class="font-semibold tracking-tight text-[.95rem] text-black">
+        066-097-5697
+      </div>
+      <div class="text-[11px] text-black">
+        (คุณ ผักบุ้ง)
+      </div>
+    </div>
+  </div>
+</a>
 
-            <!-- Tel 2 -->
-            <a href="tel:+66990802197"
-               class="group round bg-gradient-to-br from-white/15 to-white/5 p-[1px] transition">
-              <div class="contact-card round bg-white/5 backdrop-blur-sm thin flex items-center gap-2.5">
-                <span class="contact-ico round thin flex items-center justify-center">
-                  <i class="bi bi-telephone text-white/80"></i>
-                </span>
-                <div class="leading-5">
-                  <div class="font-semibold tracking-tight text-[.95rem]">099-080-2197</div>
-                  <div class="text-[11px] text-gray-400">(คุณ ผักบุ้ง)</div>
-                </div>
-              </div>
-            </a>
 
-            <!-- Email -->
-            <a id="emailBtn"
-               href="mailto:Info@hikaripower.com"
-               class="group round bg-gradient-to-br from-white/15 to-white/5 p-[1px] transition"
-               data-to="Info@hikaripower.com"
-               data-subject="สอบถามสินค้าMyFlukeTH:"
-               onclick="return openEmailSimple(event);"
-               rel="nofollow noopener">
-              <div class="contact-card round bg-white/5 backdrop-blur-sm thin flex items-center gap-2.5 px-3 py-2.5">
-                <span class="contact-ico round thin flex items-center justify-center w-8 h-8 bg-white/10">
-                  <i class="bi bi-envelope text-white/80"></i>
-                </span>
-                <div class="leading-5 break-any">
-                  <div class="font-semibold tracking-tight text-[.95rem]">Info@hikaripower.com</div>
-                  <div class="text-[11px] text-gray-400">สอบถามสินค้าMyFlukeTH:</div>
-                </div>
-              </div>
-            </a>
 
-            <!-- LINE -->
-            <a id="lineBtn"
-               href="https://line.me/R/ti/p/%40543ubjtx"
-               target="_blank" rel="noopener"
-               class="group round bg-gradient-to-br from-emerald-400/25 to-emerald-400/10 p-[1px] transition">
-              <div class="contact-card round bg-white/5 backdrop-blur-sm thin flex items-center gap-2.5">
-                <span class="contact-ico round thin flex items-center justify-center border-emerald-400/40">
-                  <img src="https://cdn.simpleicons.org/line/06C755" alt="LINE" class="w-4 h-4" />
-                </span>
-                <div class="leading-5">
-                  <div class="font-semibold tracking-tight text-[.95rem]">LINE : @hikaridenki</div>
-                </div>
-              </div>
-            </a>
+           <!-- Tel 1 -->
+<a href="tel:+66660975697"
+  class="group round bg-gradient-to-br from-white/15 to-white/5 p-[1px] transition">
+  <div class="contact-card round bg-[#A6A6A6] backdrop-blur-sm thin flex items-center gap-2.5">
+    <span class="contact-ico round thin flex items-center justify-center border border-black/60 text-black">
+      <i class="bi bi-telephone text-black"></i>
+    </span>
+    <div class="leading-5">
+      <div class="font-semibold tracking-tight text-[.95rem] text-black">066-097-5697</div>
+      <div class="text-[11px] text-black">(คุณ ผักบุ้ง)</div>
+    </div>
+  </div>
+</a>
+
+
+<!-- Tel 2 -->
+<a href="tel:021172995"
+  class="group round bg-gradient-to-br from-white/15 to-white/5 p-[1px] transition">
+  <div class="contact-card round bg-[#A6A6A6] backdrop-blur-sm thin flex items-center gap-2.5">
+    <span class="contact-ico round thin flex items-center justify-center border border-black/60 text-black">
+      <i class="bi bi-telephone text-black"></i>
+    </span>
+    <div class="leading-5">
+      <div class="font-semibold tracking-tight text-[.95rem] text-black">02-117-2995</div>
+      <div class="text-[11px] text-black">(office)</div>
+    </div>
+  </div>
+</a>
+
+
+<!-- Email -->
+<a id="emailBtn"
+  href="mailto:Info@hikaripower.com"
+  class="group round bg-gradient-to-br from-white/15 to-white/5 p-[1px] transition"
+  onclick="return openEmailSimple(event);">
+  <div class="contact-card round bg-[#A6A6A6] backdrop-blur-sm thin flex items-center gap-2.5 px-3 py-2.5">
+    <span class="contact-ico round thin flex items-center justify-center border border-black/60 text-black w-8 h-8">
+      <i class="bi bi-envelope text-black"></i>
+    </span>
+    <div class="leading-5 break-any">
+      <div class="font-semibold tracking-tight text-[.95rem] text-black">Info@hikaripower.com</div>
+      <div class="text-[11px] text-black">สอบถามสินค้าMyFlukeTH:</div>
+    </div>
+  </div>
+</a>
+
+
+<!-- LINE -->
+<a id="lineBtn"
+  href="https://line.me/R/ti/p/%40543ubjtx"
+  target="_blank"
+  rel="noopener"
+  class="group round bg-gradient-to-br from-white/15 to-white/5 p-[1px] transition">
+  <div class="contact-card round bg-[#A6A6A6] backdrop-blur-sm thin flex items-center gap-2.5">
+    <span class="contact-ico round thin flex items-center justify-center border border-black/60 text-black w-8 h-8">
+      <img src="https://cdn.simpleicons.org/line/000000" alt="LINE" class="w-4 h-4" />
+    </span>
+    <div class="leading-5">
+      <div class="font-semibold tracking-tight text-[.95rem] text-black">LINE : @hikaridenki</div>
+    </div>
+  </div>
+</a>
+
           </div>
         </div>
 

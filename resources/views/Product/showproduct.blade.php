@@ -34,19 +34,48 @@
 
   <!-- ===== Hero area ===== -->
   <section class="container-outer mx-auto section-pad mt-3 md:mt-5 grid grid-cols-1 md:grid-cols-12 gap-4">
-    <!-- left categories (desktop) -->
-    <aside class="hidden md:block md:col-span-3 card p-2 left-cat">
-      <ul class="text-sm divide-y">
-        <li><a href="{{ route('product.category', ['slug' => 'ClampMeter1']) }}" class="px-3 py-2" data-i18n="left_c1">แคลมป์มิเตอร์</a></li>
-        <li><a href="{{ route('product.category', ['slug' => 'Multimeters']) }}" class="px-3 py-2" data-i18n="left_c2">มัลติมิเตอร์</a></li>
-        <li><a href="{{ route('product.category', ['slug' => 'ElectricalTesters']) }}" class="px-3 py-2" data-i18n="left_c3">เครื่องตรวจไฟ/ทดสอบไฟฟ้า</a></li>
-        <li><a href="{{ route('product.category', ['slug' => 'Thermography']) }}" class="px-3 py-2" data-i18n="left_c4">กล้องถ่ายภาพความร้อน</a></li>
-        <li><a href="{{ route('product.category', ['slug' => 'InsulationTesters']) }}" class="px-3 py-2" data-i18n="left_c5">เครื่องวัดฉนวน</a></li>
-        <li><a href="{{ route('product.category', ['slug' => 'PowerQuality']) }}" class="px-3 py-2" data-i18n="left_c6">คุณภาพไฟฟ้า</a></li>
-        <li><a href="{{ route('product.category', ['slug' => 'LoopCalibrators']) }}" class="px-3 py-2" data-i18n="left_c7">เครื่องสอบเทียบ</a></li>
-        <li><a href="{{ route('product.category', ['slug' => 'Accessories']) }}" class="px-3 py-2" data-i18n="left_c8">อุปกรณ์เสริม</a></li>
-      </ul>
-    </aside>
+<!-- left categories (desktop) -->
+<aside class="hidden md:block md:col-span-3 card p-1 left-cat">
+  <ul class="text-[12px] leading-[0.95rem] divide-y">
+    <li>
+      <a href="{{ route('product.category', ['slug' => 'ClampMeter1']) }}"
+         class="block px-2 py-[2px]"
+         data-i18n="left_c1">แคลมป์มิเตอร์</a>
+    </li>
+    <li>
+      <a href="{{ route('product.category', ['slug' => 'ElectricalTesters']) }}"
+         class="block px-2 py-[2px]"
+         data-i18n="left_c3">เครื่องตรวจไฟ/ทดสอบไฟฟ้า</a>
+    </li>
+    <li>
+      <a href="{{ route('product.category', ['slug' => 'Thermography']) }}"
+         class="block px-2 py-[2px]"
+         data-i18n="left_c4">กล้องถ่ายภาพความร้อน</a>
+    </li>
+    <li>
+      <a href="{{ route('product.category', ['slug' => 'InsulationTesters']) }}"
+         class="block px-2 py-[2px]"
+         data-i18n="left_c5">เครื่องทดสอบ ฉนวนไฟฟ้า</a>
+    </li>
+    <li>
+      <a href="{{ route('product.category', ['slug' => 'PowerQuality']) }}"
+         class="block px-2 py-[2px]"
+         data-i18n="left_c6">เครื่องมือวัด คุณภาพไฟฟ้า</a>
+    </li>
+    <li>
+      <a href="{{ route('product.category', ['slug' => 'LoopCalibrators']) }}"
+         class="block px-2 py-[2px]"
+         data-i18n="left_c7">เครื่องมือสอบเทียบ</a>
+    </li>
+    <li>
+      <a href="{{ route('product.category', ['slug' => 'Accessories']) }}"
+         class="block px-2 py-[2px]"
+         data-i18n="left_c8">อุปกรณ์เสริม</a>
+    </li>
+  </ul>
+</aside>
+
+
 
     <!-- hero slider -->
     <div class="md:col-span-6">
@@ -66,32 +95,31 @@
       </div>
     </div>
 
-    <!-- right promos -->
-    <aside class="md:col-span-3 promo-col">
-      <a href="/SpecialOffers" class="promo-pro group focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]">
-        <div class="promo-icon bg-gradient-to-br from-amber-100 to-yellow-200 relative z-10">
-          <i class="bi bi-lightning-charge text-[var(--brand)] text-2xl"></i>
-        </div>
-        <div class="min-w-0 relative z-10">
-          <p class="text-base font-semibold text-gray-900 truncate" data-i18n="promo1_title">ข้อเสนอพิเศษ</p>
-          <p class="text-sm text-gray-600 truncate" data-i18n="promo1_sub">ประหยัดกว่าเดิม</p>
-        </div>
-        <i class="bi bi-arrow-right-short text-gray-400 text-3xl transition-transform duration-300 group-hover:translate-x-1 relative z-10"></i>
-        <span aria-hidden="true" class="pointer-events-none absolute -right-10 -bottom-10 h-28 w-28 rounded-full bg-amber-100/70 z-0"></span>
-      </a>
+<!-- right promos -->
+<aside class="hidden md:block md:col-span-3 space-y-3">
+  <!-- แบนเนอร์บน -->
+  <a href="/SpecialOffers"
+     class="block overflow-hidden shadow-sm rounded-[6px]">
+    <img
+      src="{{ asset('https://img5.pic.in.th/file/secure-sv1/imagec9bd6709d4987f50.png') }}"
+      alt="Solmetric PVA-1500 Series"
+      class="block w-full h-auto"
+    >
+  </a>
 
-      <a href="/LatestProducts" class="promo-pro group focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500">
-        <div class="promo-icon bg-gradient-to-br from-orange-100 to-orange-200 relative z-10">
-          <i class="bi bi-stars text-orange-500 text-2xl"></i>
-        </div>
-        <div class="min-w-0 relative z-10">
-          <p class="text-base font-semibold text-gray-900 truncate" data-i18n="promo2_title">สินค้าใหม่ล่าสุด</p>
-          <p class="text-sm text-gray-600 truncate" data-i18n="promo2_sub">อัปเดตทุกสัปดาห์</p>
-        </div>
-        <i class="bi bi-arrow-right-short text-gray-400 text-3xl transition-transform duration-300 group-hover:translate-x-1 relative z-10"></i>
-        <span aria-hidden="true" class="pointer-events-none absolute -left-10 -bottom-10 h-28 w-28 rounded-full bg-orange-100/70 z-0"></span>
-      </a>
-    </aside>
+  <!-- แบนเนอร์ล่าง -->
+  <a href="/SpecialOffers"
+     class="block overflow-hidden shadow-sm rounded-[6px]">
+    <img
+      src="{{ asset('https://img5.pic.in.th/file/secure-sv1/imagedf097158a525fa6d.png') }}"
+      alt="Solmetric PVA-1500 Series"
+      class="block w-full h-auto"
+    >
+  </a>
+</aside>
+
+
+
   </section>
   <br>
 
@@ -353,18 +381,18 @@
         top_login:'เข้าสู่ระบบ', top_join_free:'สมัครสมาชิกฟรี',
         nav_all_categories:'หมวดหมู่ทั้งหมด',
         mega_measure:'เครื่องมือวัด', mega_process:'กระบวนการ/สอบเทียบ', mega_accessories:'อุปกรณ์เสริม',
-        cat_left_1:'แคลมป์มิเตอร์', cat_left_2:'มัลติมิเตอร์', cat_left_3:'เครื่องทดสอบไฟฟ้า', cat_left_4:'เครื่องวัดฉนวน', cat_left_5:'กล้องถ่ายภาพความร้อน',
-        cat_left_p1:'เครื่องสอบเทียบลูป', cat_left_p2:'เครื่องสอบเทียบความดัน', cat_left_p3:'เครื่องสอบเทียบอุณหภูมิ', cat_left_p4:'เครื่องสอบเทียบกระบวนการ',
+        cat_left_1:'แคลมป์มิเตอร์', cat_left_2:'มัลติมิเตอร์', cat_left_3:'เครื่องทดสอบไฟฟ้า', cat_left_4:'เครื่องทดสอบ ฉนวนไฟฟ้า', cat_left_5:'กล้องถ่ายภาพความร้อน',
+        cat_left_p1:'เครื่องมือสอบเทียบลูป', cat_left_p2:'เครื่องมือสอบเทียบความดัน', cat_left_p3:'เครื่องมือสอบเทียบอุณหภูมิ', cat_left_p4:'เครื่องมือสอบเทียบกระบวนการ',
         cat_left_a1:'สายวัดและโพรบ', cat_left_a2:'แบตเตอรี่และชาร์จ', cat_left_a3:'กล่องเก็บเครื่องมือ', cat_left_a4:'อะไหล่สำรอง',
         search_placeholder:'คุณต้องการให้เราช่วยค้นหาอะไร', search_btn:'ค้นหา',
         left_c1:'แคลมป์มิเตอร์', left_c2:'มัลติมิเตอร์', left_c3:'เครื่องตรวจไฟ/ทดสอบไฟฟ้า', left_c4:'กล้องถ่ายภาพความร้อน',
-        left_c5:'เครื่องวัดฉนวน', left_c6:'คุณภาพไฟฟ้า', left_c7:'เครื่องสอบเทียบ', left_c8:'อุปกรณ์เสริม',
+        left_c5:'เครื่องทดสอบ ฉนวนไฟฟ้า', left_c6:'เครื่องมือวัด คุณภาพไฟฟ้า', left_c7:'เครื่องมือสอบเทียบ', left_c8:'อุปกรณ์เสริม',
         promo1_title:'ข้อเสนอพิเศษ', promo1_sub:'ประหยัดกว่าเดิม',
         promo2_title:'สินค้าใหม่ล่าสุด', promo2_sub:'อัปเดตทุกสัปดาห์',
         flash_title:'Flash Deals', flash_view_all:'ดูทั้งหมด', deal_name:'ชื่อสินค้า',
         cat_title:'หมวดหมู่สินค้า',
-        cat_g_1:'แคลมป์มิเตอร์', cat_g_2:'เครื่องทดสอบไฟฟ้า', cat_g_3:'เครื่องทดสอบสายดิน', cat_g_4:'เครื่องวัดฉนวน',
-        cat_g_5:'มัลติมิเตอร์', cat_g_6:'คุณภาพไฟฟ้า', cat_g_7:'การบำรุงรักษา', cat_g_8:'เทอร์โมกราฟี',
+        cat_g_1:'แคลมป์มิเตอร์', cat_g_2:'เครื่องทดสอบไฟฟ้า', cat_g_3:'เครื่องทดสอบสายดิน', cat_g_4:'เครื่องทดสอบ ฉนวนไฟฟ้า',
+        cat_g_5:'มัลติมิเตอร์', cat_g_6:'เครื่องมือวัด คุณภาพไฟฟ้า', cat_g_7:'การบำรุงรักษา', cat_g_8:'เทอร์โมกราฟี',
         cat_g_9:'เครื่องวัดสโคป', cat_g_10:'เครื่องมือวัดอุณหภูมิ', cat_g_11:'กล้องถ่ายภาพความร้อน', cat_g_12:'เครื่องมืออื่น ๆ',
         footer_contact:'ติดต่อเรา', footer_branch:'สาขาของเรา', footer_social:'Facebook / YouTube',
         footer_service:'บริการของเรา', footer_calib:'ห้องปฏิบัติการสอบเทียบ', footer_promo:'สินค้าโปรโมชั่น',
